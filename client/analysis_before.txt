@@ -1,0 +1,19 @@
+﻿Analyzing client...                                             
+
+warning - The declaration '_updateFcmToken' isn't referenced - lib\features\auth\presentation\screens\login_screen.dart:427:16 - unused_element
+warning - The declaration '_navigateAfterLogin' isn't referenced - lib\features\auth\presentation\screens\login_screen.dart:433:16 - unused_element
+   info - Don't invoke 'print' in production code - lib\features\delivery\presentation\screens\delivery_profile_screen.dart:51:7 - avoid_print
+   info - Statements in an if should be enclosed in a block - lib\screens\customer_details\tabs\customer_info_tab.dart:489:20 - curly_braces_in_flow_control_structures
+   info - Unnecessary use of multiple underscores - lib\screens\customer_details\tabs\customer_info_tab.dart:893:24 - unnecessary_underscores
+   info - Statements in an if should be enclosed in a block - lib\screens\customer_details\tabs\meal_plan_tab.dart:313:20 - curly_braces_in_flow_control_structures
+   info - Unnecessary use of multiple underscores - lib\screens\customer_details\tabs\transactions_tab.dart:155:28 - unnecessary_underscores
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\services\customer_detail_service.dart:93:11 - use_null_aware_elements
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\services\customer_detail_service.dart:94:11 - use_null_aware_elements
+
+flutter : 9 issues found. (ran in 12.6s)
+At C:\Users\DELL\AppData\Local\Temp\ps-script-26394f39-18d5-4d06-8b97-99cbf88a7a1f.ps1:85 char:53
++ ... s\DELL\Documents\Tiffin_CRM_app\client"; flutter analyze 2>&1 | Out-F ...
++                                              ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (9 issues found. (ran in 12.6s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

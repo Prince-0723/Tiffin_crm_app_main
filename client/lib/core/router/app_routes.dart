@@ -1,0 +1,45 @@
+abstract final class AppRoutes {
+  static const String appIntro = '/app-intro';
+  static const String splash = '/splash';
+  static const String onboarding = '/onboarding';
+  static const String login = '/login';
+  static const String otp = '/otp';
+  static const String roleSelection = '/role-selection';
+  static const String welcome = '/welcome';
+  static const String vendorOnboarding = '/vendor-onboarding';
+  static const String googleLogin = '/google-login';
+  static const String facebookLogin = '/facebook-login';
+  static const String dashboard = '/dashboard';
+  static const String customers = '/customers';
+  static const String addCustomer = '/customers/add';
+  static const String editCustomer = '/customers/edit';
+  static const String customerDetail = '/customers/detail';
+  static const String mealPlans = '/meal-plans';
+  static const String createPlan = '/create-plan';
+  static const String subscriptions = '/subscriptions';
+  static const String planAssignments = '/plan-assignments';
+  static const String delivery = '/delivery';
+  static const String deliveryStaff = '/delivery-staff';
+  static const String addDeliveryStaff = '/delivery-staff/add';
+  static const String editDeliveryStaff = '/delivery-staff/edit';
+  static const String zones = '/zones';
+  static const String payments = '/payments';
+  static const String invoices = '/invoices';
+  static const String reports = '/reports';
+  static const String analytics = '/analytics';
+  static const String settings = '/settings';
+  static const String profile = '/profile';
+  static const String notifications = '/notifications';
+  static const String businessProfile = '/business-profile';
+  static const String maps = '/maps';
+  static const String items = '/items';
+  static const String home = dashboard;
+
+  /// Role-based home routes (after login)
+  static const String customerHome = '/customer-home';
+  static const String customerNotifications = '/customer-notifications';
+  static const String deliveryDashboard = '/delivery-dashboard';
+  static const String deliveryMap = '/delivery-map';
+  static const String adminDashboard = '/admin-dashboard';
+  static const String adminList = '/admin-list';
+}

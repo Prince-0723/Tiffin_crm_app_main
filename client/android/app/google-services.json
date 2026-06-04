@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "146547626377",
+    "project_id": "tiffin-crm-819fc",
+    "storage_bucket": "tiffin-crm-819fc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:146547626377:android:7e730b6c6858792e615158",
+        "android_client_info": {
+          "package_name": "com.swati.auth"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjjSlpvwzPrOs8W1gDAjRkKAUAfZrDK68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:146547626377:android:5a53601a3fcade72615158",
+        "android_client_info": {
+          "package_name": "com.swatisen.otpauthapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjjSlpvwzPrOs8W1gDAjRkKAUAfZrDK68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:146547626377:android:fea6eff34a1989cd615158",
+        "android_client_info": {
+          "package_name": "com.tiffin.crm.tiffin_crm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjjSlpvwzPrOs8W1gDAjRkKAUAfZrDK68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

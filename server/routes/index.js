@@ -1,0 +1,52 @@
+import { Router } from "express";
+import authRoutes from "./auth.routes.js";
+import customerRoutes from "./customer.routes.js";
+import customerPortalRoutes from "./customerPortal.routes.js";
+import itemRoutes from "./item.routes.js";
+import deliveryStaffRoutes from "./deliveryStaff.routes.js";
+import planRoutes from "./plan.routes.js";
+import subscriptionRoutes from "./subscription.routes.js";
+import paymentRoutes from "./payment.routes.js";
+import invoiceRoutes from "./invoice.routes.js";
+import notificationRoutes from "./notification.routes.js";
+import reportRoutes from "./report.routes.js";
+import dailyOrderRoutes from "./dailyOrder.routes.js";
+import deliveryRoutes from "./delivery.routes.js";
+import adminRoutes from "./admin.routes.js";
+import zoneRoutes from "./zone.routes.js";
+import expenseRoutes from "./expense.routes.js";
+import incomeRoutes from "./income.routes.js";
+import sendNotificationRoutes from "./sendNotification.routes.js";
+import userRoutes from "./user.routes.js";
+import vendorCustomerTiffinRoutes from "./vendorCustomerTiffin.routes.js";
+import vendorDashboardRoutes from "./vendorDashboard.routes.js";
+import vendorFinanceRoutes from "./vendorFinance.routes.js";
+import financeRoutes from "./finance.js";
+
+const router = Router();
+
+router.use("/auth", authRoutes);
+router.use("/users", userRoutes);
+router.use("/customers", customerRoutes);
+router.use("/vendor/customers", vendorCustomerTiffinRoutes);
+router.use("/vendor/dashboard", vendorDashboardRoutes);
+router.use("/vendor/finance", vendorFinanceRoutes);
+router.use("/customer", customerPortalRoutes);   // customer self-service portal
+router.use("/items", itemRoutes);
+router.use("/delivery-staff", deliveryStaffRoutes);
+router.use("/plans", planRoutes);
+router.use("/subscriptions", subscriptionRoutes);
+router.use("/payments", paymentRoutes);
+router.use("/invoices", invoiceRoutes);
+router.use("/notifications", notificationRoutes);
+router.use("/reports", reportRoutes);
+router.use("/daily-orders", dailyOrderRoutes);
+router.use("/delivery", deliveryRoutes);
+router.use("/admin", adminRoutes);
+router.use("/zones", zoneRoutes);
+router.use("/expenses", expenseRoutes);
+router.use("/incomes", incomeRoutes);
+router.use("/send-notification", sendNotificationRoutes);
+router.use("/", financeRoutes);
+
+export default router;

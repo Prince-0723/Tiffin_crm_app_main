@@ -1,0 +1,34 @@
+-- This project uses MongoDB (Mongoose), not SQL.
+-- Equivalent schema additions live in:
+--   server/models/Transaction.model.js
+--   server/models/DeliverySchedule.model.js
+--   server/models/Customer.model.js  (walletBalance, pendingDue)
+--   server/models/Subscription.model.js (remainingBalance)
+--
+-- If you mirror to a relational DB, approximate DDL:
+--
+-- ALTER TABLE customers ADD COLUMN wallet_balance DECIMAL(12,2) DEFAULT 0;
+-- ALTER TABLE customers ADD COLUMN pending_due DECIMAL(12,2) DEFAULT 0;
+-- ALTER TABLE subscriptions ADD COLUMN remaining_balance DECIMAL(12,2);
+--
+-- CREATE TABLE transactions (
+--   id VARCHAR(24) PRIMARY KEY,
+--   customer_id VARCHAR(24) NOT NULL,
+--   date TIMESTAMP NOT NULL,
+--   description TEXT,
+--   amount DECIMAL(12,2) NOT NULL,
+--   type VARCHAR(16) NOT NULL,
+--   payment_mode VARCHAR(32),
+--   source VARCHAR(64),
+--   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
+--
+-- CREATE TABLE delivery_schedule (
+--   id VARCHAR(24) PRIMARY KEY,
+--   customer_id VARCHAR(24) NOT NULL,
+--   date DATE NOT NULL,
+--   items TEXT,
+--   status VARCHAR(16) NOT NULL,
+--   cancelled_at TIMESTAMP,
+--   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );

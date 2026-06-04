@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Public Downloads subfolder when [path_provider] resolves to shared storage -->
+    <external-path
+        name="downloads_tiffincrm"
+        path="Download/TiffinCRM" />
+    <!-- App-specific external files (API 19+) -->
+    <external-files-path
+        name="app_downloads"
+        path="Download/TiffinCRM" />
+    <external-files-path
+        name="app_external_root"
+        path="." />
+    <!-- iOS-style app documents / internal cache fallbacks -->
+    <files-path
+        name="app_internal"
+        path="." />
+    <cache-path
+        name="cache"
+        path="." />
+</paths>
