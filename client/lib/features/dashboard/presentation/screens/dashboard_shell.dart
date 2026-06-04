@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_drawer.dart';
@@ -10,6 +10,7 @@ import '../../../../core/notifications/notification_badge_service.dart';
 import '../../../auth/data/auth_api.dart';
 import '../../../auth/models/user_model.dart';
 import '../../../../screens/finance/finance_refresh_signal.dart';
+import '../../overview_dashboard_refresh_signal.dart';
 import '../../../customers/presentation/screens/customers_list_screen.dart';
 import 'dashboard_home_screen.dart';
 import 'delivery_screen.dart';
@@ -210,7 +211,9 @@ class _DashboardShellState extends State<DashboardShell>
             currentIndex: _selectedIndex,
             onTap: (index) {
               HapticFeedback.lightImpact();
-              if (index == 3) {
+              if (index == 0) {
+                overviewDashboardTabSelectedTick.value++;
+              } else if (index == 3) {
                 financeDashboardTabSelectedTick.value++;
               }
               setState(() => _selectedIndex = index);

@@ -1,5 +1,5 @@
 abstract final class AppConfig {
-  /// Set to true for local backend (e.g. http://localhost:5800), false for Render.
+  // Set to true for local backend (e.g. http://localhost:5800), false for Render.
   static const bool useLocalApi = false;
 
   static const String apiUrlLocal = 'http://localhost:5800/api/v1';
@@ -8,7 +8,7 @@ abstract final class AppConfig {
 
   static String get baseUrl => useLocalApi ? apiUrlLocal : apiUrlProduction;
 
-  /// Origin for Socket.IO (no `/api/v1` path). Used by `DeliveryTrackingSocket`.
+  // Origin for Socket.IO (no `/api/v1` path). Used by `DeliveryTrackingSocket`.
   static String get socketOrigin {
     final u = Uri.parse(baseUrl);
     if (u.hasPort) {

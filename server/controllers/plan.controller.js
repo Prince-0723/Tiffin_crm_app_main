@@ -292,6 +292,14 @@ export const updatePlan = asyncHandler(async (req, res) => {
 
   if (!plan) throw new ApiError(404, "Plan not found");
 
+  // Emit daily_orders_changed
+  const io = req.app.get("io");
+  if (io) {
+    io.of("/delivery")
+      .to(`admin:${ownerId}`)
+      .emit("daily_orders_changed", { reason: "plan_updated" });
+  }
+
   res.status(200).json(new ApiResponse(200, "Plan updated", plan));
 });
 
@@ -378,6 +386,14 @@ export const deletePlan = asyncHandler(async (req, res) => {
   }
 
   await Plan.deleteOne({ _id: id });
+
+  // Emit daily_orders_changed
+  const io = req.app.get("io");
+  if (io) {
+    io.of("/delivery")
+      .to(`admin:${ownerId}`)
+      .emit("daily_orders_changed", { reason: "plan_deleted" });
+  }
 
   res.status(200).json(new ApiResponse(200, "Meal plan deleted successfully"));
 });

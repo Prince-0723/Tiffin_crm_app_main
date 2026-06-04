@@ -1,4 +1,4 @@
-
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -7,6 +7,8 @@ import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/socket/delivery_tracking_socket.dart';
+import '../../overview_dashboard_refresh_signal.dart';
 import '../../../customers/data/customer_api.dart';
 import '../../../delivery/data/delivery_api.dart';
 import '../../data/daily_items_api.dart';
@@ -46,6 +48,8 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
   Object? _itemsError;
   List<DailyItemRow> _dailyItems = [];
   int? _dailyItemsCustomerCount;
+  StreamSubscription<void>? _dailyOrdersSocketSub;
+  VoidCallback? _overviewTabReselectedListener;
   /// Calendar day for daily-items API (local). Initialized in [initState] for web safety.
   late DateTime _itemsDay;
   _DailyItemsChip _itemsChip = _DailyItemsChip.all;
@@ -74,10 +78,33 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
     _itemsDay = DateTime(n.year, n.month, n.day);
     _loadStats();
     _loadDailyItems();
+    _attachDailyOrdersSocket();
+    _overviewTabReselectedListener = () {
+      if (!mounted) return;
+      _loadStats();
+      _loadDailyItems();
+    };
+    overviewDashboardTabSelectedTick.addListener(_overviewTabReselectedListener!);
+  }
+
+  Future<void> _attachDailyOrdersSocket() async {
+    await DeliveryTrackingSocket.instance.ensureConnected();
+    _dailyOrdersSocketSub =
+        DeliveryTrackingSocket.instance.dailyOrdersRefresh.listen((_) {
+      if (mounted) {
+        _loadStats();
+        _loadDailyItems();
+      }
+    });
   }
 
   @override
   void dispose() {
+    if (_overviewTabReselectedListener != null) {
+      overviewDashboardTabSelectedTick
+          .removeListener(_overviewTabReselectedListener!);
+    }
+    _dailyOrdersSocketSub?.cancel();
     _todayOrdersStripController.dispose();
     super.dispose();
   }

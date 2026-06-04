@@ -182,25 +182,43 @@ export const listSubscriptions = asyncHandler(async (req, res) => {
 
   const page = value.page || DEFAULT_PAGE;
   const limit = Math.min(value.limit || DEFAULT_LIMIT, MAX_LIMIT);
-  const skip = (page - 1) * limit;
 
   const ownerId = req.user.userId;
   const filter = { ownerId };
   if (value.status) filter.status = value.status;
   if (value.customerId) filter.customerId = value.customerId;
 
-  const [data, total] = await Promise.all([
-    Subscription.find(filter)
-      .populate("customerId", "name phone address")
-      .populate("planId", "planName price planType")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean(),
-    Subscription.countDocuments(filter),
-  ]);
+  if (value.status === "active") {
+    filter.endDate = { $gte: new Date() };
+  }
 
-  const normalizedData = data.map((subscription) =>
+  const activeCustomerIds = await Customer.find({
+    ownerId,
+    isDeleted: { $ne: true },
+  }).distinct("_id");
+  filter.customerId = value.customerId
+    ? value.customerId
+    : { $in: activeCustomerIds };
+
+  const subscriptions = await Subscription.find(filter)
+    .populate({
+      path: "customerId",
+      match: { isDeleted: { $ne: true } },
+      select: "name phone address"
+    })
+    .populate({
+      path: "planId",
+      match: { isActive: true },
+      select: "planName price planType"
+    })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const filteredData = subscriptions.filter(sub => sub.customerId && sub.planId);
+  const total = filteredData.length;
+  const skip = (page - 1) * limit;
+  const paginatedData = filteredData.slice(skip, skip + limit);
+  const normalizedData = paginatedData.map((subscription) =>
     normalizeSubscriptionLedger(subscription)
   );
   const totalPages = Math.ceil(total / limit);
@@ -227,11 +245,19 @@ export const getSubscriptionById = asyncHandler(async (req, res) => {
   const ownerId = req.user.userId;
   const { id } = req.params;
   const subscription = await Subscription.findOne({ _id: id, ownerId })
-    .populate("customerId", "name phone address")
-    .populate("planId", "planName price planType")
+    .populate({
+      path: "customerId",
+      match: { isDeleted: { $ne: true } },
+      select: "name phone address"
+    })
+    .populate({
+      path: "planId",
+      match: { isActive: true },
+      select: "planName price planType"
+    })
     .lean();
 
-  if (!subscription) {
+  if (!subscription || !subscription.customerId || !subscription.planId) {
     throw new ApiError(404, "Subscription not found");
   }
 
@@ -463,6 +489,14 @@ export const createSubscription = asyncHandler(async (req, res) => {
 
   console.log("========== CREATE SUBSCRIPTION SUCCESS ==========");
 
+  // Emit daily_orders_changed
+  const io = req.app.get("io");
+  if (io) {
+    io.of("/delivery")
+      .to(`admin:${ownerId.toString()}`)
+      .emit("daily_orders_changed", { reason: "subscription_created" });
+  }
+
   const response = new ApiResponse(
     201,
     "Subscription created successfully",
@@ -626,6 +660,14 @@ export const renewSubscription = asyncHandler(async (req, res) => {
   }
 
   const response = new ApiResponse(200, "Subscription renewed", updated);
+  // Emit daily_orders_changed
+  const io = req.app.get("io");
+  if (io) {
+    io.of("/delivery")
+      .to(`admin:${ownerId}`)
+      .emit("daily_orders_changed", { reason: "subscription_renewed" });
+  }
+
   res.status(response.statusCode).json({
     success: response.success,
     message: response.message,
@@ -692,6 +734,14 @@ export const pauseSubscription = asyncHandler(async (req, res) => {
     .lean();
 
   const response = new ApiResponse(200, "Subscription paused", updated);
+  // Emit daily_orders_changed
+  const io = req.app.get("io");
+  if (io) {
+    io.of("/delivery")
+      .to(`admin:${ownerId}`)
+      .emit("daily_orders_changed", { reason: "subscription_paused" });
+  }
+
   res.status(response.statusCode).json({
     success: response.success,
     message: response.message,
@@ -765,6 +815,14 @@ export const unpauseSubscription = asyncHandler(async (req, res) => {
     .lean();
 
   const response = new ApiResponse(200, "Subscription unpaused", updated);
+  // Emit daily_orders_changed
+  const io = req.app.get("io");
+  if (io) {
+    io.of("/delivery")
+      .to(`admin:${ownerId}`)
+      .emit("daily_orders_changed", { reason: "subscription_unpaused" });
+  }
+
   res.status(response.statusCode).json({
     success: response.success,
     message: response.message,
@@ -798,6 +856,14 @@ export const cancelSubscription = asyncHandler(async (req, res) => {
     .lean();
 
   const response = new ApiResponse(200, "Subscription cancelled", updated);
+  // Emit daily_orders_changed
+  const io = req.app.get("io");
+  if (io) {
+    io.of("/delivery")
+      .to(`admin:${ownerId}`)
+      .emit("daily_orders_changed", { reason: "subscription_cancelled" });
+  }
+
   res.status(response.statusCode).json({
     success: response.success,
     message: response.message,
@@ -824,6 +890,14 @@ export const deleteSubscription = asyncHandler(async (req, res) => {
   }
 
   await Subscription.deleteOne({ _id: id, ownerId });
+
+  // Emit daily_orders_changed
+  const io = req.app.get("io");
+  if (io) {
+    io.of("/delivery")
+      .to(`admin:${ownerId}`)
+      .emit("daily_orders_changed", { reason: "subscription_deleted" });
+  }
 
   const response = new ApiResponse(200, "Subscription deleted", existing);
   res.status(response.statusCode).json({

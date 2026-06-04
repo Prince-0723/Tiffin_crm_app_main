@@ -2,6 +2,7 @@ import DailyOrder from "../models/DailyOrder.model.js";
 import Subscription from "../models/Subscription.model.js";
 import MealPlan from "../models/Plan.model.js";
 import Item from "../models/Item.model.js";
+import Customer from "../models/Customer.model.js";
 import { payLaterWouldExceedCreditLimit } from "../utils/subscriptionPayLater.js";
 
 export const parseUTC = (d) => {
@@ -59,23 +60,72 @@ export const MEAL_PERIOD_TO_MEALTYPES = {
   snack: ["snack", "all"],
 };
 
+/** Non-deleted customers and active meal plans for vendor dashboard queries. */
+export async function getVendorDashboardOrderScope(ownerId) {
+  const [customerIds, planIds] = await Promise.all([
+    Customer.find({ ownerId, isDeleted: { $ne: true } }).distinct("_id"),
+    MealPlan.find({ ownerId, isActive: true }).distinct("_id"),
+  ]);
+  return { customerIds, planIds };
+}
+
+/** Restrict a DailyOrder query to dashboard-visible customers/plans. */
+export function applyVendorDashboardOrderScope(filter, { customerIds, planIds }) {
+  if (customerIds?.length) {
+    filter.customerId = { $in: customerIds };
+  } else {
+    filter.customerId = { $in: [] };
+  }
+  if (planIds?.length) {
+    filter.planId = { $in: planIds };
+  } else {
+    filter.planId = { $in: [] };
+  }
+}
+
+/**
+ * Meal-period filter aligned with Items to Prepare (planMealSlot + combined mealType).
+ */
+export function applyMealPeriodSlotFilter(filter, mealPeriod) {
+  if (!mealPeriod) return;
+  const allowedMealTypes = MEAL_PERIOD_TO_MEALTYPES[mealPeriod] || [mealPeriod];
+  const orClause = [
+    { planMealSlot: mealPeriod },
+    {
+      planMealSlot: "combined",
+      mealType: { $in: allowedMealTypes },
+    },
+  ];
+  if (mealPeriod === "breakfast") {
+    orClause.push({ planMealSlot: "early_morning" });
+  }
+  return { $or: orClause };
+}
+
 /**
  * Mutates `filter` (Mongo query object) with mealPeriod + dietType constraints.
  */
 export function applyMealDietToFilter(filter, { mealPeriod, dietType } = {}) {
+  const andClauses = [];
+
   if (mealPeriod) {
-    const allowed = MEAL_PERIOD_TO_MEALTYPES[mealPeriod];
-    if (allowed?.length) {
-      filter.mealType = { $in: allowed };
-    }
+    andClauses.push(applyMealPeriodSlotFilter({}, mealPeriod));
   }
 
   if (dietType === "veg") {
-    filter.$or = [{ dietType: "veg" }, { dietType: { $exists: false } }];
+    andClauses.push({
+      $or: [{ dietType: "veg" }, { dietType: { $exists: false } }],
+    });
   } else if (dietType === "non_veg") {
-    filter.dietType = { $in: ["non_veg", "mixed"] };
+    andClauses.push({ dietType: { $in: ["non_veg", "mixed"] } });
   } else if (dietType === "mixed") {
-    filter.dietType = "mixed";
+    andClauses.push({ dietType: "mixed" });
+  }
+
+  if (andClauses.length === 1) {
+    Object.assign(filter, andClauses[0]);
+  } else if (andClauses.length > 1) {
+    filter.$and = [...(filter.$and || []), ...andClauses];
   }
 }
 
@@ -213,9 +263,19 @@ export const generateDailyOrdersForDate = async (ownerId, date) => {
     dayOfWeek: dow,
   });
 
+  const activeCustomerIds = await Customer.find({
+    ownerId,
+    isDeleted: { $ne: true },
+  }).distinct("_id");
+
+  if (!activeCustomerIds.length) {
+    return { generatedCount: 0, existingCount: 0, skippedCreditLimit: 0 };
+  }
+
   // Fetch active + paused subscriptions; paused ones are filtered per-date below
   const subscriptions = await Subscription.find({
     ownerId,
+    customerId: { $in: activeCustomerIds },
     startDate: { $lte: day },
     endDate: { $gte: day },
     status: { $in: ["active", "paused"] },
@@ -249,7 +309,7 @@ export const generateDailyOrdersForDate = async (ownerId, date) => {
   const planIds = [...new Set(subscriptions.map((s) => s.planId.toString()))];
 
   // Fetch all plans in one query
-  const plans = await MealPlan.find({ _id: { $in: planIds } }).lean();
+  const plans = await MealPlan.find({ _id: { $in: planIds }, isActive: true }).lean();
   const planMap = {};
   for (const plan of plans) {
     planMap[plan._id.toString()] = plan;
@@ -357,21 +417,40 @@ export const generateDailyOrdersForDate = async (ownerId, date) => {
  */
 export const getTodayDailyOrders = async (ownerId, filters = {}) => {
   const today = parseUTC(new Date());
+  const scope = await getVendorDashboardOrderScope(ownerId);
   const base = {
     ownerId,
     orderDate: today,
     status: { $ne: "cancelled" },
   };
 
+  applyVendorDashboardOrderScope(base, scope);
   applyMealDietToFilter(base, filters);
 
-  return DailyOrder.find(base)
-    .populate("customerId", "name phone address area")
-    .populate("planId", "planName price")
+  const orders = await DailyOrder.find(base)
+    .populate({
+      path: "customerId",
+      match: { isDeleted: { $ne: true } },
+      select: "name phone address area",
+    })
+    .populate({
+      path: "planId",
+      match: { isActive: true },
+      select: "planName price",
+    })
+    .populate({
+      path: "subscriptionId",
+      match: { status: { $in: ["active", "paused"] } },
+      select: "status",
+    })
     .populate("deliveryStaffId", "name phone")
     .populate("resolvedItems.itemId", "name unitPrice unit dietType")
     .sort({ createdAt: 1 })
     .lean();
+
+  return orders.filter(
+    (order) => order.customerId && order.planId && order.subscriptionId
+  );
 };
 
 export const generateOrdersForNextDays = async (ownerId, days = 7) => {

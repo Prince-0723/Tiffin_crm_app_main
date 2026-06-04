@@ -1,8 +1,13 @@
 import mongoose from "mongoose";
-import Subscription from "../models/Subscription.model.js";
-import MealPlan from "../models/Plan.model.js";
 import Item from "../models/Item.model.js";
-import { parseUTC } from "../services/dailyOrder.service.js";
+import DailyOrder from "../models/DailyOrder.model.js";
+import {
+  parseUTC,
+  generateDailyOrdersForDate,
+  getVendorDashboardOrderScope,
+  applyVendorDashboardOrderScope,
+  applyMealPeriodSlotFilter,
+} from "../services/dailyOrder.service.js";
 import { istTodayYmd } from "../utils/subscriptionCalendarDays.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../class/apiResponseClass.js";
@@ -52,17 +57,45 @@ export const getDailyItems = asyncHandler(async (req, res) => {
   }
 
   const day = parseUTC(dateStr);
-  const dow = day.getUTCDay();
 
-  const subscriptions = await Subscription.find({
+  // Guarantee that daily orders are generated for the target day
+  await generateDailyOrdersForDate(ownerId, day).catch(() => {});
+
+  const scope = await getVendorDashboardOrderScope(ownerId);
+
+  // Only non-delivered orders that still need preparation
+  const dailyOrderFilter = {
     ownerId,
-    status: "active",
-    startDate: { $lte: day },
-    endDate: { $gte: day },
-    deliveryDays: { $in: [dow] },
-  }).lean();
+    orderDate: day,
+    status: { $in: ["pending", "processing", "out_for_delivery"] },
+  };
 
-  if (!subscriptions.length) {
+  applyVendorDashboardOrderScope(dailyOrderFilter, scope);
+  if (mealPeriod) {
+    Object.assign(dailyOrderFilter, applyMealPeriodSlotFilter({}, mealPeriod));
+  }
+
+  const orders = await DailyOrder.find(dailyOrderFilter)
+    .populate({
+      path: "customerId",
+      match: { isDeleted: { $ne: true } },
+    })
+    .populate({
+      path: "planId",
+      match: { isActive: true },
+    })
+    .populate({
+      path: "subscriptionId",
+      match: { status: { $in: ["active", "paused"] } },
+      select: "status",
+    })
+    .lean();
+
+  const activeOrders = orders.filter(
+    (o) => o.customerId && o.planId && o.subscriptionId
+  );
+
+  if (!activeOrders.length) {
     const response = new ApiResponse(200, "Daily items aggregated", {
       date: dateStr,
       customerCount: 0,
@@ -78,25 +111,10 @@ export const getDailyItems = asyncHandler(async (req, res) => {
     });
   }
 
-  const planIds = [
-    ...new Set(subscriptions.map((s) => s.planId.toString())),
-  ].map((id) => new mongoose.Types.ObjectId(id));
-
-  const plans = await MealPlan.find({ _id: { $in: planIds } }).lean();
-  const planById = {};
-  for (const p of plans) {
-    planById[p._id.toString()] = p;
-  }
-
   const itemIdsNeeded = new Set();
-  for (const sub of subscriptions) {
-    const plan = planById[sub.planId.toString()];
-    if (!plan?.mealSlots?.length) continue;
-    for (const slot of plan.mealSlots) {
-      if (mealPeriod && slot?.slot !== mealPeriod) continue;
-      for (const row of slot.items || []) {
-        if (row.itemId) itemIdsNeeded.add(row.itemId.toString());
-      }
+  for (const ord of activeOrders) {
+    for (const row of ord.resolvedItems || []) {
+      if (row.itemId) itemIdsNeeded.add(row.itemId.toString());
     }
   }
 
@@ -133,20 +151,14 @@ export const getDailyItems = asyncHandler(async (req, res) => {
   /** Customers who contribute at least one line item for this date + meal filter. */
   const contributingCustomerIds = new Set();
 
-  for (const sub of subscriptions) {
-    const plan = planById[sub.planId.toString()];
-    if (!plan?.mealSlots?.length) continue;
-
-    for (const slot of plan.mealSlots) {
-      if (mealPeriod && slot?.slot !== mealPeriod) continue;
-      for (const row of slot.items || []) {
-        const idStr = row.itemId?.toString();
-        if (!idStr || !itemById[idStr]) continue;
-        const q = Number(row.quantity);
-        if (!Number.isFinite(q) || q <= 0) continue;
-        totals.set(idStr, (totals.get(idStr) || 0) + q);
-        contributingCustomerIds.add(sub.customerId.toString());
-      }
+  for (const ord of activeOrders) {
+    for (const row of ord.resolvedItems || []) {
+      const idStr = row.itemId?.toString();
+      if (!idStr || !itemById[idStr]) continue;
+      const q = Number(row.quantity);
+      if (!Number.isFinite(q) || q <= 0) continue;
+      totals.set(idStr, (totals.get(idStr) || 0) + q);
+      contributingCustomerIds.add(ord.customerId._id.toString());
     }
   }
 

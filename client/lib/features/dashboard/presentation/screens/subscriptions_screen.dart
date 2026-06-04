@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import '../../../../core/socket/delivery_tracking_socket.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/router/app_routes.dart';
@@ -169,6 +172,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
   // ── all logic fields unchanged ──
   List<SubscriptionModel> _list = [];
   bool _loading = true;
+  StreamSubscription<void>? _dailyOrdersSocketSub;
   static const List<String> _statusTabs = [
     'active',
     'paused',
@@ -184,6 +188,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
     _tabController = TabController(length: _statusTabs.length, vsync: this);
     _tabController.addListener(_onTabChanged);
     _load();
+    _attachDailyOrdersSocket();
     final plan = widget.initialPlan;
     if (plan != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -198,9 +203,18 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
 
   @override
   void dispose() {
+    _dailyOrdersSocketSub?.cancel();
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _attachDailyOrdersSocket() async {
+    await DeliveryTrackingSocket.instance.ensureConnected();
+    _dailyOrdersSocketSub =
+        DeliveryTrackingSocket.instance.dailyOrdersRefresh.listen((_) {
+      if (mounted) _load();
+    });
   }
 
   Future<void> _load() async {

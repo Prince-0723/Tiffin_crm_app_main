@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import '../notifications/notification_badge_service.dart';
 import '../theme/app_colors.dart';
@@ -23,7 +23,7 @@ class NotificationBellIcon extends StatelessWidget {
         return Stack(
           clipBehavior: Clip.none,
           children: [
-            ?child,
+            if (child != null) child,
             if (count > 0)
               Positioned(
                 right: -1,

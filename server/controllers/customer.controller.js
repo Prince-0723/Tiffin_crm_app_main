@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import Customer, { CUSTOMER_STATUSES } from "../models/Customer.model.js";
 import Payment, { PAYMENT_METHODS } from "../models/Payment.model.js";
 import User from "../models/User.model.js";
+import Subscription from "../models/Subscription.model.js";
+import DailyOrder from "../models/DailyOrder.model.js";
 import { settlePayLaterSubscriptions } from "../utils/subscriptionPayLater.js";
 import Zone from "../models/Zone.model.js";
 import { parseCustomerCsv } from "../utils/parseCustomerCsv.js";
@@ -737,6 +739,26 @@ export const deleteCustomer = asyncHandler(async (req, res) => {
     { $set: { isDeleted: true } },
     { new: true }
   ).lean();
+
+  // Cancel customer's active/paused subscriptions
+  await Subscription.updateMany(
+    { customerId: id, status: { $in: ["active", "paused"] } },
+    { $set: { status: "cancelled" } }
+  );
+
+  // Remove customer's pending daily orders
+  await DailyOrder.deleteMany({
+    customerId: id,
+    status: { $in: ["pending", "processing", "out_for_delivery"] },
+  });
+
+  // Emit daily_orders_changed on /delivery socket channel
+  const io = req.app.get("io");
+  if (io) {
+    io.of("/delivery")
+      .to(`admin:${ownerId}`)
+      .emit("daily_orders_changed", { reason: "customer_deleted" });
+  }
 
   const response = new ApiResponse(200, "Customer deleted (soft)", updated);
   res.status(response.statusCode).json({

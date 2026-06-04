@@ -247,6 +247,14 @@ export const processToday = asyncHandler(async (req, res) => {
       });
   }
 
+  if (processedCount > 0) {
+    emitVendorDailyOrdersChanged(req, ownerId, {
+      date: targetDate.toISOString().slice(0, 10),
+      processedCount,
+      status: "processing",
+    });
+  }
+
   res
     .status(200)
     .json(new ApiResponse(200, "Orders processed", { processedCount }));
@@ -373,6 +381,11 @@ async function applyDailyOrderStatusCore(req, order, status) {
         });
     }
 
+    emitVendorDailyOrdersChanged(req, ownerId, {
+      orderId: orderIdStr,
+      status: "processing",
+    });
+
     return {
       message: "Order marked as processing",
       data: { order },
@@ -419,6 +432,11 @@ async function applyDailyOrderStatusCore(req, order, status) {
         })
       ),
     ]);
+
+    emitVendorDailyOrdersChanged(req, ownerId, {
+      orderId: orderIdStr,
+      status: "out_for_delivery",
+    });
 
     return {
       message: "Order marked out for delivery",

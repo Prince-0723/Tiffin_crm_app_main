@@ -110,6 +110,10 @@ final class DeliveryTrackingSocket {
       if (!_dailyOrdersRefresh.isClosed) _dailyOrdersRefresh.add(null);
     });
 
+    socket.on('orders_processed', (_) {
+      if (!_dailyOrdersRefresh.isClosed) _dailyOrdersRefresh.add(null);
+    });
+
     socket.onConnect((_) {
       if (kDebugMode) debugPrint('[DeliverySocket] connected');
     });
