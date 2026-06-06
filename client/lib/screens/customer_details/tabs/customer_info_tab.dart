@@ -421,6 +421,7 @@ import '../../../core/utils/whatsapp_helper.dart';
 import '../../../features/customers/data/customer_api.dart';
 import '../../../features/customers/presentation/screens/tiffin_collection_history_screen.dart';
 import '../../../features/customers/presentation/widgets/customer_location_pick_sheet.dart';
+import '../../../features/customers/utils/customer_location_payload.dart';
 import '../../../features/customers/presentation/widgets/customer_tiffin_nav_row.dart';
 import '../../../features/payments/presentation/widgets/daily_receipt_sheet.dart';
 import '../../../models/customer_detail_model.dart';
@@ -596,13 +597,14 @@ class _CustomerInfoTabState extends State<CustomerInfoTab>
     if (result == null || !mounted) return;
     setState(() => _savingCustomerLocation = true);
     try {
-      await CustomerApi.update(widget.customerId, {
-        'address': result.address,
-        'location': {
-          'type': 'Point',
-          'coordinates': [result.lng, result.lat],
-        },
-      });
+      await CustomerApi.update(
+        widget.customerId,
+        buildCustomerLocationUpdateBody(
+          lat: result.lat,
+          lng: result.lng,
+          address: result.address,
+        ),
+      );
       if (!mounted) return;
       AppSnackbar.success(context, 'Location saved');
       await _load();
@@ -861,7 +863,7 @@ class _CustomerInfoTabState extends State<CustomerInfoTab>
                             Icons.add_location_alt_outlined,
                             size: 18,
                           ),
-                          label: const Text('Add location'),
+                          label: const Text('Set location'),
                           style: FilledButton.styleFrom(
                             backgroundColor: _P.primary,
                             foregroundColor: Colors.white,
@@ -872,11 +874,7 @@ class _CustomerInfoTabState extends State<CustomerInfoTab>
                     ),
                   )
                 else
-                  InkWell(
-                    onTap: _loading
-                        ? null
-                        : () => _openCustomerLocationPicker(i),
-                    child: Padding(
+                  Padding(
                       padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -884,12 +882,25 @@ class _CustomerInfoTabState extends State<CustomerInfoTab>
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                Icons.location_pin,
-                                color: _P.primary,
-                                size: 22,
+                              IconButton(
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 36,
+                                  minHeight: 36,
+                                ),
+                                tooltip: 'Open in Google Maps',
+                                onPressed: () =>
+                                    LocationHelper.openGoogleMaps(
+                                  i.sharedLocationLat!,
+                                  i.sharedLocationLng!,
+                                ),
+                                icon: Icon(
+                                  Icons.location_pin,
+                                  color: _P.primary,
+                                  size: 26,
+                                ),
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: 4),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -950,7 +961,6 @@ class _CustomerInfoTabState extends State<CustomerInfoTab>
                         ],
                       ),
                     ),
-                  ),
               ],
             ),
           ),

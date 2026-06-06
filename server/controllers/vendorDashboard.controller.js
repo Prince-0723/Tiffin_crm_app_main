@@ -7,6 +7,7 @@ import {
   getVendorDashboardOrderScope,
   applyVendorDashboardOrderScope,
   applyMealPeriodSlotFilter,
+  isPopulatedRef,
 } from "../services/dailyOrder.service.js";
 import { istTodayYmd } from "../utils/subscriptionCalendarDays.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -92,7 +93,10 @@ export const getDailyItems = asyncHandler(async (req, res) => {
     .lean();
 
   const activeOrders = orders.filter(
-    (o) => o.customerId && o.planId && o.subscriptionId
+    (o) =>
+      isPopulatedRef(o.customerId) &&
+      isPopulatedRef(o.planId) &&
+      isPopulatedRef(o.subscriptionId)
   );
 
   if (!activeOrders.length) {

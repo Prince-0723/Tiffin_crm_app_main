@@ -9,11 +9,14 @@ import '../../../../core/utils/app_snackbar.dart';
 import '../../../../core/utils/location_helper.dart';
 import '../../../../core/utils/subscription_calendar_days.dart';
 import '../../../../core/utils/error_handler.dart';
+import '../../../../core/socket/delivery_tracking_socket.dart';
+import '../../../dashboard/overview_dashboard_refresh_signal.dart';
 import '../../../../core/utils/whatsapp_helper.dart';
 import '../../../../core/widgets/bottom_sheet_handle.dart';
 import '../../../../models/customer_model.dart';
 import '../../../../services/customer_detail_service.dart';
 import '../../data/customer_api.dart';
+import '../../utils/customer_location_payload.dart';
 import '../widgets/customer_location_pick_sheet.dart';
 import 'tiffin_collection_history_screen.dart';
 import '../widgets/customer_tiffin_nav_row.dart';
@@ -302,7 +305,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   bool _hasCustomerMapLocation(CustomerModel c) {
     final loc = c.location;
     if (loc == null) return false;
-    return loc.lat != 0 || loc.lng != 0;
+    return hasValidCustomerMapPin(loc.lat, loc.lng);
   }
 
   Future<void> _openCustomerLocationPicker(CustomerModel c) async {
@@ -318,13 +321,14 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     if (result == null || !mounted) return;
     setState(() => _savingCustomerLocation = true);
     try {
-      await CustomerApi.update(c.id, {
-        'address': result.address,
-        'location': {
-          'type': 'Point',
-          'coordinates': [result.lng, result.lat],
-        },
-      });
+      await CustomerApi.update(
+        c.id,
+        buildCustomerLocationUpdateBody(
+          lat: result.lat,
+          lng: result.lng,
+          address: result.address,
+        ),
+      );
       if (!mounted) return;
       AppSnackbar.success(context, 'Location saved');
       await _load();
@@ -365,6 +369,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               Navigator.pop(ctx);
               try {
                 await CustomerApi.delete(widget.customer.id);
+                DeliveryTrackingSocket.instance.notifyDailyOrdersChanged();
+                overviewDashboardTabSelectedTick.value++;
                 if (mounted) {
                   AppSnackbar.success(context, 'Customer deleted');
                   context.pop();
@@ -846,7 +852,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                   Icons.add_location_alt_outlined,
                                   size: 18,
                                 ),
-                                label: const Text('Add location'),
+                                label: const Text('Set location'),
                                 style: FilledButton.styleFrom(
                                   backgroundColor: _P.g1,
                                   foregroundColor: Colors.white,
@@ -859,11 +865,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                           ),
                         )
                       else
-                        InkWell(
-                          onTap: _isLoading
-                              ? null
-                              : () => _openCustomerLocationPicker(c),
-                          child: Padding(
+                        Padding(
                             padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -871,12 +873,25 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Icon(
-                                      Icons.location_pin,
-                                      color: _P.v600,
-                                      size: 22,
+                                    IconButton(
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(
+                                        minWidth: 36,
+                                        minHeight: 36,
+                                      ),
+                                      tooltip: 'Open in Google Maps',
+                                      onPressed: () =>
+                                          LocationHelper.openGoogleMaps(
+                                        c.location!.lat,
+                                        c.location!.lng,
+                                      ),
+                                      icon: Icon(
+                                        Icons.location_pin,
+                                        color: _P.v600,
+                                        size: 26,
+                                      ),
                                     ),
-                                    const SizedBox(width: 10),
+                                    const SizedBox(width: 4),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
@@ -944,7 +959,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                 ),
                               ],
                             ),
-                          ),
                         ),
                     ],
                   ),

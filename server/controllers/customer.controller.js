@@ -5,6 +5,14 @@ import Payment, { PAYMENT_METHODS } from "../models/Payment.model.js";
 import User from "../models/User.model.js";
 import Subscription from "../models/Subscription.model.js";
 import DailyOrder from "../models/DailyOrder.model.js";
+import Transaction from "../models/Transaction.model.js";
+import Invoice from "../models/Invoice.model.js";
+import DeliverySchedule from "../models/DeliverySchedule.model.js";
+import Delivery from "../models/Delivery.model.js";
+import Order from "../models/Order.model.js";
+import Notification from "../models/Notification.model.js";
+import TiffinLedger from "../models/TiffinLedger.model.js";
+import MealPlan from "../models/Plan.model.js";
 import { settlePayLaterSubscriptions } from "../utils/subscriptionPayLater.js";
 import Zone from "../models/Zone.model.js";
 import { parseCustomerCsv } from "../utils/parseCustomerCsv.js";
@@ -20,6 +28,7 @@ import {
 import { notifyIfWalletJustHitZero } from "../utils/walletZeroNotification.js";
 import { ApiResponse } from "../class/apiResponseClass.js";
 import { ApiError } from "../class/apiErrorClass.js";
+import { applyCustomerLocationToPayload } from "../utils/customerLocation.js";
 
 const MAX_LIMIT = 100;
 const DEFAULT_LIMIT = 20;
@@ -28,6 +37,19 @@ const DEFAULT_PAGE = 1;
 const phoneSchema = Joi.string().trim().required().messages({
   "string.empty": "Phone is required",
 });
+
+const locationBodySchema = Joi.alternatives().try(
+  Joi.object({
+    type: Joi.string().valid("Point").optional(),
+    coordinates: Joi.array().items(Joi.number()).length(2).required(),
+    address: Joi.string().trim().allow("").optional(),
+  }),
+  Joi.object({
+    latitude: Joi.number().min(-90).max(90).required(),
+    longitude: Joi.number().min(-180).max(180).required(),
+    address: Joi.string().trim().allow("").optional(),
+  })
+);
 
 const createCustomerSchema = Joi.object({
   name: Joi.string()
@@ -49,10 +71,7 @@ const createCustomerSchema = Joi.object({
   status: Joi.string()
     .valid(...CUSTOMER_STATUSES)
     .optional(),
-  location: Joi.object({
-    type: Joi.string().valid("Point").optional(),
-    coordinates: Joi.array().items(Joi.number()).length(2).optional(), // [lng, lat]
-  }).optional(),
+  location: locationBodySchema.optional(),
 });
 
 const updateCustomerSchema = Joi.object({
@@ -70,10 +89,7 @@ const updateCustomerSchema = Joi.object({
     .valid(...CUSTOMER_STATUSES)
     .optional(),
   isDeleted: Joi.boolean().optional(),
-  location: Joi.object({
-    type: Joi.string().valid("Point").optional(),
-    coordinates: Joi.array().items(Joi.number()).length(2).optional(),
-  }).optional(),
+  location: locationBodySchema.optional(),
 }).min(1);
 
 const listQuerySchema = Joi.object({
@@ -276,11 +292,8 @@ export const createCustomer = asyncHandler(async (req, res) => {
     zoneId: value.zoneId ? value.zoneId : null,
   };
 
-  if (value.location?.coordinates?.length === 2) {
-    payload.location = {
-      type: "Point",
-      coordinates: value.location.coordinates,
-    };
+  if (value.location) {
+    applyCustomerLocationToPayload(payload, value.location, value.address);
   }
 
   const customer = await Customer.create(payload);
@@ -342,11 +355,12 @@ export const updateCustomer = asyncHandler(async (req, res) => {
     // Normalize empty string → null
     if (!updatePayload.zoneId) updatePayload.zoneId = null;
   }
-  if (value.location?.coordinates?.length === 2) {
-    updatePayload.location = {
-      type: "Point",
-      coordinates: value.location.coordinates,
-    };
+  if (value.location) {
+    applyCustomerLocationToPayload(
+      updatePayload,
+      value.location,
+      value.address ?? customer.address
+    );
   }
 
   const updated = await Customer.findByIdAndUpdate(
@@ -718,41 +732,102 @@ export const walletDebit = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Hard-delete all MongoDB rows linked to a customer.
+ * @param {import("mongoose").ClientSession | null} session
+ */
+async function cascadeDeleteCustomerData(ownerId, customerId, session = null) {
+  const opts = session ? { session } : {};
+  const scoped = { ownerId, customerId };
+
+  const [
+    dailyOrders,
+    subscriptions,
+    deliverySchedules,
+    deliveries,
+    orders,
+    payments,
+    transactions,
+    invoices,
+    tiffinLedger,
+    notifications,
+    customPlans,
+    customerDoc,
+  ] = await Promise.all([
+    DailyOrder.deleteMany({ customerId }, opts),
+    Subscription.deleteMany(scoped, opts),
+    DeliverySchedule.deleteMany(scoped, opts),
+    Delivery.deleteMany({ customerId }, opts),
+    Order.deleteMany(scoped, opts),
+    Payment.deleteMany(scoped, opts),
+    Transaction.deleteMany(scoped, opts),
+    Invoice.deleteMany(scoped, opts),
+    TiffinLedger.deleteMany(scoped, opts),
+    Notification.deleteMany({ customerId }, opts),
+    MealPlan.deleteMany({ ownerId, customerId }, opts),
+    Customer.deleteOne({ _id: customerId, ownerId }, opts),
+  ]);
+
+  return {
+    dailyOrders: dailyOrders.deletedCount,
+    subscriptions: subscriptions.deletedCount,
+    deliverySchedules: deliverySchedules.deletedCount,
+    deliveries: deliveries.deletedCount,
+    orders: orders.deletedCount,
+    payments: payments.deletedCount,
+    transactions: transactions.deletedCount,
+    invoices: invoices.deletedCount,
+    tiffinLedger: tiffinLedger.deletedCount,
+    notifications: notifications.deletedCount,
+    customPlans: customPlans.deletedCount,
+    customer: customerDoc.deletedCount,
+  };
+}
+
+/**
  * DELETE /api/v1/customers/:id
- * Soft delete: sets isDeleted: true
+ * Hard delete with full cascade across all customer-linked collections.
  */
 export const deleteCustomer = asyncHandler(async (req, res) => {
   const ownerId = req.user.userId;
   const { id } = req.params;
 
-  const customer = await Customer.findOne({
-    _id: id,
-    ownerId,
-    isDeleted: { $ne: true },
-  });
+  const customer = await Customer.findOne({ _id: id, ownerId }).lean();
   if (!customer) {
     throw new ApiError(404, "Customer not found");
   }
 
-  const updated = await Customer.findByIdAndUpdate(
-    id,
-    { $set: { isDeleted: true } },
-    { new: true }
-  ).lean();
+  const customerId = customer._id;
+  let cascadeCounts;
 
-  // Cancel customer's active/paused subscriptions
-  await Subscription.updateMany(
-    { customerId: id, status: { $in: ["active", "paused"] } },
-    { $set: { status: "cancelled" } }
-  );
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    cascadeCounts = await cascadeDeleteCustomerData(
+      ownerId,
+      customerId,
+      session
+    );
+    await session.commitTransaction();
+  } catch (txnErr) {
+    await session.abortTransaction().catch(() => {});
+    const msg = txnErr?.message ? String(txnErr.message) : "";
+    const txnUnsupported =
+      msg.includes("Transaction") ||
+      msg.includes("replica set") ||
+      msg.includes("mongos");
+    if (txnUnsupported) {
+      cascadeCounts = await cascadeDeleteCustomerData(
+        ownerId,
+        customerId,
+        null
+      );
+    } else {
+      throw txnErr;
+    }
+  } finally {
+    session.endSession();
+  }
 
-  // Remove customer's pending daily orders
-  await DailyOrder.deleteMany({
-    customerId: id,
-    status: { $in: ["pending", "processing", "out_for_delivery"] },
-  });
-
-  // Emit daily_orders_changed on /delivery socket channel
   const io = req.app.get("io");
   if (io) {
     io.of("/delivery")
@@ -760,7 +835,10 @@ export const deleteCustomer = asyncHandler(async (req, res) => {
       .emit("daily_orders_changed", { reason: "customer_deleted" });
   }
 
-  const response = new ApiResponse(200, "Customer deleted (soft)", updated);
+  const response = new ApiResponse(200, "Customer deleted", {
+    customerId: customerId.toString(),
+    cascade: cascadeCounts,
+  });
   res.status(response.statusCode).json({
     success: response.success,
     message: response.message,

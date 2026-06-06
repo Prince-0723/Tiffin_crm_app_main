@@ -14,6 +14,8 @@ import '../../../../core/utils/color_utils.dart';
 import '../../../../core/utils/app_snackbar.dart';
 import '../../../../core/utils/error_handler.dart';
 import '../../../../core/utils/whatsapp_helper.dart';
+import '../../../../core/socket/delivery_tracking_socket.dart';
+import '../../../dashboard/overview_dashboard_refresh_signal.dart';
 import '../../../../core/widgets/animated_list_item.dart';
 import '../../../../core/widgets/lottie_empty_state.dart';
 import '../../../../models/customer_model.dart';
@@ -1132,6 +1134,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
               Navigator.pop(ctx);
               try {
                 await CustomerApi.delete(customer.id);
+                DeliveryTrackingSocket.instance.notifyDailyOrdersChanged();
+                overviewDashboardTabSelectedTick.value++;
                 if (context.mounted) {
                   AppSnackbar.success(context, 'Customer deleted');
                   _loadCustomers(reset: true);

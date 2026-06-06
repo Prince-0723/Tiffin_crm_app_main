@@ -660,7 +660,9 @@ Update a customer. Send only the fields you want to change.
 
 ### DELETE `/api/v1/customers/:id`
 
-Soft-delete (sets `isDeleted: true`). Data is preserved.
+Hard-deletes the customer and cascades removal of all linked records for that customer (irreversible).
+
+**Cascade collections:** `DailyOrder`, `Subscription`, `DeliverySchedule`, `Delivery`, `Order`, `Payment`, `Transaction`, `Invoice`, `TiffinLedger`, `Notification`, and customer-specific `MealPlan` rows (`customerId` set). Shared vendor meal plan templates (`customerId: null`) are not deleted.
 
 **Body:** None
 
@@ -668,9 +670,28 @@ Soft-delete (sets `isDeleted: true`). Data is preserved.
 ```json
 {
   "success": true,
-  "message": "Customer deleted (soft)"
+  "message": "Customer deleted",
+  "data": {
+    "customerId": "664abc001",
+    "cascade": {
+      "dailyOrders": 3,
+      "subscriptions": 1,
+      "deliverySchedules": 0,
+      "deliveries": 0,
+      "orders": 0,
+      "payments": 2,
+      "transactions": 5,
+      "invoices": 0,
+      "tiffinLedger": 0,
+      "notifications": 1,
+      "customPlans": 0,
+      "customer": 1
+    }
+  }
 }
 ```
+
+Emits `daily_orders_changed` on the `/delivery` socket namespace so the vendor dashboard refreshes.
 
 ---
 

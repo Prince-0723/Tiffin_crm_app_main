@@ -62,15 +62,40 @@ export const MEAL_PERIOD_TO_MEALTYPES = {
 
 /** Non-deleted customers and active meal plans for vendor dashboard queries. */
 export async function getVendorDashboardOrderScope(ownerId) {
-  const [customerIds, planIds] = await Promise.all([
-    Customer.find({ ownerId, isDeleted: { $ne: true } }).distinct("_id"),
+  const customerIds = await Customer.find({
+    ownerId,
+    isDeleted: { $ne: true },
+  }).distinct("_id");
+
+  const [planIds, subscriptionIds] = await Promise.all([
     MealPlan.find({ ownerId, isActive: true }).distinct("_id"),
+    customerIds.length
+      ? Subscription.find({
+          ownerId,
+          customerId: { $in: customerIds },
+          status: { $in: ["active", "paused"] },
+        }).distinct("_id")
+      : Promise.resolve([]),
   ]);
-  return { customerIds, planIds };
+
+  return { customerIds, planIds, subscriptionIds };
 }
 
-/** Restrict a DailyOrder query to dashboard-visible customers/plans. */
-export function applyVendorDashboardOrderScope(filter, { customerIds, planIds }) {
+/** True when Mongoose populate returned a full document (not a bare ObjectId ref). */
+export function isPopulatedRef(ref) {
+  return (
+    ref != null &&
+    typeof ref === "object" &&
+    !Array.isArray(ref) &&
+    ref._id != null
+  );
+}
+
+/** Restrict a DailyOrder query to dashboard-visible customers/plans/subscriptions. */
+export function applyVendorDashboardOrderScope(
+  filter,
+  { customerIds, planIds, subscriptionIds }
+) {
   if (customerIds?.length) {
     filter.customerId = { $in: customerIds };
   } else {
@@ -80,6 +105,11 @@ export function applyVendorDashboardOrderScope(filter, { customerIds, planIds })
     filter.planId = { $in: planIds };
   } else {
     filter.planId = { $in: [] };
+  }
+  if (subscriptionIds?.length) {
+    filter.subscriptionId = { $in: subscriptionIds };
+  } else {
+    filter.subscriptionId = { $in: [] };
   }
 }
 
@@ -449,7 +479,10 @@ export const getTodayDailyOrders = async (ownerId, filters = {}) => {
     .lean();
 
   return orders.filter(
-    (order) => order.customerId && order.planId && order.subscriptionId
+    (order) =>
+      isPopulatedRef(order.customerId) &&
+      isPopulatedRef(order.planId) &&
+      isPopulatedRef(order.subscriptionId)
   );
 };
 

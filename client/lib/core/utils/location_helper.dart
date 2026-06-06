@@ -41,7 +41,9 @@ abstract final class LocationHelper {
 
   /// Opens Google Maps at [lat], [lng] (browser or Maps app).
   static Future<void> openGoogleMaps(double lat, double lng) async {
-    final url = Uri.parse('https://www.google.com/maps?q=$lat,$lng');
+    final url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+    );
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }

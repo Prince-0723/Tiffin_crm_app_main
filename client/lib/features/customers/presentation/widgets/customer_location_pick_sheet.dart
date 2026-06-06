@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/maps/osm_map_constants.dart';
 import '../../../../core/routing/nominatim_geocode_service.dart';
 import '../../../../core/utils/app_snackbar.dart';
+import '../../../../core/utils/location_helper.dart';
 
 /// Result from [showCustomerLocationPickSheet].
 class CustomerLocationPickResult {
@@ -99,6 +100,7 @@ class _CustomerLocationPickBodyState extends State<_CustomerLocationPickBody> {
   LatLng? _pin;
   String _address = '';
   bool _reverseBusy = false;
+  bool _gpsBusy = false;
   bool _searchBusy = false;
   String? _searchError;
   Timer? _debounce;
@@ -220,6 +222,26 @@ class _CustomerLocationPickBodyState extends State<_CustomerLocationPickBody> {
     FocusScope.of(context).unfocus();
     setState(() => _pin = point);
     await _reverseAndSetAddress(point, moveCamera: false);
+  }
+
+  Future<void> _useCurrentLocation() async {
+    setState(() => _gpsBusy = true);
+    try {
+      final pos = await LocationHelper.getCurrentPosition();
+      if (!mounted) return;
+      if (pos == null) {
+        AppSnackbar.error(
+          context,
+          'Could not get GPS location. Enable location permission and try again.',
+        );
+        return;
+      }
+      final point = LatLng(pos.latitude, pos.longitude);
+      setState(() => _pin = point);
+      await _reverseAndSetAddress(point, moveCamera: true);
+    } finally {
+      if (mounted) setState(() => _gpsBusy = false);
+    }
   }
 
   void _submit() {
@@ -379,7 +401,7 @@ class _CustomerLocationPickBodyState extends State<_CustomerLocationPickBody> {
                   ),
                 ],
               ),
-              if (_reverseBusy)
+              if (_reverseBusy || _gpsBusy)
                 const Positioned(
                   left: 0,
                   right: 0,
@@ -404,6 +426,16 @@ class _CustomerLocationPickBodyState extends State<_CustomerLocationPickBody> {
                     ),
                   ),
                 ),
+              Positioned(
+                right: 12,
+                bottom: 12,
+                child: FloatingActionButton.small(
+                  heroTag: 'customer_location_gps',
+                  onPressed: (_reverseBusy || _gpsBusy) ? null : _useCurrentLocation,
+                  tooltip: 'Use current location',
+                  child: const Icon(Icons.my_location_rounded),
+                ),
+              ),
             ],
           ),
         ),

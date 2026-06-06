@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/utils/app_snackbar.dart';
 import '../../../../core/utils/error_handler.dart';
 import '../../../../models/customer_model.dart';
 import '../../data/customer_api.dart';
+import '../../utils/customer_location_payload.dart';
 import '../widgets/contact_picker_bottom_sheet.dart';
 import '../widgets/contacts_permission_sheet.dart';
+import '../widgets/customer_location_pick_sheet.dart';
 
 class AddEditCustomerScreen extends StatefulWidget {
   const AddEditCustomerScreen({super.key, this.customer});
@@ -27,6 +30,8 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
   late final TextEditingController _addressController;
   late final TextEditingController _areaController;
   bool _isSaving = false;
+  double? _mapLat;
+  double? _mapLng;
 
   @override
   void initState() {
@@ -36,6 +41,31 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
     _phoneController = TextEditingController(text: c?.phone ?? '');
     _addressController = TextEditingController(text: c?.address ?? '');
     _areaController = TextEditingController(text: c?.area ?? '');
+    final loc = c?.location;
+    if (loc != null && (loc.lat != 0 || loc.lng != 0)) {
+      _mapLat = loc.lat;
+      _mapLng = loc.lng;
+    }
+  }
+
+  bool get _hasMapPin => hasValidCustomerMapPin(_mapLat, _mapLng);
+
+  Future<void> _openLocationPicker() async {
+    LatLng? initial;
+    if (_hasMapPin) {
+      initial = LatLng(_mapLat!, _mapLng!);
+    }
+    final result = await showCustomerLocationPickSheet(
+      context,
+      initialPosition: initial,
+      initialAddress: _addressController.text.trim(),
+    );
+    if (result == null || !mounted) return;
+    setState(() {
+      _mapLat = result.lat;
+      _mapLng = result.lng;
+      _addressController.text = result.address;
+    });
   }
 
   @override
@@ -90,6 +120,15 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
         'area': _areaController.text.trim(),
         if (!widget._isEditMode) 'status': 'active',
       };
+      if (_hasMapPin) {
+        body.addAll(
+          buildCustomerLocationUpdateBody(
+            lat: _mapLat!,
+            lng: _mapLng!,
+            address: _addressController.text.trim(),
+          ),
+        );
+      }
       final saved = widget._isEditMode
           ? await CustomerApi.update(widget.customer!.id, body)
           : await CustomerApi.create(body);
@@ -197,10 +236,31 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
                     label: 'Address',
                     icon: Icons.home_outlined,
                     maxLines: 2,
-                    isLast: true,
                     textCapitalization: TextCapitalization.sentences,
                     validator: (_) => null,
                   ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: _isSaving ? null : _openLocationPicker,
+                    icon: const Icon(Icons.add_location_alt_outlined, size: 20),
+                    label: Text(_hasMapPin ? 'Update map location' : 'Set location'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF6B21D4),
+                      side: const BorderSide(color: Color(0xFF6B21D4)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                  if (_hasMapPin)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6, bottom: 4),
+                      child: Text(
+                        'Map pin: ${_mapLat!.toStringAsFixed(5)}, ${_mapLng!.toStringAsFixed(5)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    ),
                 ],
               ),
               const SizedBox(height: 12),

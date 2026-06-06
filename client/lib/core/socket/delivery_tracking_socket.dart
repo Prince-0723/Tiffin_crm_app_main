@@ -53,6 +53,11 @@ final class DeliveryTrackingSocket {
   /// Fired when vendor-facing daily order lists should refetch (e.g. customer cancelled a delivery).
   Stream<void> get dailyOrdersRefresh => _dailyOrdersRefresh.stream;
 
+  /// Call after local actions (e.g. customer delete) when socket may not have fired yet.
+  void notifyDailyOrdersChanged() {
+    if (!_dailyOrdersRefresh.isClosed) _dailyOrdersRefresh.add(null);
+  }
+
   bool get isConnected => _socket?.connected == true;
 
   /// Connect (or refresh token) to `/delivery`. Safe to call repeatedly.
