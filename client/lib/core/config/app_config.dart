@@ -4,7 +4,7 @@ abstract final class AppConfig {
 
   static const String apiUrlLocal = 'http://localhost:5800/api/v1';
   static const String apiUrlProduction =
-      'https://tiffin-crm-app.onrender.com/api/v1';
+      'https://tiffin-crm-app-main-1.onrender.com/api/v1';
 
   static String get baseUrl => useLocalApi ? apiUrlLocal : apiUrlProduction;
 
