@@ -28,6 +28,7 @@ const normalizePhone = (phone) =>
 const sendOtpLimiter = rateLimit({
   windowMs: AUTH_WINDOW_MS,
   max: 30, // per IP
+  skip: () => process.env.NODE_ENV === "development",
   message: {
     success: false,
     message: "Too many OTP requests, try again later",
@@ -37,6 +38,7 @@ const sendOtpLimiter = rateLimit({
 const sendOtpPhoneLimiter = rateLimit({
   windowMs: AUTH_WINDOW_MS,
   max: 8, // per phone
+  skip: () => process.env.NODE_ENV === "development",
   keyGenerator: (req) => {
     const phone = normalizePhone(req.body?.phone);
     return phone ? `send-otp:${phone}` : `send-otp-ip:${ipKeyGenerator(req)}`;
@@ -47,6 +49,7 @@ const sendOtpPhoneLimiter = rateLimit({
 const verifyOtpLimiter = rateLimit({
   windowMs: AUTH_WINDOW_MS,
   max: 100, // per IP
+  skip: () => process.env.NODE_ENV === "development",
   message: {
     success: false,
     message: "Too many OTP verification attempts, try again later",
@@ -56,6 +59,7 @@ const verifyOtpLimiter = rateLimit({
 const verifyOtpPhoneLimiter = rateLimit({
   windowMs: AUTH_WINDOW_MS,
   max: 25, // per phone
+  skip: () => process.env.NODE_ENV === "development",
   keyGenerator: (req) => {
     const phone = normalizePhone(req.body?.phone);
     return phone
@@ -71,6 +75,7 @@ const verifyOtpPhoneLimiter = rateLimit({
 const refreshTokenLimiter = rateLimit({
   windowMs: AUTH_WINDOW_MS,
   max: 200,
+  skip: () => process.env.NODE_ENV === "development",
   message: {
     success: false,
     message: "Too many refresh requests, try again later",

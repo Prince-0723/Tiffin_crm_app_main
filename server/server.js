@@ -49,7 +49,9 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use(rateLimit(config.RATE_LIMIT));
+if (config.NODE_ENV !== "development") {
+  app.use(rateLimit(config.RATE_LIMIT));
+}
 
 app.use("/api/v1/webhooks", webhookRoutes);
 

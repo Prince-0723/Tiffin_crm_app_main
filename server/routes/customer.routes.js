@@ -21,6 +21,7 @@ router.use(requireRole(["vendor", "admin"]));
 const bulkRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
+  skip: () => process.env.NODE_ENV === "development",
   message: { success: false, message: "Too many bulk import attempts, try again later" },
 });
 
