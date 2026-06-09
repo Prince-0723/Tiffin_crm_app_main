@@ -733,39 +733,24 @@ export const walletDebit = asyncHandler(async (req, res) => {
 
 /**
  * Hard-delete all MongoDB rows linked to a customer.
- * @param {import("mongoose").ClientSession | null} session
+ * Runs sequentially without multi-document transactions so deletes work on
+ * MongoDB Atlas / shared clusters where txn sessions are unreliable.
  */
-async function cascadeDeleteCustomerData(ownerId, customerId, session = null) {
-  const opts = session ? { session } : {};
+async function cascadeDeleteCustomerData(ownerId, customerId) {
   const scoped = { ownerId, customerId };
 
-  const [
-    dailyOrders,
-    subscriptions,
-    deliverySchedules,
-    deliveries,
-    orders,
-    payments,
-    transactions,
-    invoices,
-    tiffinLedger,
-    notifications,
-    customPlans,
-    customerDoc,
-  ] = await Promise.all([
-    DailyOrder.deleteMany({ customerId }, opts),
-    Subscription.deleteMany(scoped, opts),
-    DeliverySchedule.deleteMany(scoped, opts),
-    Delivery.deleteMany({ customerId }, opts),
-    Order.deleteMany(scoped, opts),
-    Payment.deleteMany(scoped, opts),
-    Transaction.deleteMany(scoped, opts),
-    Invoice.deleteMany(scoped, opts),
-    TiffinLedger.deleteMany(scoped, opts),
-    Notification.deleteMany({ customerId }, opts),
-    MealPlan.deleteMany({ ownerId, customerId }, opts),
-    Customer.deleteOne({ _id: customerId, ownerId }, opts),
-  ]);
+  const dailyOrders = await DailyOrder.deleteMany({ customerId });
+  const subscriptions = await Subscription.deleteMany(scoped);
+  const deliverySchedules = await DeliverySchedule.deleteMany(scoped);
+  const deliveries = await Delivery.deleteMany({ customerId });
+  const orders = await Order.deleteMany(scoped);
+  const payments = await Payment.deleteMany(scoped);
+  const transactions = await Transaction.deleteMany(scoped);
+  const invoices = await Invoice.deleteMany(scoped);
+  const tiffinLedger = await TiffinLedger.deleteMany(scoped);
+  const notifications = await Notification.deleteMany({ customerId });
+  const customPlans = await MealPlan.deleteMany({ ownerId, customerId });
+  const customerDoc = await Customer.deleteOne({ _id: customerId, ownerId });
 
   return {
     dailyOrders: dailyOrders.deletedCount,
@@ -797,36 +782,7 @@ export const deleteCustomer = asyncHandler(async (req, res) => {
   }
 
   const customerId = customer._id;
-  let cascadeCounts;
-
-  const session = await mongoose.startSession();
-  try {
-    session.startTransaction();
-    cascadeCounts = await cascadeDeleteCustomerData(
-      ownerId,
-      customerId,
-      session
-    );
-    await session.commitTransaction();
-  } catch (txnErr) {
-    await session.abortTransaction().catch(() => {});
-    const msg = txnErr?.message ? String(txnErr.message) : "";
-    const txnUnsupported =
-      msg.includes("Transaction") ||
-      msg.includes("replica set") ||
-      msg.includes("mongos");
-    if (txnUnsupported) {
-      cascadeCounts = await cascadeDeleteCustomerData(
-        ownerId,
-        customerId,
-        null
-      );
-    } else {
-      throw txnErr;
-    }
-  } finally {
-    session.endSession();
-  }
+  const cascadeCounts = await cascadeDeleteCustomerData(ownerId, customerId);
 
   const io = req.app.get("io");
   if (io) {
