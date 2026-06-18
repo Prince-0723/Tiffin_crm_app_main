@@ -248,6 +248,7 @@ async function buildCustomerInfoPayload(ownerId, customer) {
     status: customer.status || "active",
     location,
     zoneName,
+    zone: customer.zone ? String(customer.zone) : "",
     activeSubscriptionId: sub?._id ? sub._id.toString() : "",
     payLater: sub?.payLater === true,
     creditLimit,

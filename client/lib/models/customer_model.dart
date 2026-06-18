@@ -64,6 +64,7 @@ class CustomerModel {
     this.creditLimit,
     this.location,
     this.zoneName,
+    this.zone,
     this.vendorId,
     this.ownerId,
     this.vendor,
@@ -103,6 +104,9 @@ class CustomerModel {
 
   /// Resolved from [zoneId] when API includes it (GET /customers/:id).
   final String? zoneName;
+
+  /// Free-text zone / area label saved from add-customer form.
+  final String? zone;
   final String? vendorId;
 
   /// Vendor (User) id — used for public portal announcement API.
@@ -213,6 +217,7 @@ class CustomerModel {
           : null,
       location: location,
       zoneName: json['zoneName']?.toString(),
+      zone: json['zone']?.toString(),
       vendorId: json['vendorId']?.toString(),
       ownerId: json['ownerId']?.toString(),
       vendor: json['vendor'] is Map<String, dynamic>
@@ -231,6 +236,7 @@ class CustomerModel {
       'status': status,
       if (whatsapp != null) 'whatsapp': whatsapp,
       if (area != null) 'area': area,
+      if (zone != null && zone!.trim().isNotEmpty) 'zone': zone!.trim(),
       if (landmark != null) 'landmark': landmark,
       if (notes != null) 'notes': notes,
       if (tags != null && tags!.isNotEmpty) 'tags': tags,

@@ -25,8 +25,14 @@ abstract final class DeliveryApi {
     return [];
   }
 
-  static Future<List<OrderModel>> getAllDeliveries() async {
-    final response = await DioClient.instance.get(ApiEndpoints.delivery);
+  static Future<List<OrderModel>> getAllDeliveries({String? date}) async {
+    final query = <String, dynamic>{};
+    if (date != null && date.isNotEmpty) query['date'] = date;
+
+    final response = await DioClient.instance.get(
+      ApiEndpoints.delivery,
+      queryParameters: query.isEmpty ? null : query,
+    );
     final raw = response.data;
     if (raw is Map<String, dynamic>) {
       final outer = raw['data'];

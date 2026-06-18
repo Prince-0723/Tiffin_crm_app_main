@@ -22,6 +22,8 @@ import '../../../../models/customer_model.dart';
 import '../../../../services/pdf_download_service.dart';
 import '../../data/customer_api.dart';
 import '../../../profile/data/profile_api.dart';
+import '../../../zones/data/zone_api.dart';
+import '../../../zones/models/zone_model.dart';
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
 class _P {
@@ -113,6 +115,9 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
   _CustomerSort _sort = _CustomerSort.newest;
   final Set<_CustomerStatusFilter> _statusFilters = <_CustomerStatusFilter>{};
   final Set<String> _timeSlotFilters = <String>{};
+  List<ZoneModel> _zones = [];
+  bool _zonesLoading = false;
+  String? _selectedZoneId;
 
   // ── New: card field customization (local-only UI preference) ──
   static const String _prefsKeyCardFields = 'customers.card_fields.v1';
@@ -131,6 +136,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
   void initState() {
     super.initState();
     _loadCustomers();
+    _loadZones();
     _loadCardPrefs();
     _loadBusinessProfile();
     _scrollController.addListener(_onScroll);
@@ -174,6 +180,18 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     if (pos.pixels >= pos.maxScrollExtent - 200) _loadMore();
   }
 
+  Future<void> _loadZones() async {
+    setState(() => _zonesLoading = true);
+    try {
+      final list = await ZoneApi.list(limit: 100, isActive: true);
+      if (mounted) setState(() => _zones = list);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to load zones: $e');
+    } finally {
+      if (mounted) setState(() => _zonesLoading = false);
+    }
+  }
+
   Future<void> _loadCustomers({bool reset = true}) async {
     if (_isLoading) return;
     if (reset) {
@@ -189,6 +207,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             ? null
             : (_filter == 'lowBalance' ? null : _filter),
         lowBalance: _filter == 'lowBalance',
+        zoneId: _selectedZoneId,
       );
       List<dynamic> rawList = [];
       int total = 0;
@@ -234,6 +253,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             ? null
             : (_filter == 'lowBalance' ? null : _filter),
         lowBalance: _filter == 'lowBalance',
+        zoneId: _selectedZoneId,
       );
       List<dynamic> rawList = [];
       int total = 0;
@@ -267,7 +287,10 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     }
   }
 
-  Future<void> _refresh() => _loadCustomers(reset: true);
+  Future<void> _refresh() async {
+    await _loadZones();
+    await _loadCustomers(reset: true);
+  }
 
   Future<void> _openAddCustomer() async {
     final created = await context.push<CustomerModel>(AppRoutes.addCustomer);
@@ -1439,6 +1462,152 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         : 'Time Slots (${_timeSlotFilters.length})';
   }
 
+  String _zoneLabel() {
+    if (_zonesLoading) return 'Zone (…)';
+    if (_selectedZoneId == null) return 'Zone (All)';
+    for (final z in _zones) {
+      if (z.id == _selectedZoneId) return 'Zone (${z.name})';
+    }
+    return 'Zone (Selected)';
+  }
+
+  Future<void> _openZoneSheet(BuildContext context) async {
+    if (_zones.isEmpty && !_zonesLoading) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        Widget item(String? zoneId, String label) {
+          final sel = _selectedZoneId == zoneId;
+          return InkWell(
+            onTap: () {
+              Navigator.pop(ctx);
+              setState(() => _selectedZoneId = zoneId);
+              _loadCustomers(reset: true);
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Icon(
+                    sel ? Icons.radio_button_checked : Icons.radio_button_off,
+                    size: 18,
+                    color: sel ? _P.g1 : _P.s400,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: sel ? _P.s900 : _P.s600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return SafeArea(
+          child: Container(
+            margin: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: _P.s200),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Zone',
+                            style: TextStyle(
+                              color: _P.s900,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            setState(() => _selectedZoneId = null);
+                            _loadCustomers(reset: true);
+                          },
+                          child: const Text(
+                            'Clear Selection',
+                            style: TextStyle(
+                              color: _P.v700,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(Icons.close_rounded, size: 20),
+                          color: _P.s600,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(height: 1, color: _P.s200),
+                  if (_zonesLoading)
+                    const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: _P.g1,
+                          strokeWidth: 2,
+                        ),
+                      ),
+                    )
+                  else if (_zones.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text(
+                        'No zones available',
+                        style: TextStyle(
+                          color: _P.s500,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    )
+                  else ...[
+                    item(null, 'All Zones'),
+                    for (var i = 0; i < _zones.length; i++) ...[
+                      Container(height: 1, color: _P.s200),
+                      item(_zones[i].id, _zones[i].name),
+                    ],
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _dropdownPill({required String label, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
@@ -2519,7 +2688,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
               color: Colors.white,
               size: 20,
             ),
-            onPressed: _isLoading ? null : () => _loadCustomers(reset: true),
+            onPressed: _isLoading ? null : _refresh,
             tooltip: 'Refresh',
           ),
           IconButton(
@@ -2638,6 +2807,15 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                           label: _timeSlotsLabel(),
                           onTap: () => _openTimeSlotsSheet(context, searched),
                         ),
+                        if (_zones.isNotEmpty || _zonesLoading) ...[
+                          const SizedBox(width: 8),
+                          _dropdownPill(
+                            label: _zoneLabel(),
+                            onTap: _zonesLoading
+                                ? () {}
+                                : () => _openZoneSheet(context),
+                          ),
+                        ],
                       ],
                     ),
                   ),

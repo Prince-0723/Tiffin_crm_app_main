@@ -410,18 +410,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/utils/app_snackbar.dart';
 import '../../../core/utils/error_handler.dart';
-import '../../../core/utils/location_helper.dart';
 import '../../../core/utils/whatsapp_helper.dart';
-import '../../../features/customers/data/customer_api.dart';
 import '../../../features/customers/presentation/screens/tiffin_collection_history_screen.dart';
-import '../../../features/customers/presentation/widgets/customer_location_pick_sheet.dart';
-import '../../../features/customers/utils/customer_location_payload.dart';
 import '../../../features/customers/presentation/widgets/customer_tiffin_nav_row.dart';
 import '../../../features/payments/presentation/widgets/daily_receipt_sheet.dart';
 import '../../../models/customer_detail_model.dart';
@@ -488,7 +483,6 @@ class _CustomerInfoTabState extends State<CustomerInfoTab>
   String? _error;
   bool _sendingLink = false;
   bool _sendingWalletReminder = false;
-  bool _savingCustomerLocation = false;
   bool _savingCreditLimit = false;
   int _tiffinRowGeneration = 0;
 
@@ -584,37 +578,6 @@ class _CustomerInfoTabState extends State<CustomerInfoTab>
     }
   }
 
-  Future<void> _openCustomerLocationPicker(CustomerDetailInfo info) async {
-    LatLng? initialLatLng;
-    if (info.hasSharedMapLocation) {
-      initialLatLng = LatLng(info.sharedLocationLat!, info.sharedLocationLng!);
-    }
-    final result = await showCustomerLocationPickSheet(
-      context,
-      initialPosition: initialLatLng,
-      initialAddress: info.address,
-    );
-    if (result == null || !mounted) return;
-    setState(() => _savingCustomerLocation = true);
-    try {
-      await CustomerApi.update(
-        widget.customerId,
-        buildCustomerLocationUpdateBody(
-          lat: result.lat,
-          lng: result.lng,
-          address: result.address,
-        ),
-      );
-      if (!mounted) return;
-      AppSnackbar.success(context, 'Location saved');
-      await _load();
-    } catch (e) {
-      if (mounted) ErrorHandler.show(context, e);
-    } finally {
-      if (mounted) setState(() => _savingCustomerLocation = false);
-    }
-  }
-
   Future<void> _openDailyReceipt() async {
     final info = _info;
     if (info == null) return;
@@ -671,6 +634,12 @@ class _CustomerInfoTabState extends State<CustomerInfoTab>
     } finally {
       if (mounted) setState(() => _savingCreditLimit = false);
     }
+  }
+
+  String _deliveryZoneLabel(CustomerDetailInfo i) {
+    if (i.zoneName?.trim().isNotEmpty == true) return i.zoneName!.trim();
+    if (i.zone?.trim().isNotEmpty == true) return i.zone!.trim();
+    return '—';
   }
 
   // ── BUILD ──────────────────────────────────────────────────────────────────
@@ -819,149 +788,17 @@ class _CustomerInfoTabState extends State<CustomerInfoTab>
 
           const SizedBox(height: 16),
 
-          // ── Location / zone ───────────────────────────────────────────────
-          _SectionLabel('Location / zone'),
+          // ── Zone ──────────────────────────────────────────────────────────
+          _SectionLabel('Delivery zone'),
           const SizedBox(height: 6),
           _Card(
             padding: EdgeInsets.zero,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (_savingCustomerLocation)
-                  const LinearProgressIndicator(
-                    minHeight: 2,
-                    color: _P.primary,
-                  ),
-                _InfoRow(
-                  icon: Icons.route_outlined,
-                  label: 'Delivery zone',
-                  value: i.zoneName?.trim().isNotEmpty == true
-                      ? i.zoneName!.trim()
-                      : '—',
-                ),
-                if (!i.hasSharedMapLocation)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Text(
-                          'Zone Not Set',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: _P.s600,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        FilledButton.icon(
-                          onPressed: _loading
-                              ? null
-                              : () => _openCustomerLocationPicker(i),
-                          icon: const Icon(
-                            Icons.add_location_alt_outlined,
-                            size: 18,
-                          ),
-                          label: const Text('Set location'),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: _P.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  Padding(
-                      padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              IconButton(
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(
-                                  minWidth: 36,
-                                  minHeight: 36,
-                                ),
-                                tooltip: 'Open in Google Maps',
-                                onPressed: () =>
-                                    LocationHelper.openGoogleMaps(
-                                  i.sharedLocationLat!,
-                                  i.sharedLocationLng!,
-                                ),
-                                icon: Icon(
-                                  Icons.location_pin,
-                                  color: _P.primary,
-                                  size: 26,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      i.address.trim().isNotEmpty
-                                          ? i.address.trim()
-                                          : 'Pinned location',
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: _P.s900,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${i.sharedLocationLat!.toStringAsFixed(6)}, ${i.sharedLocationLng!.toStringAsFixed(6)}',
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        color: _P.s400,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 4,
-                            children: [
-                              TextButton.icon(
-                                onPressed: _loading
-                                    ? null
-                                    : () => _openCustomerLocationPicker(i),
-                                icon: const Icon(
-                                  Icons.edit_location_alt_outlined,
-                                  size: 18,
-                                ),
-                                label: const Text('Edit location'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: _P.primary,
-                                ),
-                              ),
-                              TextButton.icon(
-                                onPressed: () => LocationHelper.openGoogleMaps(
-                                  i.sharedLocationLat!,
-                                  i.sharedLocationLng!,
-                                ),
-                                icon: const Icon(Icons.map_outlined, size: 18),
-                                label: const Text('Google Maps'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: _P.s600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-              ],
+            child: _InfoRow(
+              icon: Icons.route_outlined,
+              label: 'Zone',
+              value: _deliveryZoneLabel(i),
+              muted: _deliveryZoneLabel(i) == '—',
+              isLast: true,
             ),
           ),
 

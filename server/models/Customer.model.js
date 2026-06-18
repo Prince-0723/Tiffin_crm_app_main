@@ -47,6 +47,12 @@ const customerSchema = new mongoose.Schema(
       default: null,
       index: true,
     },
+    /** Free-text zone / area label (e.g. from place autocomplete). */
+    zone: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     landmark: {
       type: String,
       trim: true,

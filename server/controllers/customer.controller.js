@@ -62,6 +62,7 @@ const createCustomerSchema = Joi.object({
     .required()
     .messages({ "string.empty": "Address is required" }),
   area: Joi.string().trim().allow("").optional(),
+  zone: Joi.string().trim().allow("").optional(),
   zoneId: Joi.string().hex().length(24).allow(null, "").optional(),
   landmark: Joi.string().trim().allow("").optional(),
   whatsapp: Joi.string().trim().allow("").optional(),
@@ -79,6 +80,7 @@ const updateCustomerSchema = Joi.object({
   phone: Joi.string().trim().optional(),
   address: Joi.string().trim().allow("").optional(),
   area: Joi.string().trim().allow("").optional(),
+  zone: Joi.string().trim().allow("").optional(),
   zoneId: Joi.string().hex().length(24).allow(null, "").optional(),
   landmark: Joi.string().trim().allow("").optional(),
   whatsapp: Joi.string().trim().allow("").optional(),
@@ -99,6 +101,7 @@ const listQuerySchema = Joi.object({
     .valid(...CUSTOMER_STATUSES)
     .optional(),
   lowBalance: Joi.boolean().truthy("true").falsy("false").optional(),
+  zoneId: Joi.string().hex().length(24).optional(),
 });
 
 const bulkPhoneSchema = Joi.string()
@@ -174,6 +177,8 @@ export const listCustomers = asyncHandler(async (req, res) => {
     const threshold = vendor?.settings?.lowBalanceThreshold ?? 100;
     filter.$or = [{ walletBalance: { $lt: threshold } }, { balance: { $lt: threshold } }];
   }
+
+  if (value.zoneId) filter.zoneId = value.zoneId;
 
   const [data, total] = await Promise.all([
     Customer.find(filter)
@@ -290,6 +295,7 @@ export const createCustomer = asyncHandler(async (req, res) => {
     tags: value.tags || [],
     creditLimit: Number(value.creditLimit || 0),
     zoneId: value.zoneId ? value.zoneId : null,
+    zone: value.zone ? value.zone.trim() : "",
   };
 
   if (value.location) {
