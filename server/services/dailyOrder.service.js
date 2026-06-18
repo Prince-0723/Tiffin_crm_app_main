@@ -446,7 +446,7 @@ export const generateDailyOrdersForDate = async (ownerId, date) => {
  * @param {string} [filters.dietType] - veg | non_veg | mixed
  */
 export const getTodayDailyOrders = async (ownerId, filters = {}) => {
-  const today = parseUTC(new Date());
+  const today = filters.date ? parseUTC(filters.date) : parseUTC(new Date());
   const scope = await getVendorDashboardOrderScope(ownerId);
   const base = {
     ownerId,

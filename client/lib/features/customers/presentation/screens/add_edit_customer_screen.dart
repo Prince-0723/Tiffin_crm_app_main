@@ -11,6 +11,7 @@ import '../../utils/customer_location_payload.dart';
 import '../widgets/contact_picker_bottom_sheet.dart';
 import '../widgets/contacts_permission_sheet.dart';
 import '../widgets/customer_location_pick_sheet.dart';
+import '../widgets/zone_autocomplete_field.dart';
 
 class AddEditCustomerScreen extends StatefulWidget {
   const AddEditCustomerScreen({super.key, this.customer});
@@ -29,6 +30,7 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
   late final TextEditingController _phoneController;
   late final TextEditingController _addressController;
   late final TextEditingController _areaController;
+  late final TextEditingController _zoneController;
   bool _isSaving = false;
   double? _mapLat;
   double? _mapLng;
@@ -41,6 +43,7 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
     _phoneController = TextEditingController(text: c?.phone ?? '');
     _addressController = TextEditingController(text: c?.address ?? '');
     _areaController = TextEditingController(text: c?.area ?? '');
+    _zoneController = TextEditingController(text: c?.zone ?? '');
     final loc = c?.location;
     if (loc != null && (loc.lat != 0 || loc.lng != 0)) {
       _mapLat = loc.lat;
@@ -74,6 +77,7 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
     _phoneController.dispose();
     _addressController.dispose();
     _areaController.dispose();
+    _zoneController.dispose();
     super.dispose();
   }
 
@@ -118,6 +122,7 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
         'address': _addressController.text.trim(),
         'whatsapp': phone,
         'area': _areaController.text.trim(),
+        'zone': _zoneController.text.trim(),
         if (!widget._isEditMode) 'status': 'active',
       };
       if (_hasMapPin) {
@@ -238,6 +243,17 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
                     maxLines: 2,
                     textCapitalization: TextCapitalization.sentences,
                     validator: (_) => null,
+                  ),
+                  ZoneAutocompleteField(
+                    controller: _zoneController,
+                    onPlaceSelected: (_, latLng) {
+                      if (!_hasMapPin) {
+                        setState(() {
+                          _mapLat = latLng.latitude;
+                          _mapLng = latLng.longitude;
+                        });
+                      }
+                    },
                   ),
                   const SizedBox(height: 8),
                   OutlinedButton.icon(

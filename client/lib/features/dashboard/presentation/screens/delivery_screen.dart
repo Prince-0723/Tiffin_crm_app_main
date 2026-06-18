@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/socket/delivery_tracking_socket.dart';
 import '../../../../core/utils/app_snackbar.dart';
 import '../../../../core/utils/error_handler.dart';
@@ -136,6 +137,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
   String? _statusFilter;
+  DateTime? _filterDate;
   _MealTimeFilter _mealTimeFilter = _MealTimeFilter.all;
   _OrderSort? _sort = _OrderSort.apiDefault;
   final Set<String> _selectedIds = {};
@@ -195,10 +197,22 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     super.dispose();
   }
 
+  static String _dateToStr(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  bool get _hasCustomDate {
+    if (_filterDate == null) return false;
+    final now = DateTime.now();
+    return _filterDate!.year != now.year ||
+        _filterDate!.month != now.month ||
+        _filterDate!.day != now.day;
+  }
+
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final list = await DeliveryApi.getAllDeliveries();
+      final dateStr = _filterDate != null ? _dateToStr(_filterDate!) : null;
+      final list = await DeliveryApi.getAllDeliveries(date: dateStr);
       final visible = list
           .where((o) => o.status.toLowerCase() != 'cancelled')
           .toList();
@@ -655,6 +669,86 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     final i = _mealTimeValues.indexOf(_mealTimeFilter);
     final label = (i >= 0) ? _mealTimeLabels[i] : _mealTimeLabels.first;
     return 'Meal ($label)';
+  }
+
+  String _dateLabel() {
+    final d = _filterDate ?? DateTime.now();
+    final now = DateTime.now();
+    final isToday =
+        d.year == now.year && d.month == now.month && d.day == now.day;
+    final label =
+        isToday ? 'Today' : DateFormat('d MMM yyyy', 'en').format(d);
+    return 'Date ($label)';
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _filterDate ?? DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 500)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _filterDate = DateTime(picked.year, picked.month, picked.day);
+    });
+    await _load();
+  }
+
+  void _clearDate() {
+    setState(() => _filterDate = null);
+    _load();
+  }
+
+  Widget _dateFilterPill() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _P.s200, width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: _pickDate,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _dateLabel(),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: _P.s900,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Icon(
+                  _hasCustomDate
+                      ? Icons.event_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  size: 16,
+                  color: _P.s400,
+                ),
+              ],
+            ),
+          ),
+          if (_hasCustomDate) ...[
+            const SizedBox(width: 6),
+            GestureDetector(
+              onTap: _clearDate,
+              child: const Icon(
+                Icons.close_rounded,
+                size: 15,
+                color: _P.s400,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   Widget _dropdownPill({
@@ -1129,6 +1223,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
+                _dateFilterPill(),
+                const SizedBox(width: 8),
                 _dropdownPill(label: _sortLabel(), onTap: _openSortSheet),
                 const SizedBox(width: 8),
                 _dropdownPill(label: _statusLabel(), onTap: _openStatusSheet),

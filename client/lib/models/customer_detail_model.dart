@@ -39,6 +39,7 @@ class CustomerDetailInfo {
     required this.startDate,
     required this.status,
     this.zoneName,
+    this.zone,
     this.sharedLocationLat,
     this.sharedLocationLng,
     this.activeSubscriptionId,
@@ -62,6 +63,9 @@ class CustomerDetailInfo {
 
   /// Delivery zone label from [Customer.zoneId].
   final String? zoneName;
+
+  /// Free-text zone / area label on the customer record.
+  final String? zone;
 
   /// GPS from customer portal "Share location" ([lng, lat] GeoJSON on server).
   final double? sharedLocationLat;
@@ -108,6 +112,7 @@ class CustomerDetailInfo {
       startDate: json['startDate']?.toString() ?? '',
       status: json['status']?.toString() ?? 'active',
       zoneName: json['zoneName']?.toString(),
+      zone: json['zone']?.toString(),
       sharedLocationLat: lat,
       sharedLocationLng: lng,
       activeSubscriptionId: json['activeSubscriptionId']?.toString(),
@@ -146,6 +151,7 @@ class CustomerDetailInfo {
     'startDate': startDate,
     'status': status,
     if (zoneName != null && zoneName!.trim().isNotEmpty) 'zoneName': zoneName,
+    if (zone != null && zone!.trim().isNotEmpty) 'zone': zone,
     if (activeSubscriptionId != null)
       'activeSubscriptionId': activeSubscriptionId,
     'payLater': payLater,
