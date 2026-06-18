@@ -85,8 +85,8 @@ class _PortalAnnouncementScreenState extends State<PortalAnnouncementScreen> {
             children: [
               const Text(
                 'This cancels all orders for the selected day that are not yet delivered. '
-                'Wallet and subscription balances are only charged when an order is marked delivered, '
-                'so cancelled orders are not charged for that day.',
+                'Wallet and subscription balances are charged when an order moves to processing. '
+                'Cancelling pending orders before processing does not deduct that day\'s meal balance.',
                 style: TextStyle(fontSize: 13, height: 1.35),
               ),
               const SizedBox(height: 16),
@@ -337,7 +337,7 @@ class _PortalAnnouncementScreenState extends State<PortalAnnouncementScreen> {
                           const SizedBox(height: 6),
                           Text(
                             'Cancels undelivered orders for the day you pick. Already-delivered orders stay as-is. '
-                            'Meal balance is charged only on delivery, so these cancellations are not charged.',
+                            'Meal balance is charged when your order is processed. Cancelling before processing is not charged.',
                             style: TextStyle(
                               fontSize: 11,
                               height: 1.35,

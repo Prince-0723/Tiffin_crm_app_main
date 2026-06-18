@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import DailyOrder from "../models/DailyOrder.model.js";
 import Subscription from "../models/Subscription.model.js";
 import Customer from "../models/Customer.model.js";
-import User from "../models/User.model.js";
 import DeliveryStaff from "../models/DeliveryStaff.model.js";
 import Transaction from "../models/Transaction.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -163,6 +162,172 @@ const deductBalanceForOrder = async (
 };
 
 /**
+ * Deduct wallet/subscription once per order and set isCharged. Idempotent if already charged.
+ * @returns {{ newSubscriptionBalance: number|null, deducted: number, walletDeducted: number, alreadyCharged: boolean }}
+ */
+const chargeOrderOnce = async (
+  order,
+  session,
+  ownerId,
+  { source = "order_processing" } = {}
+) => {
+  if (order.isCharged) {
+    return {
+      newSubscriptionBalance: null,
+      deducted: 0,
+      walletDeducted: 0,
+      alreadyCharged: true,
+    };
+  }
+
+  const { newSubscriptionBalance, deducted, walletDeducted } =
+    await deductBalanceForOrder(order, null, session, ownerId);
+
+  if (deducted > 0) {
+    if (walletDeducted > 0) {
+      await Customer.findByIdAndUpdate(
+        order.customerId,
+        { $inc: { walletBalance: -walletDeducted, balance: -walletDeducted } },
+        { session }
+      );
+    }
+
+    const planMap = await planNamesByIds([order.planId]);
+    const planLabel = planMap[order.planId?.toString()] || "Meal plan";
+    const description = buildDeliveredDescription({
+      planName: planLabel,
+      mealType: order.mealType,
+      orderDate: order.orderDate,
+    });
+    const items = orderDeliveredLineItems(order);
+
+    await Transaction.create(
+      [
+        {
+          ownerId,
+          customerId: order.customerId,
+          date: new Date(),
+          description,
+          amount: deducted,
+          type: "debit",
+          paymentMode: "wallet",
+          source,
+          items,
+        },
+      ],
+      { session }
+    );
+  }
+
+  order.isCharged = true;
+  order.markModified("isCharged");
+  return {
+    newSubscriptionBalance,
+    deducted,
+    walletDeducted,
+    alreadyCharged: false,
+  };
+};
+
+/**
+ * Charge wallet/subscription for an order entering (or already in) processing.
+ * Pending orders are moved to processing; processing orders only get charged if missed earlier.
+ */
+async function chargeUnchargedProcessingOrder(order, session, ownerId) {
+  const chargeResult = await chargeOrderOnce(order, session, ownerId, {
+    source: "order_processing",
+  });
+
+  let movedToProcessing = false;
+  if (order.status === "pending") {
+    order.status = "processing";
+    order.processedAt = new Date();
+    movedToProcessing = true;
+  }
+
+  await order.save({ session });
+  return { ...chargeResult, movedToProcessing };
+}
+
+async function applyMissedProcessingCharge(req, order, ownerId) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const chargeResult = await chargeUnchargedProcessingOrder(
+      order,
+      session,
+      ownerId
+    );
+    await session.commitTransaction();
+    session.endSession();
+
+    if (chargeResult.newSubscriptionBalance !== null) {
+      await notifyLowSubscriptionBalance({
+        ownerId,
+        customerId: order.customerId,
+        newSubscriptionBalance: chargeResult.newSubscriptionBalance,
+        vendorAlertUserIds: [String(ownerId)],
+      });
+    }
+
+    emitVendorDailyOrdersChanged(req, ownerId, {
+      orderId: order._id.toString(),
+      status: "processing",
+      charged: true,
+    });
+
+    return {
+      message: chargeResult.alreadyCharged
+        ? "Order already charged"
+        : "Order charge applied",
+      data: {
+        order,
+        balanceDeducted: chargeResult.deducted,
+        customerNewBalance: chargeResult.newSubscriptionBalance,
+      },
+    };
+  } catch (err) {
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+    session.endSession();
+    throw err;
+  }
+}
+
+async function notifyLowSubscriptionBalance({
+  ownerId,
+  customerId,
+  newSubscriptionBalance,
+  vendorAlertUserIds = [],
+}) {
+  if (newSubscriptionBalance === null || newSubscriptionBalance >= 100) return;
+
+  const customerDoc = await Customer.findById(customerId).select("name").lean();
+  await Promise.all([
+    sendNotification({
+      customerId,
+      ownerId,
+      type: NOTIFICATION_TYPES.LOW_BALANCE,
+      title: "Low subscription balance ⚠️",
+      message: `₹${newSubscriptionBalance.toFixed(2)} subscription balance remaining.`,
+      data: { balance: newSubscriptionBalance, screen: "wallet" },
+    }),
+    ...vendorAlertUserIds.map((userId) =>
+      sendNotification({
+        userId,
+        ownerId,
+        type: NOTIFICATION_TYPES.LOW_BALANCE,
+        title: "Customer subscription balance low",
+        message: `${customerDoc?.name || "A customer"} has low subscription balance (₹${newSubscriptionBalance.toFixed(2)})`,
+        data: { customerId: customerId.toString(), balance: newSubscriptionBalance },
+      })
+    ),
+  ]);
+}
+
+/**
  * GET /api/v1/daily-orders/today
  */
 export const getToday = asyncHandler(async (req, res) => {
@@ -192,7 +357,7 @@ export const getToday = asyncHandler(async (req, res) => {
 
 /**
  * POST /api/v1/daily-orders/process
- * Moves all pending orders to processing, notifies customers.
+ * Moves all pending orders to processing, charges wallet/subscription, notifies customers.
  */
 export const processToday = asyncHandler(async (req, res) => {
   const ownerId = req.user.userId;
@@ -202,29 +367,75 @@ export const processToday = asyncHandler(async (req, res) => {
     ? parseUTC(date)
     : parseUTC(new Date().toISOString().slice(0, 10));
 
-  const result = await DailyOrder.updateMany(
-    { ownerId, orderDate: targetDate, status: "pending" },
-    { $set: { status: "processing", processedAt: new Date() } }
-  );
-
-  const processedCount = result.modifiedCount || 0;
-
-  if (processedCount > 0) {
-    const orders = await DailyOrder.find({
+  const [pendingOrders, unchargedProcessingOrders] = await Promise.all([
+    DailyOrder.find({
+      ownerId,
+      orderDate: targetDate,
+      status: "pending",
+    }),
+    DailyOrder.find({
       ownerId,
       orderDate: targetDate,
       status: "processing",
-    })
-      .select("customerId")
-      .lean();
+      isCharged: { $ne: true },
+    }),
+  ]);
 
-    const customerIds = [
-      ...new Set(orders.map((o) => o.customerId.toString())),
-    ];
+  const ordersToHandle = [...pendingOrders, ...unchargedProcessingOrders];
 
-    // Create in-app Notification doc + send FCM for each unique customer
-    await Promise.all(
-      customerIds.map((cid) =>
+  if (!ordersToHandle.length) {
+    return res.status(200).json(
+      new ApiResponse(200, "Orders processed", {
+        processedCount: 0,
+        backfillChargedCount: 0,
+      })
+    );
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  let processedCount = 0;
+  let backfillChargedCount = 0;
+  const customerIds = new Set();
+  const lowBalanceByCustomer = new Map();
+
+  try {
+    for (const order of ordersToHandle) {
+      const wasPending = order.status === "pending";
+      const { newSubscriptionBalance, alreadyCharged } =
+        await chargeUnchargedProcessingOrder(order, session, ownerId);
+
+      if (wasPending) {
+        processedCount += 1;
+      } else if (!alreadyCharged) {
+        backfillChargedCount += 1;
+      }
+
+      customerIds.add(order.customerId.toString());
+
+      if (newSubscriptionBalance !== null && newSubscriptionBalance < 100) {
+        lowBalanceByCustomer.set(
+          order.customerId.toString(),
+          newSubscriptionBalance
+        );
+      }
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+  } catch (err) {
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+    session.endSession();
+    throw err;
+  }
+
+  const notifyCount = processedCount + backfillChargedCount;
+  if (notifyCount > 0) {
+    await Promise.all([
+      ...[...customerIds].map((cid) =>
         sendNotification({
           customerId: cid,
           ownerId,
@@ -233,8 +444,16 @@ export const processToday = asyncHandler(async (req, res) => {
           message: "Your tiffin is ready!",
           data: { screen: "orderDetail", status: "processing" },
         })
-      )
-    );
+      ),
+      ...[...lowBalanceByCustomer.entries()].map(([cid, balance]) =>
+        notifyLowSubscriptionBalance({
+          ownerId,
+          customerId: cid,
+          newSubscriptionBalance: balance,
+          vendorAlertUserIds: [String(ownerId)],
+        })
+      ),
+    ]);
   }
 
   const io = req.app.get("io");
@@ -247,17 +466,21 @@ export const processToday = asyncHandler(async (req, res) => {
       });
   }
 
-  if (processedCount > 0) {
+  if (processedCount > 0 || backfillChargedCount > 0) {
     emitVendorDailyOrdersChanged(req, ownerId, {
       date: targetDate.toISOString().slice(0, 10),
       processedCount,
+      backfillChargedCount,
       status: "processing",
     });
   }
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, "Orders processed", { processedCount }));
+  res.status(200).json(
+    new ApiResponse(200, "Orders processed", {
+      processedCount,
+      backfillChargedCount,
+    })
+  );
 });
 
 const cancelVendorHolidaySchema = Joi.object({
@@ -272,8 +495,8 @@ const cancelVendorHolidaySchema = Joi.object({
 /**
  * POST /api/v1/daily-orders/cancel-vendor-holiday
  * Vendor: cancel all daily orders for a calendar day (default: today UTC).
- * Only affects orders not yet delivered — wallet/subscription are charged on "delivered",
- * so cancelling here does not deduct that day's meal balance.
+ * Only affects orders not yet delivered — wallet/subscription are charged on "processing",
+ * so cancelling pending orders here does not deduct that day's meal balance.
  */
 export const cancelVendorHoliday = asyncHandler(async (req, res) => {
   const { error, value } = cancelVendorHolidaySchema.validate(req.body ?? {}, {
@@ -350,9 +573,29 @@ async function applyDailyOrderStatusCore(req, order, status) {
         "Delivery staff cannot mark an order as processing"
       );
     }
-    order.status = "processing";
-    order.processedAt = new Date();
-    await order.save();
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    let chargeResult;
+    try {
+      chargeResult = await chargeUnchargedProcessingOrder(
+        order,
+        session,
+        ownerId
+      );
+
+      await session.commitTransaction();
+      session.endSession();
+    } catch (err) {
+      if (session.inTransaction()) {
+        await session.abortTransaction();
+      }
+      session.endSession();
+      throw err;
+    }
+
+    const { newSubscriptionBalance, deducted } = chargeResult;
 
     await sendNotification({
       customerId: order.customerId,
@@ -365,6 +608,13 @@ async function applyDailyOrderStatusCore(req, order, status) {
         status: "processing",
         orderId: orderIdStr,
       },
+    });
+
+    await notifyLowSubscriptionBalance({
+      ownerId,
+      customerId: order.customerId,
+      newSubscriptionBalance,
+      vendorAlertUserIds: [String(ownerId)],
     });
 
     const io = req.app.get("io");
@@ -388,7 +638,11 @@ async function applyDailyOrderStatusCore(req, order, status) {
 
     return {
       message: "Order marked as processing",
-      data: { order },
+      data: {
+        order,
+        balanceDeducted: deducted,
+        customerNewBalance: newSubscriptionBalance,
+      },
     };
   }
 
@@ -444,50 +698,17 @@ async function applyDailyOrderStatusCore(req, order, status) {
     };
   }
 
-  const vendor = await User.findById(ownerId).select("settings").lean();
-
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const { newSubscriptionBalance, deducted, walletDeducted } =
-      await deductBalanceForOrder(order, vendor?.settings, session, ownerId);
-
-    if (deducted > 0) {
-      if (walletDeducted > 0) {
-        await Customer.findByIdAndUpdate(
-          order.customerId,
-          { $inc: { walletBalance: -walletDeducted, balance: -walletDeducted } },
-          { session }
-        );
-      }
-
-      const planMap = await planNamesByIds([order.planId]);
-      const planLabel = planMap[order.planId?.toString()] || "Meal plan";
-      const description = buildDeliveredDescription({
-        planName: planLabel,
-        mealType: order.mealType,
-        orderDate: order.orderDate,
-      });
-      const items = orderDeliveredLineItems(order);
-
-      await Transaction.create(
-        [
-          {
-            ownerId,
-            customerId: order.customerId,
-            date: new Date(),
-            description,
-            amount: deducted,
-            type: "debit",
-            paymentMode: "wallet",
-            source: "order_delivered",
-            items,
-          },
-        ],
-        { session }
-      );
-    }
+    // Charge only if processing was skipped (e.g. pending → delivered directly).
+    const chargeResult = order.isCharged
+      ? { newSubscriptionBalance: null, deducted: 0, alreadyCharged: true }
+      : await chargeOrderOnce(order, session, ownerId, {
+          source: "order_delivered",
+        });
+    const { newSubscriptionBalance, deducted } = chargeResult;
 
     order.status = "delivered";
     order.deliveredAt = new Date();
@@ -530,33 +751,13 @@ async function applyDailyOrderStatusCore(req, order, status) {
       ),
     ]);
 
-    if (newSubscriptionBalance !== null && newSubscriptionBalance < 100) {
-      const customerDoc = await Customer.findById(order.customerId)
-        .select("name")
-        .lean();
-      await Promise.all([
-        sendNotification({
-          customerId: order.customerId,
-          ownerId,
-          type: NOTIFICATION_TYPES.LOW_BALANCE,
-          title: "Low subscription balance ⚠️",
-          message: `₹${newSubscriptionBalance.toFixed(2)} subscription balance remaining.`,
-          data: { balance: newSubscriptionBalance, screen: "wallet" },
-        }),
-        ...vendorAlertUserIds.map((userId) =>
-          sendNotification({
-            userId,
-            ownerId,
-            type: NOTIFICATION_TYPES.LOW_BALANCE,
-            title: "Customer subscription balance low",
-            message: `${customerDoc?.name || "A customer"} has low subscription balance (₹${newSubscriptionBalance.toFixed(2)})`,
-            data: {
-              customerId: order.customerId.toString(),
-              balance: newSubscriptionBalance,
-            },
-          })
-        ),
-      ]);
+    if (!chargeResult.alreadyCharged && newSubscriptionBalance !== null) {
+      await notifyLowSubscriptionBalance({
+        ownerId,
+        customerId: order.customerId,
+        newSubscriptionBalance,
+        vendorAlertUserIds,
+      });
     }
 
     emitVendorDailyOrdersChanged(req, ownerId, {
@@ -586,9 +787,9 @@ async function applyDailyOrderStatusCore(req, order, status) {
  * Body: { status: 'processing' | 'out_for_delivery' | 'delivered' }
  *
  * Drives the order lifecycle:
- *   pending → processing  (vendor/admin; notifies customer — same as bulk process)
+ *   pending → processing  (vendor/admin; charges balance + notifies customer)
  *   pending/processing → out_for_delivery  (notifies customer + vendor)
- *   pending/processing/out_for_delivery → delivered  (deducts balance + notifies)
+ *   pending/processing/out_for_delivery → delivered  (notifies; charges only if processing was skipped)
  *
  * Vendor can update any of their orders.
  * Delivery staff: only out_for_delivery / delivered on assigned orders (not processing).
@@ -632,8 +833,14 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     }
   }
 
-  // Idempotent — already in target status
+  // Already processing — still charge if a prior run missed it (old code / no server restart).
   if (order.status === status) {
+    if (status === "processing" && !order.isCharged) {
+      const result = await applyMissedProcessingCharge(req, order, ownerId);
+      return res
+        .status(200)
+        .json(new ApiResponse(200, result.message, result.data));
+    }
     return res
       .status(200)
       .json(new ApiResponse(200, "Order already in this status", { order }));
@@ -655,8 +862,8 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
 
 /**
  * POST /api/v1/daily-orders/mark-delivered
- * Legacy bulk endpoint — marks all matching orders as delivered and deducts subscription balance.
- * Prefer PATCH /:id/status for single-order flow (used by delivery boy).
+ * Legacy bulk endpoint — marks all matching orders as delivered.
+ * Balance is charged on processing; only uncharged orders are debited here (skipped processing).
  */
 export const markDelivered = asyncHandler(async (req, res) => {
   const ownerId = req.user.userId;
@@ -675,7 +882,7 @@ export const markDelivered = asyncHandler(async (req, res) => {
 
   const orders = await DailyOrder.find(filter)
     .select(
-      "_id customerId subscriptionId amount status planId mealType orderDate resolvedItems"
+      "_id customerId subscriptionId amount status planId mealType orderDate resolvedItems isCharged"
     )
     .lean();
 
@@ -690,59 +897,35 @@ export const markDelivered = asyncHandler(async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  // Track new balances per subscription to fire low-balance alerts after commit
   const newBalanceMap = {};
 
   try {
-    // Update all orders to delivered
+    for (const orderLean of orders) {
+      if (!orderLean.isCharged) {
+        const orderDoc = await DailyOrder.findById(orderLean._id).session(
+          session
+        );
+        const { newSubscriptionBalance } = await chargeOrderOnce(
+          orderDoc,
+          session,
+          ownerId,
+          { source: "order_delivered" }
+        );
+        await orderDoc.save({ session });
+
+        if (orderLean.subscriptionId && newSubscriptionBalance != null) {
+          newBalanceMap[orderLean.subscriptionId.toString()] = {
+            newBalance: newSubscriptionBalance,
+          };
+        }
+      }
+    }
+
     await DailyOrder.updateMany(
       { _id: { $in: orders.map((o) => o._id) } },
       { $set: { status: "delivered", deliveredAt: new Date() } },
       { session }
     );
-
-    const planNameMap = await planNamesByIds(orders.map((o) => o.planId));
-
-    // Record debit ledger entries per delivered order for customer history.
-    const debitDocs = orders
-      .filter((o) => (o.amount || 0) > 0 && o.customerId)
-      .map((o) => ({
-        ownerId,
-        customerId: o.customerId,
-        date: new Date(),
-        description: buildDeliveredDescription({
-          planName: planNameMap[o.planId?.toString()] || "Meal plan",
-          mealType: o.mealType,
-          orderDate: o.orderDate,
-        }),
-        amount: Number(o.amount) || 0,
-        type: "debit",
-        paymentMode: "wallet",
-        source: "order_delivered",
-        items: orderDeliveredLineItems(o),
-      }));
-    if (debitDocs.length) {
-      await Transaction.create(debitDocs, { session, ordered: true });
-    }
-
-    for (const order of orders) {
-      const { newSubscriptionBalance, walletDeducted } =
-        await deductBalanceForOrder(order, null, session, ownerId);
-
-      if (walletDeducted > 0) {
-        await Customer.findByIdAndUpdate(
-          order.customerId,
-          { $inc: { walletBalance: -walletDeducted, balance: -walletDeducted } },
-          { session }
-        );
-      }
-
-      if (order.subscriptionId && newSubscriptionBalance != null) {
-        newBalanceMap[order.subscriptionId.toString()] = {
-          newBalance: newSubscriptionBalance,
-        };
-      }
-    }
 
     await session.commitTransaction();
     session.endSession();
@@ -997,7 +1180,12 @@ export const bulkUpdateOrderStatus = asyncHandler(async (req, res) => {
       }
 
       if (order.status === status) {
-        skippedSameStatus += 1;
+        if (status === "processing" && !order.isCharged) {
+          await applyMissedProcessingCharge(req, order, ownerId);
+          updatedCount += 1;
+        } else {
+          skippedSameStatus += 1;
+        }
         continue;
       }
 

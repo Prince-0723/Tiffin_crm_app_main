@@ -17,7 +17,7 @@ class CustomerDetailTransaction {
   final double amount;
   final String type;
   final String paymentMode;
-  /// Ledger origin when present, e.g. [order_delivered] for meal deductions.
+  /// Ledger origin when present, e.g. [order_processing] / [order_delivered] for meal deductions.
   final String? source;
   final List<CustomerDetailTransactionItem> items;
 
@@ -44,8 +44,12 @@ class CustomerDetailTransaction {
     final src = json['source']?.toString();
     String resolvedType = rawType.isNotEmpty
         ? rawType
-        : (src == 'order_delivered' ? 'debit' : rawType);
-    if (src == 'order_delivered') resolvedType = 'debit';
+        : (src == 'order_delivered' || src == 'order_processing'
+            ? 'debit'
+            : rawType);
+    if (src == 'order_delivered' || src == 'order_processing') {
+      resolvedType = 'debit';
+    }
 
     return CustomerDetailTransaction(
       id: json['id']?.toString() ?? '',

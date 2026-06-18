@@ -105,7 +105,7 @@ abstract final class OrderApi {
   }
 
   /// Cancels all non-delivered daily orders for [date] (YYYY-MM-DD) or today.
-  /// Subscription/wallet deduction happens only when an order is marked delivered.
+  /// Subscription/wallet deduction happens when an order moves to processing.
   static Future<int> cancelVendorHoliday({String? date}) async {
     final response = await DioClient.instance.post(
       ApiEndpoints.dailyOrdersCancelVendorHoliday,
