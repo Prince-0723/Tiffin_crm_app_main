@@ -102,6 +102,8 @@ const listQuerySchema = Joi.object({
     .optional(),
   lowBalance: Joi.boolean().truthy("true").falsy("false").optional(),
   zoneId: Joi.string().hex().length(24).optional(),
+  zone: Joi.string().trim().allow("").optional(),
+  deliveryZone: Joi.string().trim().allow("").optional(),
 });
 
 const bulkPhoneSchema = Joi.string()
@@ -178,7 +180,13 @@ export const listCustomers = asyncHandler(async (req, res) => {
     filter.$or = [{ walletBalance: { $lt: threshold } }, { balance: { $lt: threshold } }];
   }
 
-  if (value.zoneId) filter.zoneId = value.zoneId;
+  if (value.zoneId) {
+    filter.zoneId = value.zoneId;
+  } else if (value.zone) {
+    filter.zone = value.zone;
+  } else if (value.deliveryZone) {
+    filter.zone = value.deliveryZone;
+  }
 
   const [data, total] = await Promise.all([
     Customer.find(filter)

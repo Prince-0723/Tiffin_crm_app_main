@@ -169,6 +169,7 @@ const deductBalanceForOrder = async (
 
 /**
  * Deduct wallet/subscription once per order and set isCharged. Idempotent if already charged.
+ * Uses atomic MongoDB findOneAndUpdate with { isCharged: { $ne: true } } to prevent race conditions.
  * @returns {{ newSubscriptionBalance: number|null, deducted: number, walletDeducted: number, alreadyCharged: boolean }}
  */
 const chargeOrderOnce = async (
@@ -177,7 +178,16 @@ const chargeOrderOnce = async (
   ownerId,
   { source = "order_processing" } = {}
 ) => {
-  if (order.isCharged) {
+  // Atomically set isCharged=true ONLY if it hasn't been set yet
+  // This prevents race conditions where two concurrent requests both charge the order
+  const updatedOrder = await DailyOrder.findOneAndUpdate(
+    { _id: order._id, isCharged: { $ne: true } },  // Only proceed if isCharged != true
+    { $set: { isCharged: true } },
+    { new: true, session }
+  );
+
+  // If null, another request already set isCharged=true (already charged)
+  if (!updatedOrder) {
     return {
       newSubscriptionBalance: null,
       deducted: 0,
@@ -226,7 +236,6 @@ const chargeOrderOnce = async (
   }
 
   order.isCharged = true;
-  order.markModified("isCharged");
   return {
     newSubscriptionBalance,
     deducted,

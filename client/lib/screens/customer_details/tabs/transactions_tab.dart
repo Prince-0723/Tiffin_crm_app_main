@@ -267,6 +267,7 @@ class _TransactionsTabState extends State<TransactionsTab>
             ],
           ),
         ),
+        _subscriptionSummaryCard(),
         Expanded(
           child: _all.isEmpty
               ? const Center(
@@ -296,6 +297,7 @@ class _TransactionsTabState extends State<TransactionsTab>
                       final t = _all[i];
                       final credit = t.isCredit;
                       final amtColor = credit ? _P.green : _P.red;
+                      final amountText = t.amountLabel(hideDeliveredAmount: true);
                       final icon = Icons.arrow_circle_down;
                       final dt = DateTime.tryParse(t.date);
                       final dateStr = dt != null
@@ -333,14 +335,16 @@ class _TransactionsTabState extends State<TransactionsTab>
                                 const SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    Text(
-                                      '${credit ? '+' : '-'}₹${t.displayAmount.toStringAsFixed(0)}',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w800,
-                                        color: amtColor,
+                                    if (amountText.isNotEmpty) ...[
+                                      Text(
+                                        amountText,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          color: amtColor,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
+                                      const SizedBox(width: 8),
+                                    ],
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 8,
@@ -451,6 +455,88 @@ class _TransactionsTabState extends State<TransactionsTab>
           color: sel ? _P.g1 : _P.s600,
           fontWeight: FontWeight.w600,
           fontSize: 12,
+        ),
+      ),
+    );
+  }
+
+  Widget _subscriptionSummaryCard() {
+    final subscriptionDebits = _all
+        .where((t) => t.isSubscriptionTransaction && !t.isCredit)
+        .toList();
+    final totalDeducted = subscriptionDebits.fold<double>(
+      0,
+      (sum, t) => sum + t.displayAmount,
+    );
+
+    final dailyDeductionDays = subscriptionDebits
+        .map((t) {
+          final dt = DateTime.tryParse(t.date)?.toLocal();
+          if (dt == null) return null;
+          return DateTime(dt.year, dt.month, dt.day);
+        })
+        .whereType<DateTime>()
+        .toSet()
+        .length;
+
+    final perDayAmount = dailyDeductionDays > 0
+        ? totalDeducted / dailyDeductionDays
+        : 57.0;
+    final subscriptionTotal = perDayAmount * 30;
+    final remainingBalance = subscriptionTotal - totalDeducted;
+
+    String formatAmount(double value) {
+      if (value < 0) {
+        return '-₹${value.abs().toStringAsFixed(0)}';
+      }
+      return '₹${value.toStringAsFixed(0)}';
+    }
+
+    Widget row(String label, String value) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: _P.s600,
+              ),
+            ),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: _P.s900,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: _P.s200, width: 0.5),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          child: Column(
+            children: [
+              row('Subscription Total', formatAmount(subscriptionTotal)),
+              row('Total Deducted', formatAmount(totalDeducted)),
+              row('Remaining Balance', formatAmount(remainingBalance)),
+              row('Daily Deduction', '₹${perDayAmount.toStringAsFixed(0)}/day'),
+            ],
+          ),
         ),
       ),
     );

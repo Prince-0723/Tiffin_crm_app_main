@@ -1502,7 +1502,7 @@ class _DeliveryRowCard extends StatelessWidget {
                       height: 1.4,
                     ),
                   ),
-                  if (row.amount > 0 && !cancelled) ...[
+                  if (row.amount > 0 && !cancelled && !delivered) ...[
                     const SizedBox(height: 4),
                     Text(
                       '₹${row.amount.toStringAsFixed(0)} / day',

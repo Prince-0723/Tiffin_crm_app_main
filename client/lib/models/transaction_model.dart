@@ -27,8 +27,50 @@ class CustomerDetailTransaction {
   /// Display amount always non-negative; sign comes from [isCredit].
   double get displayAmount => amount.abs();
 
+  /// Whether this transaction was created from an order lifecycle event.
+  bool get isOrderTransaction =>
+      source == 'order_delivered' || source == 'order_processing';
+
+  /// Whether this transaction is part of the customer's subscription ledger.
+  bool get isSubscriptionTransaction =>
+      source == 'order_delivered' ||
+      source == 'order_processing' ||
+      source == 'subscription_dues_payment';
+
+  /// Whether this transaction affects wallet balance.
+  bool get isWalletTransaction {
+    if (id.startsWith('pay_') && isCredit) return true;
+    return source == 'wallet_topup' ||
+        source == 'wallet_deduction' ||
+        source == 'extra_charge_wallet' ||
+        source == 'extra_charge_subscription';
+  }
+
+  /// Wallet-signed amount (credits positive, debits negative).
+  double get walletSignedAmount {
+    if (!isWalletTransaction) return 0;
+    return isCredit ? displayAmount : -displayAmount;
+  }
+
+  /// Subscription-signed amount (subscription credits positive, subscription debits negative).
+  double get subscriptionSignedAmount {
+    if (!isSubscriptionTransaction) return 0;
+    return isCredit ? displayAmount : -displayAmount;
+  }
+
+  /// Hide the amount label for delivered-order ledger entries when shown in status views.
+  bool get hideAmountForDeliveredStatus => source == 'order_delivered';
+
   /// Table / chip label — API may send other type strings for debits.
   String get typeLabel => isCredit ? 'Credit' : 'Debit';
+
+  /// Returns the amount string to show in transaction rows.
+  String amountLabel({bool hideDeliveredAmount = false}) {
+    if (hideDeliveredAmount && hideAmountForDeliveredStatus) {
+      return '';
+    }
+    return '${isCredit ? '+' : '-'}₹${displayAmount.toStringAsFixed(0)}';
+  }
 
   factory CustomerDetailTransaction.fromJson(Map<String, dynamic> json) {
     final raw = json['items'];

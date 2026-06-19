@@ -1,6 +1,6 @@
 abstract final class AppConfig {
   // Set to true for local backend (e.g. http://localhost:5800), false for Render.
-  static const bool useLocalApi = false;
+  static const bool useLocalApi = true;
 
   static const String apiUrlLocal = 'http://localhost:5800/api/v1';
   static const String apiUrlProduction =

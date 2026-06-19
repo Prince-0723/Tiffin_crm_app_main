@@ -22,8 +22,6 @@ import '../../../../models/customer_model.dart';
 import '../../../../services/pdf_download_service.dart';
 import '../../data/customer_api.dart';
 import '../../../profile/data/profile_api.dart';
-import '../../../zones/data/zone_api.dart';
-import '../../../zones/models/zone_model.dart';
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
 class _P {
@@ -115,9 +113,9 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
   _CustomerSort _sort = _CustomerSort.newest;
   final Set<_CustomerStatusFilter> _statusFilters = <_CustomerStatusFilter>{};
   final Set<String> _timeSlotFilters = <String>{};
-  List<ZoneModel> _zones = [];
+  List<String> _zones = [];
   bool _zonesLoading = false;
-  String? _selectedZoneId;
+  String? _selectedZone;
 
   // ── New: card field customization (local-only UI preference) ──
   static const String _prefsKeyCardFields = 'customers.card_fields.v1';
@@ -136,7 +134,6 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
   void initState() {
     super.initState();
     _loadCustomers();
-    _loadZones();
     _loadCardPrefs();
     _loadBusinessProfile();
     _scrollController.addListener(_onScroll);
@@ -180,16 +177,16 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     if (pos.pixels >= pos.maxScrollExtent - 200) _loadMore();
   }
 
-  Future<void> _loadZones() async {
-    setState(() => _zonesLoading = true);
-    try {
-      final list = await ZoneApi.list(limit: 100, isActive: true);
-      if (mounted) setState(() => _zones = list);
-    } catch (e) {
-      if (kDebugMode) debugPrint('Failed to load zones: $e');
-    } finally {
-      if (mounted) setState(() => _zonesLoading = false);
-    }
+  void _updateCustomerZones(List<CustomerModel> customers) {
+    final next = customers
+        .map((c) => c.zoneName?.trim().isNotEmpty == true ? c.zoneName : c.zone)
+        .whereType<String>()
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
+    next.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    if (mounted) setState(() => _zones = next);
   }
 
   Future<void> _loadCustomers({bool reset = true}) async {
@@ -207,7 +204,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             ? null
             : (_filter == 'lowBalance' ? null : _filter),
         lowBalance: _filter == 'lowBalance',
-        zoneId: _selectedZoneId,
+        zone: _selectedZone,
       );
       List<dynamic> rawList = [];
       int total = 0;
@@ -230,6 +227,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         _hasMore = list.length >= _limit && list.length < total;
         _page = 1;
       });
+      _updateCustomerZones(list);
       await _loadAllLabels();
     } catch (e, stack) {
       if (kDebugMode) {
@@ -253,7 +251,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             ? null
             : (_filter == 'lowBalance' ? null : _filter),
         lowBalance: _filter == 'lowBalance',
-        zoneId: _selectedZoneId,
+        zone: _selectedZone,
       );
       List<dynamic> rawList = [];
       int total = 0;
@@ -276,6 +274,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         _page = nextPage;
         _hasMore = _customers.length < total;
       });
+      _updateCustomerZones(_customers);
       await _loadAllLabels();
     } catch (e, stack) {
       if (kDebugMode) {
@@ -288,7 +287,6 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
   }
 
   Future<void> _refresh() async {
-    await _loadZones();
     await _loadCustomers(reset: true);
   }
 
@@ -1464,11 +1462,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
 
   String _zoneLabel() {
     if (_zonesLoading) return 'Zone (…)';
-    if (_selectedZoneId == null) return 'Zone (All)';
-    for (final z in _zones) {
-      if (z.id == _selectedZoneId) return 'Zone (${z.name})';
-    }
-    return 'Zone (Selected)';
+    if (_selectedZone == null) return 'Zone (All)';
+    return 'Zone ($_selectedZone)';
   }
 
   Future<void> _openZoneSheet(BuildContext context) async {
@@ -1476,14 +1471,15 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
 
     await showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
-        Widget item(String? zoneId, String label) {
-          final sel = _selectedZoneId == zoneId;
+        Widget item(String? zone, String label) {
+          final sel = _selectedZone == zone;
           return InkWell(
             onTap: () {
               Navigator.pop(ctx);
-              setState(() => _selectedZoneId = zoneId);
+              setState(() => _selectedZone = zone);
               _loadCustomers(reset: true);
             },
             child: Padding(
@@ -1529,77 +1525,88 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(18),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-                    child: Row(
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            'Zone',
-                            style: TextStyle(
-                              color: _P.s900,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(ctx);
-                            setState(() => _selectedZoneId = null);
-                            _loadCustomers(reset: true);
-                          },
-                          child: const Text(
-                            'Clear Selection',
-                            style: TextStyle(
-                              color: _P.v700,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          icon: const Icon(Icons.close_rounded, size: 20),
-                          color: _P.s600,
-                        ),
-                      ],
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(ctx).size.height * 0.75,
                     ),
-                  ),
-                  Container(height: 1, color: _P.s200),
-                  if (_zonesLoading)
-                    const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: _P.g1,
-                          strokeWidth: 2,
-                        ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                            child: Row(
+                              children: [
+                                const Expanded(
+                                  child: Text(
+                                    'Zone',
+                                    style: TextStyle(
+                                      color: _P.s900,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(ctx);
+                                    setState(() => _selectedZone = null);
+                                    _loadCustomers(reset: true);
+                                  },
+                                  child: const Text(
+                                    'Clear Selection',
+                                    style: TextStyle(
+                                      color: _P.v700,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  icon: const Icon(Icons.close_rounded, size: 20),
+                                  color: _P.s600,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(height: 1, color: _P.s200),
+                          if (_zonesLoading)
+                            const Padding(
+                              padding: EdgeInsets.all(24),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: _P.g1,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
+                          else if (_zones.isEmpty)
+                            const Padding(
+                              padding: EdgeInsets.all(24),
+                              child: Text(
+                                'No zones available',
+                                style: TextStyle(
+                                  color: _P.s600,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            )
+                          else ...[
+                            item(null, 'All Zones'),
+                            for (var i = 0; i < _zones.length; i++) ...[
+                              Container(height: 1, color: _P.s200),
+                              item(_zones[i], _zones[i]),
+                            ],
+                          ],
+                        ],
                       ),
-                    )
-                  else if (_zones.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text(
-                        'No zones available',
-                        style: TextStyle(
-                          color: _P.s500,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                    )
-                  else ...[
-                    item(null, 'All Zones'),
-                    for (var i = 0; i < _zones.length; i++) ...[
-                      Container(height: 1, color: _P.s200),
-                      item(_zones[i].id, _zones[i].name),
-                    ],
-                  ],
-                ],
+                    ),
+                  );
+                },
               ),
             ),
           ),

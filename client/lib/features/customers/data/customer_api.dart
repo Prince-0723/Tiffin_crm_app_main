@@ -10,11 +10,19 @@ abstract final class CustomerApi {
     String? status,
     bool? lowBalance,
     String? zoneId,
+    String? zone,
+    String? deliveryZone,
   }) async {
     final query = <String, dynamic>{'page': page, 'limit': limit};
     if (status != null && status.isNotEmpty) query['status'] = status;
     if (lowBalance == true) query['lowBalance'] = 'true';
-    if (zoneId != null && zoneId.isNotEmpty) query['zoneId'] = zoneId;
+    if (zoneId != null && zoneId.isNotEmpty) {
+      query['zoneId'] = zoneId;
+    } else if (zone != null && zone.isNotEmpty) {
+      query['zone'] = zone;
+    } else if (deliveryZone != null && deliveryZone.isNotEmpty) {
+      query['deliveryZone'] = deliveryZone;
+    }
 
     final response = await DioClient.instance.get(
       ApiEndpoints.customers,
