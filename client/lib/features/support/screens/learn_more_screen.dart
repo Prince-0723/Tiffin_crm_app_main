@@ -1,5 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/theme/app_colors.dart';
+
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+}
 
 class LearnMoreScreen extends StatelessWidget {
   const LearnMoreScreen({super.key});
@@ -117,10 +128,22 @@ class LearnMoreScreen extends StatelessWidget {
     ),
   ];
 
+  Color _getFeatureIconColor(Color lightColor, bool isDark) {
+    if (!isDark) return lightColor;
+    final val = lightColor.value;
+    if (val == 0xFF4C2DB8) return const Color(0xFFA78BFA); // Violet
+    if (val == 0xFF0F6E56) return const Color(0xFF34D399); // Green
+    if (val == 0xFF854F0B) return const Color(0xFFFBBF24); // Orange
+    if (val == 0xFF185FA5) return const Color(0xFF60A5FA); // Blue
+    if (val == 0xFF993556) return const Color(0xFFF472B6); // Pink/Red
+    return lightColor;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: isDark ? _D.bg : _bg,
       appBar: AppBar(
         backgroundColor: _violet700,
         foregroundColor: Colors.white,
@@ -156,11 +179,12 @@ class LearnMoreScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: _violet700,
+              color: isDark ? _D.surface : _violet700,
               borderRadius: BorderRadius.circular(16),
+              border: isDark ? Border.all(color: _D.border) : null,
               boxShadow: [
                 BoxShadow(
-                  color: _violet900.withValues(alpha: 0.2),
+                  color: isDark ? Colors.black.withValues(alpha: 0.2) : _violet900.withValues(alpha: 0.2),
                   blurRadius: 20,
                   offset: const Offset(0, 6),
                 ),
@@ -172,17 +196,17 @@ class LearnMoreScreen extends StatelessWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
+                    color: isDark ? _D.violet100 : Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.rocket_launch_rounded,
                     size: 26,
-                    color: Colors.white,
+                    color: isDark ? AppColors.primaryLight : Colors.white,
                   ),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -191,13 +215,16 @@ class LearnMoreScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
-                          color: Colors.white,
+                          color: isDark ? _D.textPrimary : Colors.white,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         'Complete tiffin business management',
-                        style: TextStyle(fontSize: 12, color: Colors.white70),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? _D.textSecondary : Colors.white70,
+                        ),
                       ),
                     ],
                   ),
@@ -209,14 +236,14 @@ class LearnMoreScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // ── Features ──────────────────────────────────────────────────────
-          _sectionLabel('App Features'),
+          _sectionLabel('App Features', isDark),
           const SizedBox(height: 10),
-          ..._buildFeatureRows(),
+          ..._buildFeatureRows(isDark),
 
           const SizedBox(height: 24),
 
           // ── How-to guides ──────────────────────────────────────────────────
-          _sectionLabel('How-to Guides'),
+          _sectionLabel('How-to Guides', isDark),
           const SizedBox(height: 10),
           ...(_guides.map((g) {
             final (icon, step, title, desc) = g;
@@ -228,12 +255,12 @@ class LearnMoreScreen extends StatelessWidget {
                   vertical: 13,
                 ),
                 decoration: BoxDecoration(
-                  color: _surface,
+                  color: isDark ? _D.surface : _surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _border),
+                  border: Border.all(color: isDark ? _D.border : _border),
                   boxShadow: [
                     BoxShadow(
-                      color: _violet900.withValues(alpha: 0.04),
+                      color: isDark ? Colors.black.withValues(alpha: 0.1) : _violet900.withValues(alpha: 0.04),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -246,7 +273,7 @@ class LearnMoreScreen extends StatelessWidget {
                       width: 34,
                       height: 34,
                       decoration: BoxDecoration(
-                        color: _violet600,
+                        color: isDark ? AppColors.primary : _violet600,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Center(
@@ -267,10 +294,10 @@ class LearnMoreScreen extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: _textPrimary,
+                              color: isDark ? _D.textPrimary : _textPrimary,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -280,15 +307,15 @@ class LearnMoreScreen extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: _violet50,
+                              color: isDark ? _D.violet50 : _violet50,
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: _border),
+                              border: Border.all(color: isDark ? _D.border : _border),
                             ),
                             child: Text(
                               desc,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
-                                color: _textSecondary,
+                                color: isDark ? _D.textSecondary : _textSecondary,
                                 fontFamily: 'monospace',
                               ),
                             ),
@@ -305,19 +332,20 @@ class LearnMoreScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // ── About ──────────────────────────────────────────────────────────
-          _sectionLabel('About TiffinCRM'),
+          _sectionLabel('About TiffinCRM', isDark),
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: _surface,
+              color: isDark ? _D.surface : _surface,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: _border),
+              border: Border.all(color: isDark ? _D.border : _border),
             ),
             child: _aboutRow(
               Icons.email_outlined,
               'Contact',
               'shrivasumii@gmail.com',
+              isDark,
             ),
           ),
         ],
@@ -325,7 +353,7 @@ class LearnMoreScreen extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildFeatureRows() {
+  List<Widget> _buildFeatureRows(bool isDark) {
     final rows = <Widget>[];
     for (int i = 0; i < _features.length; i += 2) {
       final left = _features[i];
@@ -336,10 +364,10 @@ class LearnMoreScreen extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _featureCard(left)),
+              Expanded(child: _featureCard(left, isDark)),
               const SizedBox(width: 10),
               Expanded(
-                child: right != null ? _featureCard(right) : const SizedBox(),
+                child: right != null ? _featureCard(right, isDark) : const SizedBox(),
               ),
             ],
           ),
@@ -349,17 +377,20 @@ class LearnMoreScreen extends StatelessWidget {
     return rows;
   }
 
-  Widget _featureCard((IconData, Color, Color, String, String) f) {
+  Widget _featureCard((IconData, Color, Color, String, String) f, bool isDark) {
     final (icon, iconColor, iconBg, title, desc) = f;
+    final activeIconColor = _getFeatureIconColor(iconColor, isDark);
+    final activeIconBg = isDark ? activeIconColor.withValues(alpha: 0.15) : iconBg;
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: _surface,
+        color: isDark ? _D.surface : _surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _border),
+        border: Border.all(color: isDark ? _D.border : _border),
         boxShadow: [
           BoxShadow(
-            color: _violet900.withValues(alpha: 0.04),
+            color: isDark ? Colors.black.withValues(alpha: 0.1) : _violet900.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -372,26 +403,26 @@ class LearnMoreScreen extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: iconBg,
+              color: activeIconBg,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, size: 18, color: iconColor),
+            child: Icon(icon, size: 18, color: activeIconColor),
           ),
           const SizedBox(height: 10),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: _textPrimary,
+              color: isDark ? _D.textPrimary : _textPrimary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             desc,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
-              color: _textSecondary,
+              color: isDark ? _D.textSecondary : _textSecondary,
               height: 1.4,
             ),
           ),
@@ -400,56 +431,56 @@ class LearnMoreScreen extends StatelessWidget {
     );
   }
 
-  Widget _aboutRow(IconData icon, String label, String value) => Row(
+  Widget _aboutRow(IconData icon, String label, String value, bool isDark) => Row(
     children: [
       Container(
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: _violet50,
+          color: isDark ? _D.violet50 : _violet50,
           borderRadius: BorderRadius.circular(9),
-          border: Border.all(color: _border),
+          border: Border.all(color: isDark ? _D.border : _border),
         ),
-        child: Icon(icon, size: 15, color: _violet600),
+        child: Icon(icon, size: 15, color: isDark ? AppColors.primaryLight : _violet600),
       ),
       const SizedBox(width: 12),
       Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
-          color: _textSecondary,
+          color: isDark ? _D.textSecondary : _textSecondary,
           fontWeight: FontWeight.w500,
         ),
       ),
       const Spacer(),
       Text(
         value,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w700,
-          color: _textPrimary,
+          color: isDark ? _D.textPrimary : _textPrimary,
         ),
       ),
     ],
   );
 
-  Widget _sectionLabel(String text) => Row(
+  Widget _sectionLabel(String text, bool isDark) => Row(
     children: [
       Container(
         width: 3,
         height: 14,
         decoration: BoxDecoration(
-          color: _violet600,
+          color: isDark ? AppColors.primary : _violet600,
           borderRadius: BorderRadius.circular(2),
         ),
       ),
       const SizedBox(width: 8),
       Text(
         text.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
-          color: _textSecondary,
+          color: isDark ? _D.textSecondary : _textSecondary,
           letterSpacing: 1.2,
         ),
       ),

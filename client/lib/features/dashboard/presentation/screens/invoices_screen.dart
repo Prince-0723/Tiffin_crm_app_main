@@ -6,6 +6,18 @@ import '../../../payments/data/invoice_api.dart';
 import '../../../payments/models/invoice_model.dart';
 import '../../../../models/customer_model.dart';
 
+
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const divider = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+}
+
 class InvoicesScreen extends StatefulWidget {
   const InvoicesScreen({super.key});
 
@@ -107,8 +119,9 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: isDark ? _D.bg : _bg,
       appBar: AppBar(
         backgroundColor: _violet700,
         foregroundColor: Colors.white,
@@ -270,83 +283,89 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
     );
   }
 
-  PopupMenuItem<String?> _popupItem(String? val, String label, IconData icon) =>
-      PopupMenuItem(
-        value: val,
-        child: Row(
-          children: [
-            Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: _violet50,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, size: 15, color: _violet600),
+  PopupMenuItem<String?> _popupItem(String? val, String label, IconData icon) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return PopupMenuItem(
+      value: val,
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: isDark ? _D.violet100 : _violet50,
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: _textPrimary,
-              ),
+            child: Icon(icon, size: 15, color: _violet600),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: isDark ? _D.textPrimary : _textPrimary,
             ),
-            if (val == _statusFilter) ...[
-              const Spacer(),
-              const Icon(Icons.check_rounded, size: 15, color: _violet600),
-            ],
+          ),
+          if (val == _statusFilter) ...[
+            const Spacer(),
+            const Icon(Icons.check_rounded, size: 15, color: _violet600),
           ],
-        ),
-      );
+        ],
+      ),
+    );
+  }
 
   // ── Empty state ───────────────────────────────────────────────────────────
-  Widget _buildEmpty() => ListView(
-    padding: EdgeInsets.only(
-      bottom: MediaQuery.of(context).padding.bottom + 24,
-    ),
-    children: [
-      const SizedBox(height: 80),
-      Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: _violet100,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.receipt_long_outlined,
-                size: 36,
-                color: _violet600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'No invoices found',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: _textPrimary,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Tap + Generate to create one',
-              style: TextStyle(fontSize: 13, color: _textSecondary),
-            ),
-          ],
-        ),
+  Widget _buildEmpty() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return ListView(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).padding.bottom + 24,
       ),
-    ],
-  );
+      children: [
+        const SizedBox(height: 80),
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: isDark ? _D.violet100 : _violet100,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.receipt_long_outlined,
+                  size: 36,
+                  color: _violet600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No invoices found',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? _D.textPrimary : _textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Tap + Generate to create one',
+                style: TextStyle(fontSize: 13, color: isDark ? _D.textSecondary : _textSecondary),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   // ── Invoice card ──────────────────────────────────────────────────────────
   Widget _buildInvoiceCard(InvoiceModel inv) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final invNum = inv.id.length > 8
         ? inv.id.substring(inv.id.length - 8)
         : inv.id;
@@ -360,15 +379,15 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
       child: InkWell(
         onTap: () => _showDetail(inv),
         borderRadius: BorderRadius.circular(14),
-        splashColor: _violet100,
+        splashColor: isDark ? _D.violet100 : _violet100,
         child: Container(
           decoration: BoxDecoration(
-            color: _surface,
+            color: isDark ? _D.surface : _surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: _border),
+            border: Border.all(color: isDark ? _D.border : _border),
             boxShadow: [
               BoxShadow(
-                color: _violet900.withValues(alpha: 0.05),
+                color: isDark ? Colors.black.withValues(alpha: 0.35) : _violet900.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -400,7 +419,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                           width: 42,
                           height: 42,
                           decoration: BoxDecoration(
-                            color: _violet100,
+                            color: isDark ? _D.violet100 : _violet100,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
@@ -417,18 +436,18 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                             children: [
                               Text(
                                 'INV-$invNum',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w800,
-                                  color: _textPrimary,
+                                  color: isDark ? _D.textPrimary : _textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 inv.customerName ?? inv.customerId,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
-                                  color: _textSecondary,
+                                  color: isDark ? _D.textSecondary : _textSecondary,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -437,17 +456,17 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                                 const SizedBox(height: 2),
                                 Row(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.calendar_today_outlined,
                                       size: 11,
-                                      color: _textSecondary,
+                                      color: isDark ? _D.textSecondary : _textSecondary,
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
                                       'Due $fmtDate',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11,
-                                        color: _textSecondary,
+                                        color: isDark ? _D.textSecondary : _textSecondary,
                                       ),
                                     ),
                                   ],
@@ -463,10 +482,10 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                           children: [
                             Text(
                               'Rs.${inv.amount.toStringAsFixed(0)}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w800,
-                                color: _textPrimary,
+                                color: isDark ? _D.textPrimary : _textPrimary,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -498,12 +517,12 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                     ),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.only(right: 10),
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
                   child: Icon(
                     Icons.chevron_right_rounded,
                     size: 18,
-                    color: _textSecondary,
+                    color: isDark ? _D.textSecondary : _textSecondary,
                   ),
                 ),
               ],
@@ -555,6 +574,7 @@ class _InvoiceDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final invNum = inv.id.length > 8
         ? inv.id.substring(inv.id.length - 8)
         : inv.id;
@@ -564,9 +584,9 @@ class _InvoiceDetailSheet extends StatelessWidget {
         : null;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: isDark ? _D.surface : _surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(
         20,
@@ -586,7 +606,7 @@ class _InvoiceDetailSheet extends StatelessWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: _divider,
+                color: isDark ? _D.divider : _divider,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -600,7 +620,7 @@ class _InvoiceDetailSheet extends StatelessWidget {
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: _violet100,
+                  color: isDark ? _D.violet100 : _violet100,
                   borderRadius: BorderRadius.circular(13),
                 ),
                 child: const Icon(
@@ -616,17 +636,17 @@ class _InvoiceDetailSheet extends StatelessWidget {
                   children: [
                     Text(
                       'INV-$invNum',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
-                        color: _textPrimary,
+                        color: isDark ? _D.textPrimary : _textPrimary,
                       ),
                     ),
                     Text(
                       inv.customerName ?? inv.customerId,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: _textSecondary,
+                        color: isDark ? _D.textSecondary : _textSecondary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -657,16 +677,16 @@ class _InvoiceDetailSheet extends StatelessWidget {
           ),
 
           const SizedBox(height: 16),
-          Divider(color: _divider, height: 1),
+          Divider(color: isDark ? _D.divider : _divider, height: 1),
           const SizedBox(height: 14),
 
           // Details grid
-          _row('Amount', 'Rs.${inv.amount.toStringAsFixed(0)}'),
+          _row('Amount', 'Rs.${inv.amount.toStringAsFixed(0)}', isDark),
           const SizedBox(height: 8),
-          _row('Status', inv.status),
+          _row('Status', inv.status, isDark),
           if (fmtDate != null) ...[
             const SizedBox(height: 8),
-            _row('Due Date', fmtDate),
+            _row('Due Date', fmtDate, isDark),
           ],
 
           const SizedBox(height: 20),
@@ -727,27 +747,28 @@ class _InvoiceDetailSheet extends StatelessWidget {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (c) => AlertDialog(
+                    backgroundColor: isDark ? _D.surface : Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    title: const Text(
+                    title: Text(
                       'Void Invoice',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        color: _textPrimary,
+                        color: isDark ? _D.textPrimary : _textPrimary,
                       ),
                     ),
-                    content: const Text(
+                    content: Text(
                       'This will void the invoice and cannot be undone.',
-                      style: TextStyle(color: _textSecondary, fontSize: 14),
+                      style: TextStyle(color: isDark ? _D.textSecondary : _textSecondary, fontSize: 14),
                     ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(c, false),
-                        child: const Text(
+                        child: Text(
                           'Cancel',
                           style: TextStyle(
-                            color: _textSecondary,
+                            color: isDark ? _D.textSecondary : _textSecondary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -808,7 +829,7 @@ class _InvoiceDetailSheet extends StatelessWidget {
           const SizedBox(height: 10),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(foregroundColor: _textSecondary),
+            style: TextButton.styleFrom(foregroundColor: isDark ? _D.textSecondary : _textSecondary),
             child: const Text(
               'Close',
               style: TextStyle(fontWeight: FontWeight.w600),
@@ -819,23 +840,23 @@ class _InvoiceDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _row(String label, String value) => Row(
+  Widget _row(String label, String value, bool isDark) => Row(
     children: [
       Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
-          color: _textSecondary,
+          color: isDark ? _D.textSecondary : _textSecondary,
           fontWeight: FontWeight.w500,
         ),
       ),
       const Spacer(),
       Text(
         value,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w700,
-          color: _textPrimary,
+          color: isDark ? _D.textPrimary : _textPrimary,
         ),
       ),
     ],
@@ -925,10 +946,11 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      decoration: const BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: isDark ? _D.surface : _surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(
         20,
@@ -949,7 +971,7 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: _divider,
+                  color: isDark ? _D.divider : _divider,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -963,7 +985,7 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: _violet100,
+                    color: isDark ? _D.violet100 : _violet100,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -973,12 +995,12 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text(
+                Text(
                   'Generate Invoice',
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
-                    color: _textPrimary,
+                    color: isDark ? _D.textPrimary : _textPrimary,
                   ),
                 ),
               ],
@@ -986,20 +1008,20 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
             const SizedBox(height: 20),
 
             // Customer dropdown
-            _label('Customer'),
+            _label('Customer', isDark),
             const SizedBox(height: 6),
             Container(
               decoration: BoxDecoration(
-                color: _violet50,
+                color: isDark ? _D.violet50 : _violet50,
                 borderRadius: BorderRadius.circular(11),
-                border: Border.all(color: _border),
+                border: Border.all(color: isDark ? _D.border : _border),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 14),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<CustomerModel>(
                   value: _customer,
                   isExpanded: true,
-                  dropdownColor: _surface,
+                  dropdownColor: isDark ? _D.surface : _surface,
                   icon: const Icon(
                     Icons.keyboard_arrow_down_rounded,
                     color: _textSecondary,
@@ -1007,7 +1029,7 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
                   hint: Text(
                     'Select customer',
                     style: TextStyle(
-                      color: _textSecondary.withValues(alpha: 0.7),
+                      color: (isDark ? _D.textSecondary : _textSecondary).withValues(alpha: 0.7),
                       fontSize: 14,
                     ),
                   ),
@@ -1017,10 +1039,10 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
                           value: c,
                           child: Text(
                             '${c.name}  ·  ${c.phone}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: _textPrimary,
+                              color: isDark ? _D.textPrimary : _textPrimary,
                             ),
                           ),
                         ),
@@ -1034,7 +1056,7 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
             const SizedBox(height: 16),
 
             // Billing dates
-            _label('Billing Period'),
+            _label('Billing Period', isDark),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -1043,6 +1065,7 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
                     label: 'Start',
                     date: _billingStart,
                     icon: Icons.calendar_today_outlined,
+                    isDark: isDark,
                     onTap: () async {
                       final d = await showDatePicker(
                         context: context,
@@ -1062,6 +1085,7 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
                     label: 'End',
                     date: _billingEnd,
                     icon: Icons.event_rounded,
+                    isDark: isDark,
                     onTap: () async {
                       final d = await showDatePicker(
                         context: context,
@@ -1142,7 +1166,7 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
     );
   }
 
-  Widget _label(String text) => Row(
+  Widget _label(String text, bool isDark) => Row(
     children: [
       Container(
         width: 3,
@@ -1155,10 +1179,10 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
       const SizedBox(width: 7),
       Text(
         text.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
-          color: _textSecondary,
+          color: isDark ? _D.textSecondary : _textSecondary,
           letterSpacing: 1.1,
         ),
       ),
@@ -1169,15 +1193,16 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
     required String label,
     required DateTime date,
     required IconData icon,
+    required bool isDark,
     required VoidCallback onTap,
   }) => GestureDetector(
     onTap: onTap,
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
       decoration: BoxDecoration(
-        color: _violet50,
+        color: isDark ? _D.violet50 : _violet50,
         borderRadius: BorderRadius.circular(11),
-        border: Border.all(color: _border),
+        border: Border.all(color: isDark ? _D.border : _border),
       ),
       child: Row(
         children: [
@@ -1188,18 +1213,18 @@ class _GenerateInvoiceSheetState extends State<_GenerateInvoiceSheet> {
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
-                  color: _textSecondary,
+                  color: isDark ? _D.textSecondary : _textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
                 '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: _textPrimary,
+                  color: isDark ? _D.textPrimary : _textPrimary,
                 ),
               ),
             ],

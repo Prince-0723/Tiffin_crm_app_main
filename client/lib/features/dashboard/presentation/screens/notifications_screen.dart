@@ -8,6 +8,15 @@ import '../../../../models/notification_model.dart';
 import '../../data/notification_api.dart';
 import '../../../../core/notifications/notification_badge_service.dart';
 
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+}
+
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -162,8 +171,106 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return order.map((l) => _NotifGroup(label: l, items: map[l]!)).toList();
   }
 
-  _NotifStyle _styleForType(String? type) {
-    switch ((type ?? '').toLowerCase()) {
+  _NotifStyle _styleForType(String? type, bool isDark) {
+    final t = (type ?? '').toLowerCase();
+    if (isDark) {
+      switch (t) {
+        case 'out_for_delivery':
+          return _NotifStyle(
+            label: 'Out for Delivery',
+            pillBg: const Color(0xFFFFF0DC).withValues(alpha: 0.15),
+            pillText: const Color(0xFFFBBF24),
+            iconBg: const Color(0xFFFFF0DC).withValues(alpha: 0.15),
+            iconColor: const Color(0xFFF59E0B),
+            dotColor: const Color(0xFFF59E0B),
+            icon: Icons.delivery_dining_rounded,
+          );
+        case 'delivered':
+          return _NotifStyle(
+            label: 'Delivered',
+            pillBg: const Color(0xFFE6F4D7).withValues(alpha: 0.15),
+            pillText: const Color(0xFF86EFAC),
+            iconBg: const Color(0xFFE6F4D7).withValues(alpha: 0.15),
+            iconColor: const Color(0xFF22C55E),
+            dotColor: const Color(0xFF22C55E),
+            icon: Icons.check_circle_outline_rounded,
+          );
+        case 'task_accepted':
+          return _NotifStyle(
+            label: 'Task Accepted',
+            pillBg: const Color(0xFFEEEDFE).withValues(alpha: 0.15),
+            pillText: const Color(0xFFA78BFA),
+            iconBg: const Color(0xFFEEEDFE).withValues(alpha: 0.15),
+            iconColor: const Color(0xFF8B5CF6),
+            dotColor: const Color(0xFF8B5CF6),
+            icon: Icons.handshake_outlined,
+          );
+        case 'order_processing':
+          return _NotifStyle(
+            label: 'Preparing',
+            pillBg: const Color(0xFFFFF8E1).withValues(alpha: 0.15),
+            pillText: const Color(0xFFFBBF24),
+            iconBg: const Color(0xFFFFF8E1).withValues(alpha: 0.15),
+            iconColor: const Color(0xFFF59E0B),
+            dotColor: const Color(0xFFF59E0B),
+            icon: Icons.restaurant_outlined,
+          );
+        case 'order_placed':
+          return _NotifStyle(
+            label: 'Order Placed',
+            pillBg: const Color(0xFFEEEDFE).withValues(alpha: 0.15),
+            pillText: const Color(0xFFA78BFA),
+            iconBg: const Color(0xFFEEEDFE).withValues(alpha: 0.15),
+            iconColor: const Color(0xFF8B5CF6),
+            dotColor: const Color(0xFF8B5CF6),
+            icon: Icons.shopping_bag_outlined,
+          );
+        case 'payment':
+        case 'wallet':
+          return _NotifStyle(
+            label: 'Payment',
+            pillBg: const Color(0xFFE6F4D7).withValues(alpha: 0.15),
+            pillText: const Color(0xFF86EFAC),
+            iconBg: const Color(0xFFE6F4D7).withValues(alpha: 0.15),
+            iconColor: const Color(0xFF22C55E),
+            dotColor: const Color(0xFF22C55E),
+            icon: Icons.account_balance_wallet_outlined,
+          );
+        case 'cancelled':
+          return _NotifStyle(
+            label: 'Cancelled',
+            pillBg: const Color(0xFFFCEBEB).withValues(alpha: 0.15),
+            pillText: const Color(0xFFF87171),
+            iconBg: const Color(0xFFFCEBEB).withValues(alpha: 0.15),
+            iconColor: const Color(0xFFEF4444),
+            dotColor: const Color(0xFFEF4444),
+            icon: Icons.cancel_outlined,
+          );
+        case 'system':
+        case 'alert':
+          return _NotifStyle(
+            label: 'Alert',
+            pillBg: const Color(0xFFFCEBEB).withValues(alpha: 0.15),
+            pillText: const Color(0xFFF87171),
+            iconBg: const Color(0xFFFCEBEB).withValues(alpha: 0.15),
+            iconColor: const Color(0xFFEF4444),
+            dotColor: const Color(0xFFEF4444),
+            icon: Icons.warning_amber_rounded,
+          );
+        default:
+          return _NotifStyle(
+            label: 'Notification',
+            pillBg: const Color(0xFFF0EFFF).withValues(alpha: 0.15),
+            pillText: const Color(0xFFA78BFA),
+            iconBg: const Color(0xFFF0EFFF).withValues(alpha: 0.15),
+            iconColor: const Color(0xFF8B5CF6),
+            dotColor: const Color(0xFF8B5CF6),
+            icon: Icons.notifications_outlined,
+          );
+      }
+    }
+
+    switch (t) {
       case 'out_for_delivery':
         return _NotifStyle(
           label: 'Out for Delivery',
@@ -261,11 +368,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final unreadCount = _notifications.where((n) => !n.read).length;
     final hasRead = _notifications.any((n) => n.read);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE8E6F0),
+      backgroundColor: isDark ? _D.bg : const Color(0xFFE8E6F0),
       appBar: AppBar(
         backgroundColor: const Color(0xFF6B21D4),
         elevation: 0,
@@ -338,6 +446,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListView(
       padding: EdgeInsets.fromLTRB(
         24,
@@ -352,37 +461,38 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFFEEEDFE),
+              color: isDark ? _D.violet100 : const Color(0xFFEEEDFE),
               borderRadius: BorderRadius.circular(24),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.notifications_none_rounded,
               size: 40,
-              color: Color(0xFF6B21D4),
+              color: isDark ? AppColors.primaryLight : const Color(0xFF6B21D4),
             ),
           ),
         ),
         const SizedBox(height: 20),
-        const Text(
+        Text(
           'No notifications yet',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A2E),
+            color: isDark ? _D.textPrimary : const Color(0xFF1A1A2E),
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Updates and alerts will appear here.',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 13, color: Color(0xFF888888)),
+          style: TextStyle(fontSize: 13, color: isDark ? _D.textSecondary : const Color(0xFF888888)),
         ),
       ],
     );
   }
 
   Widget _buildList() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final groups = _buildGroups();
     return ListView.builder(
       cacheExtent: 400,
@@ -400,10 +510,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               padding: const EdgeInsets.only(left: 46, top: 16, bottom: 8),
               child: Text(
                 group.label.toUpperCase(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF888888),
+                  color: isDark ? _D.textSecondary : const Color(0xFF888888),
                   letterSpacing: 1.0,
                 ),
               ),
@@ -427,7 +537,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildTimelineRow(NotificationModel n, bool isLast) {
-    final style = _styleForType(n.type);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final style = _styleForType(n.type, isDark);
     final isRead = n.read;
 
     final cleanTitle = _stripEmojis(n.title);
@@ -449,7 +560,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     left: 10,
                     child: Container(
                       width: 1.5,
-                      color: const Color(0xFFCCCCCC),
+                      color: isDark ? _D.border : const Color(0xFFCCCCCC),
                     ),
                   ),
                 Positioned(
@@ -463,7 +574,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       // ✅ dot always full color, no fade
                       color: style.dotColor,
                       border: Border.all(
-                        color: const Color(0xFFE8E6F0),
+                        color: isDark ? _D.bg : const Color(0xFFE8E6F0),
                         width: 2,
                       ),
                     ),
@@ -483,10 +594,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 padding: const EdgeInsets.fromLTRB(12, 10, 10, 12),
                 decoration: BoxDecoration(
                   // ✅ read = slightly off-white, unread = white — no big difference
-                  color: isRead ? const Color(0xFFF8F8F8) : Colors.white,
+                  color: isDark
+                      ? (isRead ? _D.surface.withValues(alpha: 0.6) : _D.surface)
+                      : (isRead ? const Color(0xFFF8F8F8) : Colors.white),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: isRead ? const Color(0xFFEEEEEE) : style.pillBg,
+                    color: isDark
+                        ? (isRead ? _D.border : style.pillBg)
+                        : (isRead ? const Color(0xFFEEEEEE) : style.pillBg),
                     width: isRead ? 1.0 : 1.5,
                   ),
                   boxShadow: [
@@ -546,7 +661,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   ? FontWeight.w400
                                   : FontWeight.w600,
                               // ✅ same dark color always
-                              color: const Color(0xFF1A1A2E),
+                              color: isDark ? _D.textPrimary : const Color(0xFF1A1A2E),
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -554,9 +669,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           // ✅ Body: same color always, no fade
                           Text(
                             cleanBody,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF888888),
+                              color: isDark ? _D.textSecondary : const Color(0xFF888888),
                               height: 1.4,
                             ),
                           ),

@@ -26,6 +26,18 @@ class _P {
   static const red = Color(0xFFEF4444);
 }
 
+class _D {
+  static const card = Color(0xFF1B1F2E);
+  static const cardBdr = Color(0xFF2F3347);
+  static const primaryBg = Color(0xFF241B42);
+  static const s900 = Color(0xFFF8FAFC);
+  static const s600 = Color(0xFFCBD5E1);
+  static const s400 = Color(0xFF94A3B8);
+  static const s200 = Color(0xFF2F3347);
+  static const green = Color(0xFF22C55E);
+  static const red = Color(0xFFEF4444);
+}
+
 /// Filters + transaction list + receipt bottom sheet.
 class TransactionsTab extends StatefulWidget {
   const TransactionsTab({
@@ -137,6 +149,7 @@ class _TransactionsTabState extends State<TransactionsTab>
     setState(() => _transactionSheetOpen = true);
     final snackCtx = context;
     try {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
       await showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
@@ -148,9 +161,9 @@ class _TransactionsTabState extends State<TransactionsTab>
               margin: const EdgeInsets.all(12),
               padding: EdgeInsets.fromLTRB(14, 14, 14, 14 + kb),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? _D.card : Colors.white,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: _P.s200),
+                border: Border.all(color: isDark ? _D.s200 : _P.s200),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.10),
@@ -182,6 +195,7 @@ class _TransactionsTabState extends State<TransactionsTab>
     setState(() => _transactionSheetOpen = true);
     final snackCtx = context;
     try {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
       await showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
@@ -193,9 +207,9 @@ class _TransactionsTabState extends State<TransactionsTab>
               margin: const EdgeInsets.all(12),
               padding: EdgeInsets.fromLTRB(14, 14, 14, 14 + kb),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? _D.card : Colors.white,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: _P.s200),
+                border: Border.all(color: isDark ? _D.s200 : _P.s200),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.10),
@@ -225,10 +239,12 @@ class _TransactionsTabState extends State<TransactionsTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (_loading) {
       return Shimmer.fromColors(
-        baseColor: _P.s200,
-        highlightColor: _P.s100,
+        baseColor: isDark ? _D.s200 : _P.s200,
+        highlightColor: isDark ? _D.card : _P.s100,
         child: ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: 6,
@@ -237,7 +253,7 @@ class _TransactionsTabState extends State<TransactionsTab>
             child: Container(
               height: 72,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? _D.card : Colors.white,
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
@@ -270,18 +286,18 @@ class _TransactionsTabState extends State<TransactionsTab>
         _subscriptionSummaryCard(),
         Expanded(
           child: _all.isEmpty
-              ? const Center(
+              ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.receipt_long, size: 48, color: _P.s600),
-                      SizedBox(height: 8),
+                      Icon(Icons.receipt_long, size: 48, color: isDark ? _D.s600 : _P.s600),
+                      const SizedBox(height: 8),
                       Text(
                         'No transactions found',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: _P.s600,
+                          color: isDark ? _D.s600 : _P.s600,
                         ),
                       ),
                     ],
@@ -296,7 +312,7 @@ class _TransactionsTabState extends State<TransactionsTab>
                     itemBuilder: (context, i) {
                       final t = _all[i];
                       final credit = t.isCredit;
-                      final amtColor = credit ? _P.green : _P.red;
+                      final amtColor = credit ? (isDark ? _D.green : _P.green) : (isDark ? _D.red : _P.red);
                       final amountText = t.amountLabel(hideDeliveredAmount: true);
                       final icon = Icons.arrow_circle_down;
                       final dt = DateTime.tryParse(t.date);
@@ -308,18 +324,19 @@ class _TransactionsTabState extends State<TransactionsTab>
                         child: Card(
                           margin: const EdgeInsets.only(bottom: 8),
                           elevation: 0,
+                          color: isDark ? _D.card : Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                            side: const BorderSide(color: _P.s200, width: 0.5),
+                            side: BorderSide(color: isDark ? _D.s200 : _P.s200, width: 0.5),
                           ),
                           child: ListTile(
                             leading: Icon(icon, color: amtColor, size: 28),
                             title: Text(
                               dateStr,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: _P.s900,
+                                color: isDark ? _D.s900 : _P.s900,
                               ),
                             ),
                             subtitle: Column(
@@ -327,9 +344,9 @@ class _TransactionsTabState extends State<TransactionsTab>
                               children: [
                                 Text(
                                   desc,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
-                                    color: _P.s600,
+                                    color: isDark ? _D.s600 : _P.s600,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -351,16 +368,16 @@ class _TransactionsTabState extends State<TransactionsTab>
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: _P.s100,
+                                        color: isDark ? _D.s200 : _P.s100,
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: _P.s200),
+                                        border: Border.all(color: isDark ? _D.s200 : _P.s200),
                                       ),
                                       child: Text(
                                         t.typeLabel,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.w700,
-                                          color: _P.s600,
+                                          color: isDark ? _D.s600 : _P.s600,
                                         ),
                                       ),
                                     ),
@@ -394,7 +411,7 @@ class _TransactionsTabState extends State<TransactionsTab>
                           ? null
                           : _openAddBalanceSheet,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _P.green,
+                        backgroundColor: isDark ? _D.green : _P.green,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -416,7 +433,7 @@ class _TransactionsTabState extends State<TransactionsTab>
                           ? null
                           : _openDeductBalanceSheet,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _P.red,
+                        backgroundColor: isDark ? _D.red : _P.red,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -438,6 +455,7 @@ class _TransactionsTabState extends State<TransactionsTab>
   }
 
   Widget _chip(String label, int index) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final sel = _filter == index;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
@@ -452,7 +470,7 @@ class _TransactionsTabState extends State<TransactionsTab>
         },
         selectedColor: _P.g1.withValues(alpha: 0.2),
         labelStyle: TextStyle(
-          color: sel ? _P.g1 : _P.s600,
+          color: sel ? _P.g1 : (isDark ? _D.s600 : _P.s600),
           fontWeight: FontWeight.w600,
           fontSize: 12,
         ),
@@ -461,6 +479,7 @@ class _TransactionsTabState extends State<TransactionsTab>
   }
 
   Widget _subscriptionSummaryCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final subscriptionDebits = _all
         .where((t) => t.isSubscriptionTransaction && !t.isCredit)
         .toList();
@@ -500,18 +519,18 @@ class _TransactionsTabState extends State<TransactionsTab>
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: _P.s600,
+                color: isDark ? _D.s600 : _P.s600,
               ),
             ),
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: _P.s900,
+                color: isDark ? _D.s900 : _P.s900,
               ),
             ),
           ],
@@ -523,9 +542,10 @@ class _TransactionsTabState extends State<TransactionsTab>
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
       child: Card(
         elevation: 0,
+        color: isDark ? _D.card : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: _P.s200, width: 0.5),
+          side: BorderSide(color: isDark ? _D.s200 : _P.s200, width: 0.5),
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
@@ -543,8 +563,6 @@ class _TransactionsTabState extends State<TransactionsTab>
   }
 
   String _safeBusinessName() {
-    // Business name is not part of the loaded transaction list payload.
-    // Use a stable app name placeholder and still follow naming rules.
     return 'tiffincrm';
   }
 
@@ -562,6 +580,7 @@ class _TransactionsTabState extends State<TransactionsTab>
       return;
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -570,9 +589,9 @@ class _TransactionsTabState extends State<TransactionsTab>
           child: Container(
             margin: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? _D.card : Colors.white,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: _P.s200),
+              border: Border.all(color: isDark ? _D.s200 : _P.s200),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.08),
@@ -586,15 +605,15 @@ class _TransactionsTabState extends State<TransactionsTab>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(16, 16, 16, 10),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
                     child: Row(
                       children: [
                         Expanded(
                           child: Text(
                             'Download',
                             style: TextStyle(
-                              color: _P.s900,
+                              color: isDark ? _D.s900 : _P.s900,
                               fontWeight: FontWeight.w800,
                               fontSize: 15,
                             ),
@@ -603,16 +622,16 @@ class _TransactionsTabState extends State<TransactionsTab>
                       ],
                     ),
                   ),
-                  Container(height: 1, color: _P.s200),
+                  Container(height: 1, color: isDark ? _D.s200 : _P.s200),
                   ListTile(
                     leading: const Icon(
                       Icons.picture_as_pdf_rounded,
                       color: _P.g1,
                     ),
-                    title: const Text(
+                    title: Text(
                       'Download as PDF',
                       style: TextStyle(
-                        color: _P.s900,
+                        color: isDark ? _D.s900 : _P.s900,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -621,13 +640,13 @@ class _TransactionsTabState extends State<TransactionsTab>
                       await _downloadPdf();
                     },
                   ),
-                  Container(height: 1, color: _P.s200),
+                  Container(height: 1, color: isDark ? _D.s200 : _P.s200),
                   ListTile(
                     leading: const Icon(Icons.grid_on_rounded, color: _P.g1),
-                    title: const Text(
+                    title: Text(
                       'Download as Excel',
                       style: TextStyle(
-                        color: _P.s900,
+                        color: isDark ? _D.s900 : _P.s900,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -882,8 +901,7 @@ class _TransactionsTabState extends State<TransactionsTab>
 }
 
 /// Add-balance form: [State] holds payment mode and controllers so keyboard
-/// `MediaQuery` rebuilds of the sheet do not reset dropdown state (which caused
-/// framework `_dependents` / Dropdown corruption when typing in Amount).
+/// `MediaQuery` rebuilds of the sheet do not reset dropdown state.
 class _TransactionsAddBalanceBody extends StatefulWidget {
   const _TransactionsAddBalanceBody({
     required this.customerId,
@@ -954,18 +972,19 @@ class _TransactionsAddBalanceBodyState
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Form(
       key: _formKey,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
+          Text(
             'Add Balance',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: _P.s900,
+              color: isDark ? _D.s900 : _P.s900,
             ),
           ),
           const SizedBox(height: 10),
@@ -975,6 +994,7 @@ class _TransactionsAddBalanceBodyState
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
             ],
+            style: TextStyle(color: isDark ? _D.s900 : _P.s900),
             decoration: const InputDecoration(
               labelText: 'Amount',
               border: OutlineInputBorder(),
@@ -988,10 +1008,12 @@ class _TransactionsAddBalanceBodyState
               labelText: 'Payment mode',
               border: OutlineInputBorder(),
             ),
-            items: const [
-              DropdownMenuItem(value: 'cash', child: Text('Cash')),
-              DropdownMenuItem(value: 'upi', child: Text('UPI')),
-              DropdownMenuItem(value: 'online', child: Text('Online')),
+            dropdownColor: isDark ? _D.card : Colors.white,
+            style: TextStyle(fontSize: 14, color: isDark ? _D.s900 : _P.s900),
+            items: [
+              DropdownMenuItem(value: 'cash', child: Text('Cash', style: TextStyle(color: isDark ? _D.s900 : _P.s900))),
+              DropdownMenuItem(value: 'upi', child: Text('UPI', style: TextStyle(color: isDark ? _D.s900 : _P.s900))),
+              DropdownMenuItem(value: 'online', child: Text('Online', style: TextStyle(color: isDark ? _D.s900 : _P.s900))),
             ],
             onChanged: _submitting
                 ? null
@@ -1002,6 +1024,7 @@ class _TransactionsAddBalanceBodyState
           const SizedBox(height: 10),
           TextFormField(
             controller: _noteCtrl,
+            style: TextStyle(color: isDark ? _D.s900 : _P.s900),
             decoration: const InputDecoration(
               labelText: 'Note (optional)',
               border: OutlineInputBorder(),
@@ -1021,7 +1044,7 @@ class _TransactionsAddBalanceBodyState
                 child: ElevatedButton(
                   onPressed: _submitting ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _P.green,
+                    backgroundColor: isDark ? _D.green : _P.green,
                     foregroundColor: Colors.white,
                   ),
                   child: const Text('Add'),
@@ -1103,18 +1126,19 @@ class _TransactionsDeductBalanceBodyState
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Form(
       key: _formKey,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
+          Text(
             'Deduct Balance',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: _P.s900,
+              color: isDark ? _D.s900 : _P.s900,
             ),
           ),
           const SizedBox(height: 10),
@@ -1124,6 +1148,7 @@ class _TransactionsDeductBalanceBodyState
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
             ],
+            style: TextStyle(color: isDark ? _D.s900 : _P.s900),
             decoration: const InputDecoration(
               labelText: 'Amount',
               border: OutlineInputBorder(),
@@ -1133,6 +1158,7 @@ class _TransactionsDeductBalanceBodyState
           const SizedBox(height: 10),
           TextFormField(
             controller: _noteCtrl,
+            style: TextStyle(color: isDark ? _D.s900 : _P.s900),
             decoration: const InputDecoration(
               labelText: 'Reason / Note',
               border: OutlineInputBorder(),
@@ -1153,7 +1179,7 @@ class _TransactionsDeductBalanceBodyState
                 child: ElevatedButton(
                   onPressed: _submitting ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _P.red,
+                    backgroundColor: isDark ? _D.red : _P.red,
                     foregroundColor: Colors.white,
                   ),
                   child: const Text('Deduct'),
@@ -1175,6 +1201,7 @@ class _ReceiptSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -1192,15 +1219,15 @@ class _ReceiptSheet extends StatelessWidget {
                   Expanded(
                     child: Text(
                       receipt.businessName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
-                        color: _P.s900,
+                        color: isDark ? _D.s900 : _P.s900,
                       ),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.share),
+                    icon: Icon(Icons.share, color: isDark ? _D.s600 : _P.s600),
                     onPressed: () {
                       final buf = StringBuffer()
                         ..writeln(receipt.businessName)
@@ -1215,7 +1242,7 @@ class _ReceiptSheet extends StatelessWidget {
               const SizedBox(height: 8),
               SizedBox(
                 height: 1,
-                child: CustomPaint(painter: _DashedLinePainter()),
+                child: CustomPaint(painter: _DashedLinePainter(isDark: isDark)),
               ),
               const SizedBox(height: 12),
               ...receipt.items.map(
@@ -1224,16 +1251,16 @@ class _ReceiptSheet extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.fiber_manual_record,
                         size: 8,
-                        color: _P.s600,
+                        color: isDark ? _D.s600 : _P.s600,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           '${it.name} x${it.quantity.toStringAsFixed(0)} @ ₹${it.unitPrice.toStringAsFixed(0)}',
-                          style: const TextStyle(fontSize: 13, color: _P.s900),
+                          style: TextStyle(fontSize: 13, color: isDark ? _D.s900 : _P.s900),
                         ),
                       ),
                     ],
@@ -1243,13 +1270,13 @@ class _ReceiptSheet extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  const Icon(Icons.currency_rupee, size: 18, color: _P.s900),
+                  Icon(Icons.currency_rupee, size: 18, color: isDark ? _D.s900 : _P.s900),
                   Text(
                     'Total: ₹${receipt.total.toStringAsFixed(0)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: _P.s900,
+                      color: isDark ? _D.s900 : _P.s900,
                     ),
                   ),
                 ],
@@ -1257,11 +1284,11 @@ class _ReceiptSheet extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(Icons.payment, size: 18, color: _P.s600),
+                  Icon(Icons.payment, size: 18, color: isDark ? _D.s600 : _P.s600),
                   const SizedBox(width: 6),
                   Text(
                     receipt.paymentMode,
-                    style: const TextStyle(fontSize: 13, color: _P.s600),
+                    style: TextStyle(fontSize: 13, color: isDark ? _D.s600 : _P.s600),
                   ),
                 ],
               ),
@@ -1274,10 +1301,13 @@ class _ReceiptSheet extends StatelessWidget {
 }
 
 class _DashedLinePainter extends CustomPainter {
+  _DashedLinePainter({required this.isDark});
+  final bool isDark;
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFE2E8F0)
+      ..color = isDark ? _D.s200 : const Color(0xFFE2E8F0)
       ..strokeWidth = 1;
     const dash = 5.0;
     const gap = 4.0;

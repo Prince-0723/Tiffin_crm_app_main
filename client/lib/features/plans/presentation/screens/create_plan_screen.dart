@@ -9,6 +9,17 @@ import '../../models/plan_model.dart';
 const List<String> _planTypes = ['monthly', 'weekly', 'daily'];
 const List<String> _slotLabels = ['breakfast', 'lunch', 'dinner', 'evening'];
 
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const divider = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+}
+
 class CreatePlanScreen extends StatefulWidget {
   const CreatePlanScreen({super.key, this.plan});
   final PlanModel? plan;
@@ -76,35 +87,67 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
   }
 
   // ── Slot meta ─────────────────────────────────────────────────────────────
-  static (IconData, Color, Color) _slotMeta(String slot) {
-    switch (slot) {
-      case 'breakfast':
-        return (Icons.wb_sunny_rounded, Color(0xFF854F0B), Color(0xFFFAEEDA));
-      case 'lunch':
-        return (Icons.light_mode_rounded, Color(0xFF3B6D11), Color(0xFFEAF3DE));
-      case 'dinner':
-        return (
-          Icons.nights_stay_rounded,
-          Color(0xFF4C2DB8),
-          Color(0xFFEDE8FD),
-        );
-      case 'evening':
-        return (Icons.local_cafe_rounded, Color(0xFF993556), Color(0xFFFBEAF0));
-      default:
-        return (Icons.restaurant_rounded, Color(0xFF7B6DAB), Color(0xFFEEEBFA));
+  static (IconData, Color, Color) _slotMeta(String slot, bool isDark) {
+    if (isDark) {
+      switch (slot) {
+        case 'breakfast':
+          return (Icons.wb_sunny_rounded, const Color(0xFFFBBF24), const Color(0xFF2E2418));
+        case 'lunch':
+          return (Icons.light_mode_rounded, const Color(0xFF34D399), const Color(0xFF102E26));
+        case 'dinner':
+          return (
+            Icons.nights_stay_rounded,
+            const Color(0xFFA78BFA),
+            const Color(0xFF241B42),
+          );
+        case 'evening':
+          return (Icons.local_cafe_rounded, const Color(0xFFF472B6), const Color(0xFF2E1821));
+        default:
+          return (Icons.restaurant_rounded, const Color(0xFF94A3B8), const Color(0xFF1E1F30));
+      }
+    } else {
+      switch (slot) {
+        case 'breakfast':
+          return (Icons.wb_sunny_rounded, const Color(0xFF854F0B), const Color(0xFFFAEEDA));
+        case 'lunch':
+          return (Icons.light_mode_rounded, const Color(0xFF3B6D11), const Color(0xFFEAF3DE));
+        case 'dinner':
+          return (
+            Icons.nights_stay_rounded,
+            const Color(0xFF4C2DB8),
+            const Color(0xFFEDE8FD),
+          );
+        case 'evening':
+          return (Icons.local_cafe_rounded, const Color(0xFF993556), const Color(0xFFFBEAF0));
+        default:
+          return (Icons.restaurant_rounded, const Color(0xFF7B6DAB), const Color(0xFFEEEBFA));
+      }
     }
   }
 
-  static (IconData, Color) _planTypeMeta(String type) {
-    switch (type) {
-      case 'monthly':
-        return (Icons.calendar_month_rounded, Color(0xFF4C2DB8));
-      case 'weekly':
-        return (Icons.date_range_rounded, Color(0xFF0F6E56));
-      case 'daily':
-        return (Icons.today_rounded, Color(0xFF854F0B));
-      default:
-        return (Icons.event_rounded, Color(0xFF7B6DAB));
+  static (IconData, Color) _planTypeMeta(String type, bool isDark) {
+    if (isDark) {
+      switch (type) {
+        case 'monthly':
+          return (Icons.calendar_month_rounded, const Color(0xFFA78BFA));
+        case 'weekly':
+          return (Icons.date_range_rounded, const Color(0xFF34D399));
+        case 'daily':
+          return (Icons.today_rounded, const Color(0xFFFBBF24));
+        default:
+          return (Icons.event_rounded, const Color(0xFF94A3B8));
+      }
+    } else {
+      switch (type) {
+        case 'monthly':
+          return (Icons.calendar_month_rounded, const Color(0xFF4C2DB8));
+        case 'weekly':
+          return (Icons.date_range_rounded, const Color(0xFF0F6E56));
+        case 'daily':
+          return (Icons.today_rounded, const Color(0xFF854F0B));
+        default:
+          return (Icons.event_rounded, const Color(0xFF7B6DAB));
+      }
     }
   }
 
@@ -250,8 +293,9 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.plan != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: isDark ? _D.bg : _bg,
       appBar: AppBar(
         backgroundColor: _violet700,
         foregroundColor: Colors.white,
@@ -286,12 +330,13 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
           ),
           children: [
             // ── Plan details ───────────────────────────────────────────────
-            _sectionLabel('Plan Details'),
+            _sectionLabel('Plan Details', isDark),
             const SizedBox(height: 10),
             _VioletField(
               controller: _nameCtrl,
               label: 'Plan Name',
               icon: Icons.edit_note_rounded,
+              isDark: isDark,
               validator: (v) =>
                   (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
@@ -301,6 +346,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
               label: 'Price (₹)',
               icon: Icons.currency_rupee_rounded,
               keyboardType: TextInputType.number,
+              isDark: isDark,
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Required';
                 if (double.tryParse(v.trim()) == null) return 'Invalid number';
@@ -311,12 +357,12 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
             const SizedBox(height: 22),
 
             // ── Plan type ──────────────────────────────────────────────────
-            _sectionLabel('Plan Type'),
+            _sectionLabel('Plan Type', isDark),
             const SizedBox(height: 10),
             Row(
               children: _planTypes.map((t) {
                 final selected = _planType == t;
-                final (icon, color) = _planTypeMeta(t);
+                final (icon, color) = _planTypeMeta(t, isDark);
                 return Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(
@@ -331,10 +377,10 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                           horizontal: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: selected ? _violet600 : _surface,
+                          color: selected ? _violet600 : (isDark ? _D.surface : _surface),
                           borderRadius: BorderRadius.circular(11),
                           border: Border.all(
-                            color: selected ? _violet700 : _border,
+                            color: selected ? _violet700 : (isDark ? _D.border : _border),
                             width: selected ? 1.5 : 1,
                           ),
                         ),
@@ -351,7 +397,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: selected ? Colors.white : _textPrimary,
+                                color: selected ? Colors.white : (isDark ? _D.textPrimary : _textPrimary),
                               ),
                             ),
                           ],
@@ -367,21 +413,21 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
 
             // ── Active toggle (edit only) ──────────────────────────────────
             if (isEdit) ...[
-              _sectionLabel('Status'),
+              _sectionLabel('Status', isDark),
               const SizedBox(height: 10),
-              _buildStatusToggle(),
+              _buildStatusToggle(isDark),
               const SizedBox(height: 22),
             ],
 
             // ── Meal slots selector ────────────────────────────────────────
-            _sectionLabel('Meal Slots'),
+            _sectionLabel('Meal Slots', isDark),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: _slotLabels.map((slot) {
                 final sel = _selectedSlots.contains(slot);
-                final (icon, iconColor, iconBg) = _slotMeta(slot);
+                final (icon, iconColor, iconBg) = _slotMeta(slot, isDark);
                 return GestureDetector(
                   onTap: () => setState(() {
                     if (sel) {
@@ -400,10 +446,10 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: sel ? iconBg : _surface,
+                      color: sel ? iconBg : (isDark ? _D.surface : _surface),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: sel ? iconColor.withValues(alpha: 0.4) : _border,
+                        color: sel ? iconColor.withValues(alpha: 0.4) : (isDark ? _D.border : _border),
                         width: sel ? 1.5 : 1,
                       ),
                     ),
@@ -413,7 +459,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                         Icon(
                           icon,
                           size: 15,
-                          color: sel ? iconColor : _textSecondary,
+                          color: sel ? iconColor : (isDark ? _D.textSecondary : _textSecondary),
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -421,7 +467,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: sel ? iconColor : _textPrimary,
+                            color: sel ? iconColor : (isDark ? _D.textPrimary : _textPrimary),
                           ),
                         ),
                       ],
@@ -434,15 +480,15 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
             // ── Slot item cards ────────────────────────────────────────────
             if (_selectedSlots.isNotEmpty) ...[
               const SizedBox(height: 20),
-              _sectionLabel('Slot Items'),
+              _sectionLabel('Slot Items', isDark),
               const SizedBox(height: 10),
-              ..._selectedSlots.map((slot) => _buildSlotCard(slot)),
+              ..._selectedSlots.map((slot) => _buildSlotCard(slot, isDark)),
             ],
 
             const SizedBox(height: 32),
 
             // ── Save button ────────────────────────────────────────────────
-            _saveButton(isEdit),
+            _saveButton(isEdit, isDark),
           ],
         ),
       ),
@@ -460,18 +506,18 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
   }
 
   // ── Slot card ─────────────────────────────────────────────────────────────
-  Widget _buildSlotCard(String slot) {
+  Widget _buildSlotCard(String slot, bool isDark) {
     final items = _slotItems[slot] ?? [];
-    final (icon, iconColor, iconBg) = _slotMeta(slot);
+    final (icon, iconColor, iconBg) = _slotMeta(slot, isDark);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: _surface,
+        color: isDark ? _D.surface : _surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _border),
+        border: Border.all(color: isDark ? _D.border : _border),
         boxShadow: [
           BoxShadow(
-            color: _violet900.withValues(alpha: 0.04),
+            color: isDark ? Colors.transparent : _violet900.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -484,11 +530,11 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
           Container(
             padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
             decoration: BoxDecoration(
-              color: iconBg.withValues(alpha: 0.5),
+              color: isDark ? iconBg.withValues(alpha: 0.25) : iconBg.withValues(alpha: 0.5),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(14),
               ),
-              border: Border(bottom: BorderSide(color: _border)),
+              border: Border(bottom: BorderSide(color: isDark ? _D.border : _border)),
             ),
             child: Row(
               children: [
@@ -519,15 +565,15 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                       vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: _violet100,
+                      color: isDark ? _D.violet100 : _violet100,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       '${items.length} item${items.length == 1 ? '' : 's'}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: _violet700,
+                        color: isDark ? const Color(0xFFA78BFA) : _violet700,
                       ),
                     ),
                   ),
@@ -577,14 +623,14 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                   Icon(
                     Icons.info_outline_rounded,
                     size: 14,
-                    color: _textSecondary,
+                    color: isDark ? _D.textSecondary : _textSecondary,
                   ),
                   const SizedBox(width: 7),
                   Text(
                     'No items added yet',
                     style: TextStyle(
                       fontSize: 12,
-                      color: _textSecondary,
+                      color: isDark ? _D.textSecondary : _textSecondary,
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -608,19 +654,19 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                           width: 34,
                           height: 34,
                           decoration: BoxDecoration(
-                            color: _violet50,
+                            color: isDark ? const Color(0xFF141625) : _violet50,
                             borderRadius: BorderRadius.circular(9),
-                            border: Border.all(color: _border),
+                            border: Border.all(color: isDark ? _D.border : _border),
                           ),
                           child: Center(
                             child: Text(
                               _resolvedName(it).isNotEmpty
                                   ? _resolvedName(it)[0].toUpperCase()
                                   : '?',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
-                                color: _violet700,
+                                color: isDark ? const Color(0xFFA78BFA) : _violet700,
                               ),
                             ),
                           ),
@@ -632,19 +678,19 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                             children: [
                               Text(
                                 _resolvedName(it),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: _textPrimary,
+                                  color: isDark ? _D.textPrimary : _textPrimary,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
                                 'Qty: ${it.quantity}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
-                                  color: _textSecondary,
+                                  color: isDark ? _D.textSecondary : _textSecondary,
                                 ),
                               ),
                             ],
@@ -654,9 +700,9 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                         // Qty controls
                         Container(
                           decoration: BoxDecoration(
-                            color: _violet50,
+                            color: isDark ? const Color(0xFF141625) : _violet50,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: _border),
+                            border: Border.all(color: isDark ? _D.border : _border),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -681,10 +727,10 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                                 alignment: Alignment.center,
                                 child: Text(
                                   '${it.quantity}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
-                                    color: _textPrimary,
+                                    color: isDark ? _D.textPrimary : _textPrimary,
                                   ),
                                 ),
                               ),
@@ -712,13 +758,13 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                             width: 30,
                             height: 30,
                             decoration: BoxDecoration(
-                              color: _dangerSoft,
+                              color: isDark ? const Color(0xFF2E1C1B) : _dangerSoft,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.delete_outline_rounded,
                               size: 15,
-                              color: _danger,
+                              color: isDark ? const Color(0xFFF87171) : _danger,
                             ),
                           ),
                         ),
@@ -727,7 +773,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                   ),
                   if (!isLast)
                     Divider(
-                      color: _divider,
+                      color: isDark ? _D.divider : _divider,
                       height: 1,
                       indent: 58,
                       endIndent: 14,
@@ -751,12 +797,12 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
   );
 
   // ── Status toggle ─────────────────────────────────────────────────────────
-  Widget _buildStatusToggle() => Container(
+  Widget _buildStatusToggle(bool isDark) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     decoration: BoxDecoration(
-      color: _surface,
+      color: isDark ? _D.surface : _surface,
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: _border),
+      border: Border.all(color: isDark ? _D.border : _border),
     ),
     child: Row(
       children: [
@@ -764,7 +810,9 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: _isActive ? _successSoft : _divider,
+            color: _isActive
+                ? (isDark ? const Color(0xFF0F2A1C) : _successSoft)
+                : (isDark ? _D.divider : _divider),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
@@ -772,7 +820,9 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                 ? Icons.check_circle_outline_rounded
                 : Icons.cancel_outlined,
             size: 18,
-            color: _isActive ? _success : _textSecondary,
+            color: _isActive
+                ? (isDark ? const Color(0xFF4ADE80) : _success)
+                : (isDark ? _D.textSecondary : _textSecondary),
           ),
         ),
         const SizedBox(width: 12),
@@ -782,17 +832,17 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
             children: [
               Text(
                 _isActive ? 'Active' : 'Inactive',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: _textPrimary,
+                  color: isDark ? _D.textPrimary : _textPrimary,
                 ),
               ),
               Text(
                 _isActive
                     ? 'Plan is visible to customers'
                     : 'Plan is hidden from customers',
-                style: const TextStyle(fontSize: 11, color: _textSecondary),
+                style: TextStyle(fontSize: 11, color: isDark ? _D.textSecondary : _textSecondary),
               ),
             ],
           ),
@@ -805,10 +855,10 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
             height: 28,
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
-              color: _isActive ? _violet600 : const Color(0xFFD0C8E8),
+              color: _isActive ? _violet600 : (isDark ? const Color(0xFF242238) : const Color(0xFFD0C8E8)),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: _isActive ? _violet700 : const Color(0xFFB0A8D0),
+                color: _isActive ? _violet700 : (isDark ? const Color(0xFF3B335C) : const Color(0xFFB0A8D0)),
                 width: 1.5,
               ),
             ),
@@ -834,7 +884,9 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
                 child: Icon(
                   _isActive ? Icons.check_rounded : Icons.close_rounded,
                   size: 12,
-                  color: _isActive ? _violet600 : const Color(0xFFB0A8D0),
+                  color: _isActive
+                      ? _violet600
+                      : (isDark ? const Color(0xFF5A527A) : const Color(0xFFB0A8D0)),
                 ),
               ),
             ),
@@ -845,23 +897,23 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
   );
 
   // ── Section label ─────────────────────────────────────────────────────────
-  Widget _sectionLabel(String text) => Row(
+  Widget _sectionLabel(String text, bool isDark) => Row(
     children: [
       Container(
         width: 3,
         height: 14,
         decoration: BoxDecoration(
-          color: _violet600,
+          color: isDark ? const Color(0xFFA78BFA) : _violet600,
           borderRadius: BorderRadius.circular(2),
         ),
       ),
       const SizedBox(width: 8),
       Text(
         text.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
-          color: _textSecondary,
+          color: isDark ? _D.textSecondary : _textSecondary,
           letterSpacing: 1.2,
         ),
       ),
@@ -869,7 +921,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
   );
 
   // ── Save button ───────────────────────────────────────────────────────────
-  Widget _saveButton(bool isEdit) => SizedBox(
+  Widget _saveButton(bool isEdit, bool isDark) => SizedBox(
     height: 52,
     child: DecoratedBox(
       decoration: BoxDecoration(
@@ -881,7 +933,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
         borderRadius: BorderRadius.circular(13),
         boxShadow: [
           BoxShadow(
-            color: _violet600.withValues(alpha: 0.38),
+            color: isDark ? Colors.transparent : _violet600.withValues(alpha: 0.38),
             blurRadius: 16,
             offset: const Offset(0, 5),
           ),
@@ -892,7 +944,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
-          disabledBackgroundColor: const Color(0xFFCDBEFA),
+          disabledBackgroundColor: isDark ? const Color(0xFF241F3D) : const Color(0xFFCDBEFA),
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -945,12 +997,14 @@ class _VioletField extends StatelessWidget {
     required this.icon,
     this.validator,
     this.keyboardType,
+    required this.isDark,
   });
   final TextEditingController controller;
   final String label;
   final IconData icon;
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
+  final bool isDark;
 
   static const _violet600 = Color(0xFF5B35D5);
   static const _violet500 = Color(0xFF6C42F5);
@@ -964,25 +1018,25 @@ class _VioletField extends StatelessWidget {
     controller: controller,
     validator: validator,
     keyboardType: keyboardType,
-    style: const TextStyle(
+    style: TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,
-      color: _textPrimary,
+      color: isDark ? const Color(0xFFF8FAFC) : _textPrimary,
     ),
     decoration: InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(fontSize: 13, color: _textSecondary),
+      labelStyle: TextStyle(fontSize: 13, color: isDark ? const Color(0xFF94A3B8) : _textSecondary),
       prefixIcon: Padding(
         padding: const EdgeInsets.only(left: 14, right: 10),
-        child: Icon(icon, size: 18, color: _violet600),
+        child: Icon(icon, size: 18, color: isDark ? const Color(0xFFA78BFA) : _violet600),
       ),
       prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
       filled: true,
-      fillColor: _violet50,
+      fillColor: isDark ? const Color(0xFF141625) : _violet50,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(11),
-        borderSide: const BorderSide(color: _border),
+        borderSide: BorderSide(color: isDark ? const Color(0xFF2F3347) : _border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(11),
@@ -1021,15 +1075,16 @@ class _ItemPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return DraggableScrollableSheet(
       initialChildSize: 0.55,
       minChildSize: 0.35,
       maxChildSize: 0.9,
       expand: false,
       builder: (context, scrollController) => Container(
-        decoration: const BoxDecoration(
-          color: _surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: isDark ? _D.surface : _surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           children: [
@@ -1043,7 +1098,7 @@ class _ItemPickerSheet extends StatelessWidget {
                       width: 36,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: _divider,
+                        color: isDark ? _D.border : _divider,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -1055,36 +1110,36 @@ class _ItemPickerSheet extends StatelessWidget {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: _violet100,
+                          color: isDark ? _D.violet100 : _violet100,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.restaurant_outlined,
                           size: 18,
-                          color: _violet700,
+                          color: isDark ? const Color(0xFFA78BFA) : _violet700,
                         ),
                       ),
                       const SizedBox(width: 10),
-                      const Text(
+                      Text(
                         'Select Item',
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
-                          color: _textPrimary,
+                          color: isDark ? _D.textPrimary : _textPrimary,
                         ),
                       ),
                       const Spacer(),
                       Text(
                         '${items.length} available',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: _textSecondary,
+                          color: isDark ? _D.textSecondary : _textSecondary,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
-                  Divider(color: _divider, height: 1),
+                  Divider(color: isDark ? _D.divider : _divider, height: 1),
                 ],
               ),
             ),
@@ -1107,16 +1162,16 @@ class _ItemPickerSheet extends StatelessWidget {
                     child: InkWell(
                       onTap: () => Navigator.pop(context, item),
                       borderRadius: BorderRadius.circular(12),
-                      splashColor: _violet100,
+                      splashColor: isDark ? _D.violet100 : _violet100,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: _violet50,
+                          color: isDark ? const Color(0xFF141625) : _violet50,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: _border),
+                          border: Border.all(color: isDark ? _D.border : _border),
                         ),
                         child: Row(
                           children: [
@@ -1124,7 +1179,7 @@ class _ItemPickerSheet extends StatelessWidget {
                               width: 38,
                               height: 38,
                               decoration: BoxDecoration(
-                                color: _violet100,
+                                color: isDark ? _D.violet100 : _violet100,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Center(
@@ -1132,10 +1187,10 @@ class _ItemPickerSheet extends StatelessWidget {
                                   item.name.isNotEmpty
                                       ? item.name[0].toUpperCase()
                                       : '?',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w800,
-                                    color: _violet700,
+                                    color: isDark ? const Color(0xFFA78BFA) : _violet700,
                                   ),
                                 ),
                               ),
@@ -1147,18 +1202,18 @@ class _ItemPickerSheet extends StatelessWidget {
                                 children: [
                                   Text(
                                     item.name,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
-                                      color: _textPrimary,
+                                      color: isDark ? _D.textPrimary : _textPrimary,
                                     ),
                                   ),
                                   if (item.unit.trim().isNotEmpty)
                                     Text(
                                       item.unit,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 12,
-                                        color: _textSecondary,
+                                        color: isDark ? _D.textSecondary : _textSecondary,
                                       ),
                                     ),
                                 ],

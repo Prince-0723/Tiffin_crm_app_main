@@ -6,6 +6,17 @@ import '../../../../core/widgets/bottom_sheet_handle.dart';
 import '../../data/item_api.dart';
 import '../../models/item_model.dart';
 
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const divider = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+}
+
 class ItemsListScreen extends StatefulWidget {
   const ItemsListScreen({super.key});
 
@@ -54,32 +65,32 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
     return 'Status ($label)';
   }
 
-  Widget _dropdownPill({required String label, required VoidCallback onTap}) {
+  Widget _dropdownPill({required String label, required VoidCallback onTap, required bool isDark}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? _D.violet100 : Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _border),
+          border: Border.all(color: isDark ? _D.border : _border),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: _textSecondary,
+                color: isDark ? _D.textSecondary : _textSecondary,
               ),
             ),
             const SizedBox(width: 6),
-            const Icon(
+            Icon(
               Icons.keyboard_arrow_down_rounded,
               size: 18,
-              color: _violet600,
+              color: isDark ? const Color(0xFFA78BFA) : _violet600,
             ),
           ],
         ),
@@ -87,7 +98,7 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
     );
   }
 
-  Future<void> _openCategorySheet() async {
+  Future<void> _openCategorySheet(bool isDark) async {
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -107,7 +118,7 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                   Icon(
                     sel ? Icons.radio_button_checked : Icons.radio_button_off,
                     size: 18,
-                    color: sel ? _violet600 : _textSecondary,
+                    color: sel ? (isDark ? const Color(0xFFA78BFA) : _violet600) : (isDark ? _D.textSecondary : _textSecondary),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -116,7 +127,9 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: sel ? _textPrimary : _textSecondary,
+                        color: sel
+                            ? (isDark ? _D.textPrimary : _textPrimary)
+                            : (isDark ? _D.textSecondary : _textSecondary),
                       ),
                     ),
                   ),
@@ -130,12 +143,14 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
           child: Container(
             margin: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? _D.surface : Colors.white,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: _border),
+              border: Border.all(color: isDark ? _D.border : _border),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.35)
+                      : Colors.black.withValues(alpha: 0.08),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -150,11 +165,11 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
                     child: Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Category',
                             style: TextStyle(
-                              color: _textPrimary,
+                              color: isDark ? _D.textPrimary : _textPrimary,
                               fontWeight: FontWeight.w800,
                               fontSize: 15,
                             ),
@@ -163,15 +178,15 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                         IconButton(
                           onPressed: () => Navigator.pop(ctx),
                           icon: const Icon(Icons.close_rounded, size: 20),
-                          color: _textSecondary,
+                          color: isDark ? _D.textSecondary : _textSecondary,
                         ),
                       ],
                     ),
                   ),
-                  Container(height: 1, color: _divider),
+                  Container(height: 1, color: isDark ? _D.divider : _divider),
                   item(null, 'All'),
                   for (final c in _categories) ...[
-                    Container(height: 1, color: _divider),
+                    Container(height: 1, color: isDark ? _D.divider : _divider),
                     item(c, c[0].toUpperCase() + c.substring(1)),
                   ],
                 ],
@@ -183,7 +198,7 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
     );
   }
 
-  Future<void> _openStatusSheet() async {
+  Future<void> _openStatusSheet(bool isDark) async {
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -203,7 +218,7 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                   Icon(
                     sel ? Icons.radio_button_checked : Icons.radio_button_off,
                     size: 18,
-                    color: sel ? _violet600 : _textSecondary,
+                    color: sel ? (isDark ? const Color(0xFFA78BFA) : _violet600) : (isDark ? _D.textSecondary : _textSecondary),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -212,7 +227,9 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: sel ? _textPrimary : _textSecondary,
+                        color: sel
+                            ? (isDark ? _D.textPrimary : _textPrimary)
+                            : (isDark ? _D.textSecondary : _textSecondary),
                       ),
                     ),
                   ),
@@ -226,12 +243,14 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
           child: Container(
             margin: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? _D.surface : Colors.white,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: _border),
+              border: Border.all(color: isDark ? _D.border : _border),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.35)
+                      : Colors.black.withValues(alpha: 0.08),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -246,11 +265,11 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
                     child: Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Status',
                             style: TextStyle(
-                              color: _textPrimary,
+                              color: isDark ? _D.textPrimary : _textPrimary,
                               fontWeight: FontWeight.w800,
                               fontSize: 15,
                             ),
@@ -259,16 +278,16 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                         IconButton(
                           onPressed: () => Navigator.pop(ctx),
                           icon: const Icon(Icons.close_rounded, size: 20),
-                          color: _textSecondary,
+                          color: isDark ? _D.textSecondary : _textSecondary,
                         ),
                       ],
                     ),
                   ),
-                  Container(height: 1, color: _divider),
+                  Container(height: 1, color: isDark ? _D.divider : _divider),
                   item(true, 'Active'),
-                  Container(height: 1, color: _divider),
+                  Container(height: 1, color: isDark ? _D.divider : _divider),
                   item(false, 'Inactive'),
-                  Container(height: 1, color: _divider),
+                  Container(height: 1, color: isDark ? _D.divider : _divider),
                   item(null, 'All'),
                 ],
               ),
@@ -318,25 +337,27 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
   }
 
   void _confirmDelete(ItemModel item) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? _D.surface : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        title: Text(
           'Delete Item',
-          style: TextStyle(fontWeight: FontWeight.w700, color: _textPrimary),
+          style: TextStyle(fontWeight: FontWeight.w700, color: isDark ? _D.textPrimary : _textPrimary),
         ),
         content: Text(
           'Are you sure you want to delete "${item.name}"?',
-          style: const TextStyle(color: _textSecondary, fontSize: 14),
+          style: TextStyle(color: isDark ? _D.textSecondary : _textSecondary, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: TextStyle(
-                color: _textSecondary,
+                color: isDark ? _D.textSecondary : _textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -365,7 +386,7 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: _danger,
+              backgroundColor: isDark ? const Color(0xFFEF4444) : _danger,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -431,26 +452,42 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
   }
 
   // ── Category meta ─────────────────────────────────────────────────────────
-  static (IconData, Color, Color) _catMeta(String cat) {
-    switch (cat.toLowerCase()) {
-      case 'roti':
-        return (Icons.breakfast_dining, Color(0xFF854F0B), Color(0xFFFAEEDA));
-      case 'sabji':
-        return (Icons.lunch_dining, Color(0xFF3B6D11), Color(0xFFEAF3DE));
-      case 'dal':
-        return (Icons.soup_kitchen, Color(0xFF8B4513), Color(0xFFF5EBE0));
-      case 'rice':
-        return (Icons.rice_bowl, Color(0xFF4C2DB8), Color(0xFFEDE8FD));
-      default:
-        return (Icons.restaurant_rounded, Color(0xFF6B7A99), Color(0xFFF1F0F8));
+  static (IconData, Color, Color) _catMeta(String cat, bool isDark) {
+    if (isDark) {
+      switch (cat.toLowerCase()) {
+        case 'roti':
+          return (Icons.breakfast_dining, const Color(0xFFF59E0B), const Color(0xFF2D2418));
+        case 'sabji':
+          return (Icons.lunch_dining, const Color(0xFF10B981), const Color(0xFF122C21));
+        case 'dal':
+          return (Icons.soup_kitchen, const Color(0xFFF97316), const Color(0xFF2E1C15));
+        case 'rice':
+          return (Icons.rice_bowl, const Color(0xFFA78BFA), const Color(0xFF241B42));
+        default:
+          return (Icons.restaurant_rounded, const Color(0xFF94A3B8), const Color(0xFF1E293B));
+      }
+    } else {
+      switch (cat.toLowerCase()) {
+        case 'roti':
+          return (Icons.breakfast_dining, const Color(0xFF854F0B), const Color(0xFFFAEEDA));
+        case 'sabji':
+          return (Icons.lunch_dining, const Color(0xFF3B6D11), const Color(0xFFEAF3DE));
+        case 'dal':
+          return (Icons.soup_kitchen, const Color(0xFF8B4513), const Color(0xFFF5EBE0));
+        case 'rice':
+          return (Icons.rice_bowl, const Color(0xFF4C2DB8), const Color(0xFFEDE8FD));
+        default:
+          return (Icons.restaurant_rounded, const Color(0xFF6B7A99), const Color(0xFFF1F0F8));
+      }
     }
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? _D.bg : Colors.white,
       appBar: AppBar(
         backgroundColor: _violet700,
         foregroundColor: Colors.white,
@@ -505,28 +542,30 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Container(
-            color: Colors.white,
+            color: isDark ? _D.surface : Colors.white,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(height: 1, color: Colors.white.withValues(alpha: 0.08)),
+                Container(height: 1, color: isDark ? _D.border : Colors.white.withValues(alpha: 0.08)),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
                   child: Row(
                     children: [
                       _dropdownPill(
                         label: _categoryPillLabel(),
-                        onTap: _openCategorySheet,
+                        onTap: () => _openCategorySheet(isDark),
+                        isDark: isDark,
                       ),
                       const SizedBox(width: 10),
                       _dropdownPill(
                         label: _statusPillLabel(),
-                        onTap: _openStatusSheet,
+                        onTap: () => _openStatusSheet(isDark),
+                        isDark: isDark,
                       ),
                     ],
                   ),
                 ),
-                Container(height: 1, color: _divider),
+                Container(height: 1, color: isDark ? _D.border : _divider),
               ],
             ),
           ),
@@ -546,12 +585,12 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
       body: _isLoading
           ? Center(
               child: CircularProgressIndicator(
-                color: _violet600,
+                color: isDark ? const Color(0xFFA78BFA) : _violet600,
                 strokeWidth: 2.5,
               ),
             )
           : _items.isEmpty
-          ? _buildEmptyState()
+          ? _buildEmptyState(isDark)
           : RefreshIndicator(
               color: _violet600,
               onRefresh: _load,
@@ -565,17 +604,17 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                 separatorBuilder: (_, _) => Container(
                   height: 1,
                   margin: const EdgeInsets.only(left: 16),
-                  color: _divider,
+                  color: isDark ? _D.divider : _divider,
                 ),
                 itemBuilder: (ctx, i) =>
-                    RepaintBoundary(child: _buildItemCard(_items[i])),
+                    RepaintBoundary(child: _buildItemCard(_items[i], isDark)),
               ),
             ),
     );
   }
 
   // ── Empty state ───────────────────────────────────────────────────────────
-  Widget _buildEmptyState() => Center(
+  Widget _buildEmptyState(bool isDark) => Center(
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -583,36 +622,36 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
           width: 72,
           height: 72,
           decoration: BoxDecoration(
-            color: _violet100,
+            color: isDark ? _D.violet100 : _violet100,
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.restaurant_menu_rounded,
             size: 36,
-            color: _violet600,
+            color: isDark ? const Color(0xFFA78BFA) : _violet600,
           ),
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           'No items found',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: _textPrimary,
+            color: isDark ? _D.textPrimary : _textPrimary,
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Tap + Add Item to get started',
-          style: TextStyle(fontSize: 13, color: _textSecondary),
+          style: TextStyle(fontSize: 13, color: isDark ? _D.textSecondary : _textSecondary),
         ),
       ],
     ),
   );
 
   // ── Item row (simple list style) ──────────────────────────────────────────
-  Widget _buildItemCard(ItemModel item) {
-    final (icon, iconColor, iconBg) = _catMeta(item.category);
+  Widget _buildItemCard(ItemModel item, bool isDark) {
+    final (icon, iconColor, iconBg) = _catMeta(item.category, isDark);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
@@ -633,10 +672,10 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
               children: [
                 Text(
                   item.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: _textPrimary,
+                    color: isDark ? _D.textPrimary : _textPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -646,19 +685,19 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                   children: [
                     Text(
                       item.unit,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: _textSecondary,
+                        color: isDark ? _D.textSecondary : _textSecondary,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       item.category,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: _textSecondary,
+                        color: isDark ? _D.textSecondary : _textSecondary,
                       ),
                     ),
                   ],
@@ -672,7 +711,7 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                         padding: EdgeInsets.zero,
                         minimumSize: const Size(0, 32),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        foregroundColor: _violet600,
+                        foregroundColor: isDark ? const Color(0xFFA78BFA) : _violet600,
                       ),
                       child: const Text(
                         'Edit',
@@ -686,7 +725,7 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
                         padding: EdgeInsets.zero,
                         minimumSize: const Size(0, 32),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        foregroundColor: _danger,
+                        foregroundColor: isDark ? const Color(0xFFF87171) : _danger,
                       ),
                       child: const Text(
                         'Delete',
@@ -701,7 +740,7 @@ class _ItemsListScreenState extends State<ItemsListScreen> {
           const SizedBox(width: 12),
           Switch(
             value: item.isActive,
-            activeColor: _violet600,
+            activeColor: isDark ? const Color(0xFFA78BFA) : _violet600,
             onChanged: (v) => _toggleActive(item, v),
           ),
         ],
@@ -802,10 +841,11 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.item != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      decoration: const BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: isDark ? _D.surface : _surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(
         20,
@@ -826,7 +866,7 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: _divider,
+                  color: isDark ? _D.border : _divider,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -840,22 +880,22 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: _violet100,
+                    color: isDark ? _D.violet100 : _violet100,
                     borderRadius: BorderRadius.circular(11),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.restaurant_menu_rounded,
                     size: 18,
-                    color: _violet700,
+                    color: isDark ? const Color(0xFFA78BFA) : _violet700,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Text(
                   isEdit ? 'Edit Item' : 'Add Menu Item',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
-                    color: _textPrimary,
+                    color: isDark ? _D.textPrimary : _textPrimary,
                   ),
                 ),
               ],
@@ -863,11 +903,11 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
             const SizedBox(height: 20),
 
             // Name field
-            _sheetField(_nameCtrl, 'Item Name', Icons.restaurant_outlined),
+            _sheetField(_nameCtrl, 'Item Name', Icons.restaurant_outlined, isDark: isDark),
             const SizedBox(height: 18),
 
             // Unit chips
-            _sheetLabel('Unit'),
+            _sheetLabel('Unit', isDark),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -885,7 +925,7 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
             const SizedBox(height: 16),
 
             // Category chips
-            _sheetLabel('Category'),
+            _sheetLabel('Category', isDark),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -906,9 +946,9 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: _violet50,
+                color: isDark ? const Color(0xFF141625) : _violet50,
                 borderRadius: BorderRadius.circular(11),
-                border: Border.all(color: _border),
+                border: Border.all(color: isDark ? const Color(0xFF2F3347) : _border),
               ),
               child: Row(
                 children: [
@@ -916,7 +956,9 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: _isActive ? _successSoft : _divider,
+                      color: _isActive
+                          ? (isDark ? const Color(0xFF0F2A1C) : _successSoft)
+                          : (isDark ? _D.divider : _divider),
                       borderRadius: BorderRadius.circular(9),
                     ),
                     child: Icon(
@@ -924,17 +966,19 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
                           ? Icons.check_circle_outline_rounded
                           : Icons.cancel_outlined,
                       size: 16,
-                      color: _isActive ? _success : _textSecondary,
+                      color: _isActive
+                          ? (isDark ? const Color(0xFF4ADE80) : _success)
+                          : (isDark ? _D.textSecondary : _textSecondary),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       _isActive ? 'Item is Active' : 'Item is Inactive',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: _textPrimary,
+                        color: isDark ? _D.textPrimary : _textPrimary,
                       ),
                     ),
                   ),
@@ -946,12 +990,12 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
                       height: 26,
                       padding: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
-                        color: _isActive ? _violet600 : const Color(0xFFD0C8E8),
+                        color: _isActive ? _violet600 : (isDark ? const Color(0xFF242238) : const Color(0xFFD0C8E8)),
                         borderRadius: BorderRadius.circular(13),
                         border: Border.all(
                           color: _isActive
                               ? _violet700
-                              : const Color(0xFFB0A8D0),
+                              : (isDark ? const Color(0xFF3B335C) : const Color(0xFFB0A8D0)),
                           width: 1.5,
                         ),
                       ),
@@ -981,7 +1025,7 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
                             size: 10,
                             color: _isActive
                                 ? _violet600
-                                : const Color(0xFFB0A8D0),
+                                : (isDark ? const Color(0xFF5A527A) : const Color(0xFFB0A8D0)),
                           ),
                         ),
                       ),
@@ -1005,7 +1049,7 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
                   borderRadius: BorderRadius.circular(13),
                   boxShadow: [
                     BoxShadow(
-                      color: _violet600.withValues(alpha: 0.35),
+                      color: isDark ? Colors.transparent : _violet600.withValues(alpha: 0.35),
                       blurRadius: 14,
                       offset: const Offset(0, 5),
                     ),
@@ -1064,28 +1108,29 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
     String label,
     IconData icon, {
     TextInputType? keyboardType,
+    required bool isDark,
   }) => TextField(
     controller: ctrl,
     keyboardType: keyboardType,
-    style: const TextStyle(
+    style: TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,
-      color: _textPrimary,
+      color: isDark ? const Color(0xFFF8FAFC) : _textPrimary,
     ),
     decoration: InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(fontSize: 13, color: _textSecondary),
+      labelStyle: TextStyle(fontSize: 13, color: isDark ? const Color(0xFF94A3B8) : _textSecondary),
       prefixIcon: Padding(
         padding: const EdgeInsets.only(left: 14, right: 10),
-        child: Icon(icon, size: 17, color: _violet600),
+        child: Icon(icon, size: 17, color: isDark ? const Color(0xFFA78BFA) : _violet600),
       ),
       prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
       filled: true,
-      fillColor: _violet50,
+      fillColor: isDark ? const Color(0xFF141625) : _violet50,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(11),
-        borderSide: const BorderSide(color: _border),
+        borderSide: BorderSide(color: isDark ? const Color(0xFF2F3347) : _border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(11),
@@ -1094,7 +1139,7 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
     ),
   );
 
-  Widget _sheetLabel(String text) => Row(
+  Widget _sheetLabel(String text, bool isDark) => Row(
     children: [
       Container(
         width: 3,
@@ -1107,10 +1152,10 @@ class _AddEditItemSheetState extends State<_AddEditItemSheet> {
       const SizedBox(width: 7),
       Text(
         text.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
-          color: _textSecondary,
+          color: isDark ? _D.textSecondary : _textSecondary,
           letterSpacing: 1.1,
         ),
       ),
@@ -1140,27 +1185,34 @@ class _ChoiceChip extends StatelessWidget {
   static const _textPrimary = Color(0xFF1A0E45);
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 160),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: selected ? _violet600 : _violet50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: selected ? _violet700 : _border,
-          width: selected ? 1.5 : 1,
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected
+              ? _violet600
+              : (isDark ? const Color(0xFF141625) : _violet50),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: selected
+                ? _violet700
+                : (isDark ? const Color(0xFF2F3347) : _border),
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: selected ? Colors.white : (isDark ? _D.textPrimary : _textPrimary),
+          ),
         ),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: selected ? Colors.white : _textPrimary,
-        ),
-      ),
-    ),
-  );
+    );
+  }
 }

@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/error_handler.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../data/zone_api.dart';
 import '../../models/zone_model.dart';
 import 'add_edit_zone_screen.dart';
+
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+}
 
 class ZonesListScreen extends StatefulWidget {
   const ZonesListScreen({super.key});
@@ -89,8 +100,9 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: isDark ? _D.bg : _bg,
       appBar: AppBar(
         backgroundColor: _violet700,
         foregroundColor: Colors.white,
@@ -161,7 +173,7 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _loading ? null : _openCreate,
-        backgroundColor: _violet600,
+        backgroundColor: isDark ? AppColors.primary : _violet600,
         foregroundColor: Colors.white,
         elevation: 4,
         icon: const Icon(Icons.add_location_alt_outlined, size: 18),
@@ -173,7 +185,7 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
       body: _loading
           ? Center(
               child: CircularProgressIndicator(
-                color: _violet600,
+                color: isDark ? AppColors.primaryLight : _violet600,
                 strokeWidth: 2.5,
               ),
             )
@@ -184,65 +196,68 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
   }
 
   // ── Empty state ───────────────────────────────────────────────────────────
-  Widget _buildEmptyState() => SafeArea(
-    child: Center(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            color: _violet100,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Icon(Icons.map_outlined, size: 36, color: _violet600),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'No delivery zones',
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: _textPrimary,
-          ),
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          'Create zones to manage delivery areas',
-          style: TextStyle(fontSize: 13, color: _textSecondary),
-        ),
-        const SizedBox(height: 24),
-        ElevatedButton.icon(
-          onPressed: _openCreate,
-          icon: const Icon(Icons.add_location_alt_outlined, size: 16),
-          label: const Text(
-            'Create First Zone',
-            style: TextStyle(fontWeight: FontWeight.w700),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _violet600,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(11),
+  Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return SafeArea(
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: isDark ? _D.violet100 : _violet100,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(Icons.map_outlined, size: 36, color: isDark ? AppColors.primaryLight : _violet600),
             ),
-          ),
+            const SizedBox(height: 16),
+            Text(
+              'No delivery zones',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: isDark ? _D.textPrimary : _textPrimary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Create zones to manage delivery areas',
+              style: TextStyle(fontSize: 13, color: isDark ? _D.textSecondary : _textSecondary),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _openCreate,
+              icon: const Icon(Icons.add_location_alt_outlined, size: 16),
+              label: const Text(
+                'Create First Zone',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDark ? AppColors.primary : _violet600,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(11),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => context.go(AppRoutes.dashboard),
+              style: TextButton.styleFrom(foregroundColor: isDark ? _D.textSecondary : _textSecondary),
+              child: const Text(
+                'Back to Dashboard',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        TextButton(
-          onPressed: () => context.go(AppRoutes.dashboard),
-          style: TextButton.styleFrom(foregroundColor: _textSecondary),
-          child: const Text(
-            'Back to Dashboard',
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-      ],
-    ),
-    ),
-  );
+      ),
+    );
+  }
 
   // ── List ──────────────────────────────────────────────────────────────────
   Widget _buildList() => ListView.builder(
@@ -258,6 +273,7 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
 
   // ── Zone card ─────────────────────────────────────────────────────────────
   Widget _buildZoneCard(ZoneModel z) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final zColor = _zoneColor(z);
     final initial = _initial(z.name);
 
@@ -266,16 +282,16 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
       child: InkWell(
         onTap: () => _openEdit(z),
         borderRadius: BorderRadius.circular(14),
-        splashColor: _violet100,
-        highlightColor: _violet50,
+        splashColor: isDark ? _D.violet100 : _violet100,
+        highlightColor: isDark ? _D.violet50 : _violet50,
         child: Container(
           decoration: BoxDecoration(
-            color: _surface,
+            color: isDark ? _D.surface : _surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: _border),
+            border: Border.all(color: isDark ? _D.border : _border),
             boxShadow: [
               BoxShadow(
-                color: _violet900.withValues(alpha: 0.05),
+                color: isDark ? Colors.black.withValues(alpha: 0.2) : _violet900.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -288,7 +304,7 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
                 Container(
                   width: 4,
                   decoration: BoxDecoration(
-                    color: z.color.isNotEmpty ? zColor : _violet600,
+                    color: z.color.isNotEmpty ? zColor : (isDark ? AppColors.primaryLight : _violet600),
                     borderRadius: const BorderRadius.horizontal(
                       left: Radius.circular(14),
                     ),
@@ -310,7 +326,7 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
                           decoration: BoxDecoration(
                             color: z.color.isNotEmpty
                                 ? zColor.withValues(alpha: 0.15)
-                                : _violet100,
+                                : (isDark ? _D.violet100 : _violet100),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Center(
@@ -321,7 +337,7 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
                                 fontWeight: FontWeight.w800,
                                 color: z.color.isNotEmpty
                                     ? zColor.withValues(alpha: 1)
-                                    : _violet700,
+                                    : (isDark ? AppColors.primaryLight : _violet700),
                               ),
                             ),
                           ),
@@ -335,10 +351,10 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
                             children: [
                               Text(
                                 z.name,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
-                                  color: _textPrimary,
+                                  color: isDark ? _D.textPrimary : _textPrimary,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -347,9 +363,9 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
                                 const SizedBox(height: 2),
                                 Text(
                                   z.description,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
-                                    color: _textSecondary,
+                                    color: isDark ? _D.textSecondary : _textSecondary,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -363,14 +379,22 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: z.isActive
-                                      ? _successSoft
-                                      : _dangerSoft,
+                                  color: isDark
+                                      ? (z.isActive
+                                          ? AppColors.success.withValues(alpha: 0.15)
+                                          : AppColors.error.withValues(alpha: 0.15))
+                                      : (z.isActive
+                                          ? _successSoft
+                                          : _dangerSoft),
                                   borderRadius: BorderRadius.circular(5),
                                   border: Border.all(
-                                    color: z.isActive
-                                        ? _success.withValues(alpha: 0.25)
-                                        : _danger.withValues(alpha: 0.25),
+                                    color: isDark
+                                        ? (z.isActive
+                                            ? AppColors.success.withValues(alpha: 0.35)
+                                            : AppColors.error.withValues(alpha: 0.35))
+                                        : (z.isActive
+                                            ? _success.withValues(alpha: 0.25)
+                                            : _danger.withValues(alpha: 0.25)),
                                   ),
                                 ),
                                 child: Row(
@@ -380,7 +404,9 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
                                       width: 5,
                                       height: 5,
                                       decoration: BoxDecoration(
-                                        color: z.isActive ? _success : _danger,
+                                        color: isDark
+                                            ? (z.isActive ? AppColors.success : AppColors.error)
+                                            : (z.isActive ? _success : _danger),
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -390,7 +416,9 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w700,
-                                        color: z.isActive ? _success : _danger,
+                                        color: isDark
+                                            ? (z.isActive ? AppColors.success : AppColors.error)
+                                            : (z.isActive ? _success : _danger),
                                       ),
                                     ),
                                   ],
@@ -400,10 +428,10 @@ class _ZonesListScreenState extends State<ZonesListScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(
+                        Icon(
                           Icons.chevron_right_rounded,
                           size: 18,
-                          color: _textSecondary,
+                          color: isDark ? _D.textSecondary : _textSecondary,
                         ),
                       ],
                     ),

@@ -59,8 +59,52 @@ class _AppPurple {
   static const s100 = Color(0xFFF8FAFC);
 }
 
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const divider = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+  static const inputBg = Color(0xFF1B1F2E);
+}
+
 // ─── Status helpers ──────────────────────────────────────────────────────────
-_StatusStyle _statusStyle(String status) {
+_StatusStyle _statusStyle(String status, bool isDark) {
+  if (isDark) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return _StatusStyle(
+          bg: const Color(0xFF22C55E).withValues(alpha: 0.15),
+          fg: const Color(0xFF4ADE80),
+          border: const Color(0xFF22C55E).withValues(alpha: 0.3),
+          accent: const Color(0xFF22C55E),
+        );
+      case 'paused':
+        return _StatusStyle(
+          bg: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+          fg: const Color(0xFFFBBF24),
+          border: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+          accent: const Color(0xFFF59E0B),
+        );
+      case 'expired':
+        return _StatusStyle(
+          bg: const Color(0xFFEF4444).withValues(alpha: 0.15),
+          fg: const Color(0xFFF87171),
+          border: const Color(0xFFEF4444).withValues(alpha: 0.3),
+          accent: const Color(0xFFEF4444),
+        );
+      default:
+        return _StatusStyle(
+          bg: _D.border,
+          fg: _D.textSecondary,
+          border: _D.border,
+          accent: _D.textSecondary,
+        );
+    }
+  }
   switch (status.toLowerCase()) {
     case 'active':
       return _StatusStyle(
@@ -137,14 +181,15 @@ Widget _avatarCircle(
   double size = 38,
   Color? bg,
   Color? fg,
+  bool isDark = false,
 }) {
   return Container(
     width: size,
     height: size,
     decoration: BoxDecoration(
-      color: bg ?? _AppPurple.v100,
+      color: bg ?? (isDark ? _D.violet100 : _AppPurple.v100),
       shape: BoxShape.circle,
-      border: Border.all(color: _AppPurple.v200, width: 0.5),
+      border: Border.all(color: isDark ? _D.border : _AppPurple.v200, width: 0.5),
     ),
     alignment: Alignment.center,
     child: Text(
@@ -152,7 +197,7 @@ Widget _avatarCircle(
       style: TextStyle(
         fontSize: size * 0.3,
         fontWeight: FontWeight.w700,
-        color: fg ?? _AppPurple.v700,
+        color: fg ?? (isDark ? AppColors.primaryLight : _AppPurple.v700),
       ),
     ),
   );
@@ -377,8 +422,9 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
   // ── BUILD ──────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: _AppPurple.bg,
+      backgroundColor: isDark ? _D.bg : _AppPurple.bg,
       body: SafeArea(
         top: false,
         bottom: true,
@@ -439,12 +485,12 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
               child: Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? _D.surface : Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _AppPurple.v200, width: 0.5),
+                  border: Border.all(color: isDark ? _D.border : _AppPurple.v200, width: 0.5),
                   boxShadow: [
                     BoxShadow(
-                      color: _AppPurple.v300.withValues(alpha: 0.18),
+                      color: isDark ? Colors.black.withValues(alpha: 0.2) : _AppPurple.v300.withValues(alpha: 0.18),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -468,7 +514,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
                   ),
                   indicatorSize: TabBarIndicatorSize.tab,
                   labelColor: Colors.white,
-                  unselectedLabelColor: _AppPurple.s500,
+                  unselectedLabelColor: isDark ? _D.textSecondary : _AppPurple.s500,
                   labelStyle: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -516,22 +562,22 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
                                         width: 64,
                                         height: 64,
                                         decoration: BoxDecoration(
-                                          color: _AppPurple.v100,
+                                          color: isDark ? _D.violet100 : _AppPurple.v100,
                                           shape: BoxShape.circle,
                                         ),
-                                        child: const Icon(
+                                        child: Icon(
                                           Icons.assignment_outlined,
-                                          color: _AppPurple.v500,
+                                          color: isDark ? AppColors.primaryLight : _AppPurple.v500,
                                           size: 28,
                                         ),
                                       ),
                                       const SizedBox(height: 16),
                                       Text(
                                         'No $_currentStatus plan assignments',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w500,
-                                          color: _AppPurple.s500,
+                                          color: isDark ? _D.textSecondary : _AppPurple.s500,
                                         ),
                                       ),
                                     ],
@@ -564,7 +610,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
                                         1.0,
                                       )
                                     : 1.0;
-                                final st = _statusStyle(sub.status);
+                                final st = _statusStyle(sub.status, isDark);
                                 final planName = sub.planName ?? sub.planId;
                                 final customerName =
                                     sub.customerName ?? sub.customerId;
@@ -576,10 +622,10 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
                                     child: Container(
                                       margin: const EdgeInsets.only(bottom: 10),
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: isDark ? _D.surface : Colors.white,
                                         borderRadius: BorderRadius.circular(16),
                                         border: Border.all(
-                                          color: _AppPurple.s200,
+                                          color: isDark ? _D.border : _AppPurple.s200,
                                           width: 0.5,
                                         ),
                                       ),
@@ -592,7 +638,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
                                             // ── Row 1: avatar + name + badge ──
                                             Row(
                                               children: [
-                                                _avatarCircle(initials),
+                                                _avatarCircle(initials, isDark: isDark),
                                                 const SizedBox(width: 10),
                                                 Expanded(
                                                   child: Column(
@@ -602,12 +648,11 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
                                                     children: [
                                                       Text(
                                                         customerName,
-                                                        style: const TextStyle(
+                                                        style: TextStyle(
                                                           fontSize: 13,
                                                           fontWeight:
                                                               FontWeight.w700,
-                                                          color:
-                                                              _AppPurple.s900,
+                                                          color: isDark ? _D.textPrimary : _AppPurple.s900,
                                                         ),
                                                         overflow: TextOverflow
                                                             .ellipsis,
@@ -615,10 +660,9 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
                                                       const SizedBox(height: 1),
                                                       Text(
                                                         planName,
-                                                        style: const TextStyle(
+                                                        style: TextStyle(
                                                           fontSize: 11,
-                                                          color:
-                                                              _AppPurple.s500,
+                                                          color: isDark ? _D.textSecondary : _AppPurple.s500,
                                                         ),
                                                       ),
                                                     ],
@@ -630,10 +674,10 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
                                             ),
 
                                             const SizedBox(height: 10),
-                                            const Divider(
+                                            Divider(
                                               height: 1,
                                               thickness: 0.5,
-                                              color: _AppPurple.s200,
+                                              color: isDark ? _D.border : _AppPurple.s200,
                                             ),
                                             const SizedBox(height: 10),
 
@@ -643,11 +687,13 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
                                                 _metaChip(
                                                   Icons.calendar_today_outlined,
                                                   '${sub.startDate.day}/${sub.startDate.month}/${sub.startDate.year}',
+                                                  isDark,
                                                 ),
                                                 const SizedBox(width: 6),
                                                 _metaChip(
                                                   Icons.event_outlined,
                                                   '${sub.endDate.day}/${sub.endDate.month}/${sub.endDate.year}',
+                                                  isDark,
                                                 ),
                                               ],
                                             ),
@@ -661,8 +707,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
                                               child: LinearProgressIndicator(
                                                 value: progress,
                                                 minHeight: 4,
-                                                backgroundColor:
-                                                    _AppPurple.v200,
+                                                backgroundColor: isDark ? _D.border : _AppPurple.v200,
                                                 valueColor:
                                                     AlwaysStoppedAnimation<
                                                       Color
@@ -699,25 +744,25 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen>
     );
   }
 
-  Widget _metaChip(IconData icon, String label) {
+  Widget _metaChip(IconData icon, String label, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: _AppPurple.v50,
+        color: isDark ? _D.violet50 : _AppPurple.v50,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: _AppPurple.v200, width: 0.5),
+        border: Border.all(color: isDark ? _D.border : _AppPurple.v200, width: 0.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 10, color: _AppPurple.v600),
+          Icon(icon, size: 10, color: isDark ? AppColors.primaryLight : _AppPurple.v600),
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w500,
-              color: _AppPurple.s700,
+              color: isDark ? _D.textSecondary : _AppPurple.s700,
             ),
           ),
         ],
@@ -759,21 +804,6 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
     _autoRenew = widget.subscription.autoRenew;
   }
 
-  // Future<void> _toggleAutoRenew() async {
-  //   setState(() => _renewLoading = true);
-  //   try {
-  //     // Uses the renew endpoint to patch autoRenew field
-  //     await DioClient.instance.put(
-  //       '\${ApiEndpoints.subscriptions}/\${widget.subscription.id}',
-  //       data: {'autoRenew': !_autoRenew},
-  //     );
-  //     setState(() => _autoRenew = !_autoRenew);
-  //   } catch (e) {
-  //     if (mounted) ErrorHandler.show(context, e);
-  //   } finally {
-  //     if (mounted) setState(() => _renewLoading = false);
-  //   }
-  // }
   Future<void> _toggleAutoRenew() async {
     setState(() => _renewLoading = true);
     try {
@@ -801,8 +831,9 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final sub = widget.subscription;
-    final st = _statusStyle(sub.status);
+    final st = _statusStyle(sub.status, isDark);
     final customerName = sub.customerName ?? sub.customerId;
     final planName = sub.planName ?? sub.planId;
     final isEnded =
@@ -812,9 +843,9 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
     final isPaused = sub.status.toLowerCase() == 'paused';
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: isDark ? _D.surface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: DraggableScrollableSheet(
         initialChildSize: 0.78,
@@ -869,19 +900,19 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
                         children: [
                           Text(
                             customerName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
-                              color: _AppPurple.s900,
+                              color: isDark ? _D.textPrimary : _AppPurple.s900,
                             ),
                           ),
                           if (sub.customerPhone != null) ...[
                             const SizedBox(height: 1),
                             Text(
                               sub.customerPhone!,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
-                                color: _AppPurple.s500,
+                                color: isDark ? _D.textSecondary : _AppPurple.s500,
                               ),
                             ),
                           ],
@@ -889,9 +920,9 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
                             const SizedBox(height: 1),
                             Text(
                               sub.customerAddress!,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
-                                color: _AppPurple.s500,
+                                color: isDark ? _D.textSecondary : _AppPurple.s500,
                               ),
                             ),
                           ],
@@ -912,7 +943,7 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: _AppPurple.v700,
+                    color: isDark ? AppColors.primaryLight : _AppPurple.v700,
                     letterSpacing: 0.7,
                   ),
                 ),
@@ -923,9 +954,9 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: _AppPurple.s100,
+                    color: isDark ? _D.violet50 : _AppPurple.s100,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: _AppPurple.s200, width: 0.5),
+                    border: Border.all(color: isDark ? _D.border : _AppPurple.s200, width: 0.5),
                   ),
                   child: Column(
                     children: [
@@ -974,9 +1005,9 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: _AppPurple.s100,
+                    color: isDark ? _D.violet50 : _AppPurple.s100,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: _AppPurple.s200, width: 0.5),
+                    border: Border.all(color: isDark ? _D.border : _AppPurple.s200, width: 0.5),
                   ),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -984,9 +1015,9 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
                   ),
                   child: Row(
                     children: [
-                      const Text(
+                      Text(
                         'Auto renewal',
-                        style: TextStyle(fontSize: 12, color: _AppPurple.s500),
+                        style: TextStyle(fontSize: 12, color: isDark ? _D.textSecondary : _AppPurple.s500),
                       ),
                       const Spacer(),
                       if (_renewLoading)
@@ -1007,7 +1038,7 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
                             activeColor: Colors.white,
                             activeTrackColor: _AppPurple.v600,
                             inactiveThumbColor: Colors.white,
-                            inactiveTrackColor: _AppPurple.v300,
+                            inactiveTrackColor: isDark ? _D.border : _AppPurple.v300,
                           ),
                         ),
                     ],
@@ -1081,13 +1112,14 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
     Color? valueColor,
     bool isLast = false,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         border: isLast
             ? null
-            : const Border(
-                bottom: BorderSide(color: _AppPurple.s200, width: 0.5),
+            : Border(
+                bottom: BorderSide(color: isDark ? _D.border : _AppPurple.s200, width: 0.5),
               ),
       ),
       child: Row(
@@ -1097,7 +1129,7 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
             width: 110,
             child: Text(
               label,
-              style: const TextStyle(fontSize: 12, color: _AppPurple.s500),
+              style: TextStyle(fontSize: 12, color: isDark ? _D.textSecondary : _AppPurple.s500),
             ),
           ),
           Expanded(
@@ -1107,7 +1139,7 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: valueColor ?? _AppPurple.s900,
+                color: valueColor ?? (isDark ? _D.textPrimary : _AppPurple.s900),
               ),
             ),
           ),
@@ -1117,22 +1149,23 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
   }
 
   Widget _outlineBtn(String label, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? _D.violet50 : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _AppPurple.v300, width: 0.5),
+          border: Border.all(color: isDark ? _D.border : _AppPurple.v300, width: 0.5),
         ),
         alignment: Alignment.center,
         child: Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: _AppPurple.v700,
+            color: isDark ? AppColors.primaryLight : _AppPurple.v700,
           ),
         ),
       ),
@@ -1143,20 +1176,39 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
     String label,
     Color fg,
     Color bg,
-
     Color border,
-
     VoidCallback onTap,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    Color finalBg = bg;
+    Color finalFg = fg;
+    Color finalBorder = border;
+
+    if (isDark) {
+      if (label.contains('Resume')) {
+        finalBg = const Color(0xFF22C55E).withValues(alpha: 0.15);
+        finalFg = const Color(0xFF4ADE80);
+        finalBorder = const Color(0xFF22C55E).withValues(alpha: 0.3);
+      } else if (label.contains('Pause')) {
+        finalBg = const Color(0xFFF59E0B).withValues(alpha: 0.15);
+        finalFg = const Color(0xFFFBBF24);
+        finalBorder = const Color(0xFFF59E0B).withValues(alpha: 0.3);
+      } else if (label.contains('Cancel')) {
+        finalBg = const Color(0xFFEF4444).withValues(alpha: 0.15);
+        finalFg = const Color(0xFFF87171);
+        finalBorder = const Color(0xFFEF4444).withValues(alpha: 0.3);
+      }
+    }
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: bg,
+          color: finalBg,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: border, width: 0.5),
+          border: Border.all(color: finalBorder, width: 0.5),
         ),
         alignment: Alignment.center,
         child: Text(
@@ -1164,7 +1216,7 @@ class _SubscriptionDetailSheetState extends State<_SubscriptionDetailSheet> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: fg,
+            color: finalFg,
           ),
         ),
       ),
@@ -1340,41 +1392,48 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
   }
 
   // ── shared form field label ──
-  Widget _label(String text) => Padding(
-    padding: const EdgeInsets.only(bottom: 4),
-    child: Text(
-      text.toUpperCase(),
-      style: const TextStyle(
-        fontSize: 10,
-        fontWeight: FontWeight.w700,
-        color: _AppPurple.v700,
-        letterSpacing: 0.6,
+  Widget _label(String text) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Text(
+        text.toUpperCase(),
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: isDark ? AppColors.primaryLight : _AppPurple.v700,
+          letterSpacing: 0.6,
+        ),
       ),
-    ),
-  );
+    );
+  }
 
-  InputDecoration _inputDeco(String hint) => InputDecoration(
-    hintText: hint,
-    hintStyle: const TextStyle(color: _AppPurple.s400, fontSize: 12),
-    filled: true,
-    fillColor: Colors.white,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
-      borderSide: const BorderSide(color: _AppPurple.v300, width: 0.5),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
-      borderSide: const BorderSide(color: _AppPurple.v500, width: 1),
-    ),
-  );
+  InputDecoration _inputDeco(String hint) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: isDark ? _D.textSecondary.withValues(alpha: 0.6) : _AppPurple.s400, fontSize: 12),
+      filled: true,
+      fillColor: isDark ? _D.inputBg : Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: isDark ? _D.border : _AppPurple.v300, width: 0.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: isDark ? AppColors.primaryLight : _AppPurple.v500, width: 1),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: isDark ? _D.surface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -1394,12 +1453,12 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
             ),
             children: [
               const BottomSheetHandle(),
-              const Text(
+              Text(
                 'Assign Plan',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: _AppPurple.s900,
+                  color: isDark ? _D.textPrimary : _AppPurple.s900,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -1410,17 +1469,17 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
               DropdownButtonFormField<CustomerModel>(
                 value: _customer,
                 decoration: _inputDeco('Select customer'),
-                dropdownColor: Colors.white,
-                style: const TextStyle(
+                dropdownColor: isDark ? _D.surface : Colors.white,
+                style: TextStyle(
                   fontSize: 12,
-                  color: _AppPurple.s900,
+                  color: isDark ? _D.textPrimary : _AppPurple.s900,
                   fontWeight: FontWeight.w500,
                 ),
                 items: _customers
                     .map(
                       (c) => DropdownMenuItem(
                         value: c,
-                        child: Text('${c.name} (${c.phone})'),
+                        child: Text('${c.name} (${c.phone})', style: TextStyle(color: isDark ? _D.textPrimary : null)),
                       ),
                     )
                     .toList(),
@@ -1435,10 +1494,10 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
                     ? _selectedPlanId
                     : null,
                 decoration: _inputDeco('Select plan'),
-                dropdownColor: Colors.white,
-                style: const TextStyle(
+                dropdownColor: isDark ? _D.surface : Colors.white,
+                style: TextStyle(
                   fontSize: 12,
-                  color: _AppPurple.s900,
+                  color: isDark ? _D.textPrimary : _AppPurple.s900,
                   fontWeight: FontWeight.w500,
                 ),
                 items: _plans
@@ -1447,6 +1506,7 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
                         value: p.id,
                         child: Text(
                           '${p.planName} – ₹${p.price.toStringAsFixed(0)}',
+                          style: TextStyle(color: isDark ? _D.textPrimary : null),
                         ),
                       ),
                     )
@@ -1495,10 +1555,10 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
                               vertical: 11,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: isDark ? _D.inputBg : Colors.white,
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                color: _AppPurple.v300,
+                                color: isDark ? _D.border : _AppPurple.v300,
                                 width: 0.5,
                               ),
                             ),
@@ -1507,17 +1567,17 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
                                 Expanded(
                                   child: Text(
                                     '${_startDate.day}/${_startDate.month}/${_startDate.year}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
-                                      color: _AppPurple.s900,
+                                      color: isDark ? _D.textPrimary : _AppPurple.s900,
                                     ),
                                   ),
                                 ),
-                                const Icon(
+                                Icon(
                                   Icons.calendar_today_outlined,
                                   size: 14,
-                                  color: _AppPurple.v500,
+                                  color: isDark ? AppColors.primaryLight : _AppPurple.v500,
                                 ),
                               ],
                             ),
@@ -1558,10 +1618,10 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
                               vertical: 11,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: isDark ? _D.inputBg : Colors.white,
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                color: _AppPurple.v300,
+                                color: isDark ? _D.border : _AppPurple.v300,
                                 width: 0.5,
                               ),
                             ),
@@ -1570,17 +1630,17 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
                                 Expanded(
                                   child: Text(
                                     '${_endDate.day}/${_endDate.month}/${_endDate.year}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
-                                      color: _AppPurple.s900,
+                                      color: isDark ? _D.textPrimary : _AppPurple.s900,
                                     ),
                                   ),
                                 ),
-                                const Icon(
+                                Icon(
                                   Icons.calendar_today_outlined,
                                   size: 14,
-                                  color: _AppPurple.v500,
+                                  color: isDark ? AppColors.primaryLight : _AppPurple.v500,
                                 ),
                               ],
                             ),
@@ -1598,17 +1658,17 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
               DropdownButtonFormField<String>(
                 value: _deliverySlot,
                 decoration: _inputDeco(''),
-                dropdownColor: Colors.white,
-                style: const TextStyle(
+                dropdownColor: isDark ? _D.surface : Colors.white,
+                style: TextStyle(
                   fontSize: 12,
-                  color: _AppPurple.s900,
+                  color: isDark ? _D.textPrimary : _AppPurple.s900,
                   fontWeight: FontWeight.w500,
                 ),
                 items: ['morning', 'afternoon', 'evening']
                     .map(
                       (s) => DropdownMenuItem(
                         value: s,
-                        child: Text(s[0].toUpperCase() + s.substring(1)),
+                        child: Text(s[0].toUpperCase() + s.substring(1), style: TextStyle(color: isDark ? _D.textPrimary : null)),
                       ),
                     )
                     .toList(),
@@ -1634,10 +1694,10 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
                         vertical: 7,
                       ),
                       decoration: BoxDecoration(
-                        color: selected ? _AppPurple.v600 : Colors.white,
+                        color: selected ? _AppPurple.v600 : (isDark ? _D.inputBg : Colors.white),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: selected ? _AppPurple.v600 : _AppPurple.v300,
+                          color: selected ? _AppPurple.v600 : (isDark ? _D.border : _AppPurple.v300),
                           width: 0.5,
                         ),
                         boxShadow: selected
@@ -1657,7 +1717,7 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: selected ? Colors.white : _AppPurple.v600,
+                          color: selected ? Colors.white : (isDark ? AppColors.primaryLight : _AppPurple.v600),
                         ),
                       ),
                     ),
@@ -1669,24 +1729,24 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _AppPurple.v50,
+                  color: isDark ? _D.violet50 : _AppPurple.v50,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _AppPurple.v200, width: 0.5),
+                  border: Border.all(color: isDark ? _D.border : _AppPurple.v200, width: 0.5),
                 ),
                 child: SwitchListTile(
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                  title: const Text(
+                  title: Text(
                     'Start on credit (even if wallet is ₹0)',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: _AppPurple.s900,
+                      color: isDark ? _D.textPrimary : _AppPurple.s900,
                     ),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Meals use plan balance immediately. Wallet top-ups clear plan dues first.',
-                    style: TextStyle(fontSize: 11, color: _AppPurple.s600),
+                    style: TextStyle(fontSize: 11, color: isDark ? _D.textSecondary : _AppPurple.s600),
                   ),
                   value: _payLater,
                   activeThumbColor: _AppPurple.v600,
@@ -1721,26 +1781,26 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
                       vertical: 11,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? _D.inputBg : Colors.white,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: _AppPurple.v300, width: 0.5),
+                      border: Border.all(color: isDark ? _D.border : _AppPurple.v300, width: 0.5),
                     ),
                     child: Row(
                       children: [
                         Expanded(
                           child: Text(
                             DateFormat.yMMMd().format(_paymentDueDate),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: _AppPurple.s900,
+                              color: isDark ? _D.textPrimary : _AppPurple.s900,
                             ),
                           ),
                         ),
-                        const Icon(
+                        Icon(
                           Icons.event_outlined,
                           size: 16,
-                          color: _AppPurple.v500,
+                          color: isDark ? AppColors.primaryLight : _AppPurple.v500,
                         ),
                       ],
                     ),
@@ -1754,11 +1814,12 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
                   controller: _creditLimitController,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  style: const TextStyle(fontSize: 12, color: _AppPurple.s900),
+                  style: TextStyle(fontSize: 12, color: isDark ? _D.textPrimary : _AppPurple.s900),
                   decoration:
                       _inputDeco('Defaults to full plan price × days').copyWith(
                     helperText:
                         'Est. plan total ₹${((_plan?.price ?? 0) * totalDaysInclusiveIST(_startDate, _endDate)).toStringAsFixed(0)}',
+                    helperStyle: TextStyle(color: isDark ? _D.textSecondary : null),
                   ),
                 ),
               ],
@@ -1769,7 +1830,7 @@ class _AssignSubscriptionSheetState extends State<_AssignSubscriptionSheet> {
               TextField(
                 controller: _notesController,
                 maxLines: 2,
-                style: const TextStyle(fontSize: 12, color: _AppPurple.s900),
+                style: TextStyle(fontSize: 12, color: isDark ? _D.textPrimary : _AppPurple.s900),
                 decoration: _inputDeco('Any special instructions…'),
               ),
               const SizedBox(height: 24),

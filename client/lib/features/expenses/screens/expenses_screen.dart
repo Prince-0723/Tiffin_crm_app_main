@@ -31,7 +31,7 @@ IconData expenseCategoryIcon(String category) {
   }
 }
 
-Color expenseCategoryColor(String category) {
+Color expenseCategoryColor(String category, bool isDark) {
   switch (category) {
     case 'food':
       return AppColors.warning;
@@ -40,7 +40,7 @@ Color expenseCategoryColor(String category) {
     case 'salary':
       return AppColors.secondary;
     case 'rent':
-      return AppColors.onSurface;
+      return isDark ? _D.textPrimary : AppColors.onSurface;
     case 'utilities':
       return AppColors.processingChipText;
     case 'marketing':
@@ -48,13 +48,16 @@ Color expenseCategoryColor(String category) {
     case 'equipment':
       return AppColors.outForDeliveryChipText;
     case 'maintenance':
-      return AppColors.textSecondary;
+      return isDark ? _D.textSecondary : AppColors.textSecondary;
     default:
       return AppColors.primary;
   }
 }
 
-Color expenseCategoryBg(String category) {
+Color expenseCategoryBg(String category, bool isDark) {
+  if (isDark) {
+    return expenseCategoryColor(category, isDark).withValues(alpha: 0.15);
+  }
   switch (category) {
     case 'food':
       return const Color(0xFFFAEEDA);
@@ -75,6 +78,18 @@ Color expenseCategoryBg(String category) {
     default:
       return const Color(0xFFE6F1FB);
   }
+}
+
+
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const divider = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
 }
 
 class ExpensesScreen extends StatefulWidget {
@@ -280,6 +295,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final mq = MediaQuery.of(context);
     final scrollBody = _loading
         ? const Center(child: CircularProgressIndicator())
@@ -301,26 +317,26 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   mq.padding.bottom + 80,
                 ),
                 children: [
-                  _summaryRow(),
+                  _summaryRow(isDark),
                   const SizedBox(height: 12),
                   _periodChips(),
                   const SizedBox(height: 10),
-                  _searchField(),
+                  _searchField(isDark),
                   const SizedBox(height: 10),
                   _categoryChips(),
                   const SizedBox(height: 14),
                   if (_categoryBreakdown().isNotEmpty) ...[
-                    _sectionLabel('Category breakdown'),
+                    _sectionLabel('Category breakdown', isDark),
                     const SizedBox(height: 8),
-                    ..._categoryBreakdown().map(_breakdownTile),
+                    ..._categoryBreakdown().map((row) => _breakdownTile(row, isDark)),
                     const SizedBox(height: 6),
                   ],
                   if (_items.isEmpty)
-                    _emptyState()
+                    _emptyState(isDark)
                   else ...[
-                    _sectionLabel('Recent expenses'),
+                    _sectionLabel('Recent expenses', isDark),
                     const SizedBox(height: 8),
-                    ..._items.map(_expenseTile),
+                    ..._items.map((e) => _expenseTile(e, isDark)),
                   ],
                   if (_loadingMore)
                     const Padding(
@@ -335,7 +351,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           );
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? _D.bg : AppColors.background,
       appBar: widget.embeddedInFinanceShell
           ? null
           : AppBar(
@@ -361,41 +377,52 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
   // ── Summary ──────────────────────────────────────────────────────
 
-  Widget _summaryRow() {
+  Widget _summaryRow(bool isDark) {
     final exp = _sumFromSummary('totalExpenseThisMonth');
     final inc = _sumFromSummary('totalIncomeThisMonth');
     final net = _sumFromSummary('netBalance');
     return Row(
       children: [
         Expanded(
-          child: _sumCard('Expense', exp, AppColors.errorContainer,
-              AppColors.error),
+          child: _sumCard(
+            'Expense',
+            exp,
+            isDark ? AppColors.error.withValues(alpha: 0.15) : AppColors.errorContainer,
+            AppColors.error,
+            isDark,
+          ),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: _sumCard(
-              'Income', inc, AppColors.successChipBg, AppColors.success),
+            'Income',
+            inc,
+            isDark ? AppColors.success.withValues(alpha: 0.15) : AppColors.successChipBg,
+            AppColors.success,
+            isDark,
+          ),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: _sumCard(
             'Balance',
             net,
-            AppColors.primaryContainer,
+            isDark ? AppColors.primary.withValues(alpha: 0.15) : AppColors.primaryContainer,
             net >= 0 ? AppColors.success : AppColors.error,
+            isDark,
           ),
         ),
       ],
     );
   }
 
-  Widget _sumCard(String label, double value, Color bg, Color fg) {
+  Widget _sumCard(String label, double value, Color bg, Color fg, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: isDark ? _D.border : AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -405,7 +432,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
+              color: isDark ? _D.textSecondary : AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 5),
@@ -473,24 +500,26 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
   // ── Search ───────────────────────────────────────────────────────
 
-  Widget _searchField() {
+  Widget _searchField(bool isDark) {
     return TextField(
       controller: _searchCtrl,
       onSubmitted: (_) => _load(reset: true),
+      style: TextStyle(color: isDark ? _D.textPrimary : null),
       decoration: InputDecoration(
         hintText: 'Search by title',
-        prefixIcon: const Icon(Icons.search_rounded, size: 20),
+        hintStyle: TextStyle(color: isDark ? _D.textSecondary : null),
+        prefixIcon: Icon(Icons.search_rounded, size: 20, color: isDark ? _D.textSecondary : null),
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: isDark ? _D.surface : AppColors.surface,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: isDark ? _D.border : AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: isDark ? _D.border : AppColors.border),
         ),
       ),
     );
@@ -528,21 +557,21 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
   // ── Section label ─────────────────────────────────────────────────
 
-  Widget _sectionLabel(String text) {
+  Widget _sectionLabel(String text, bool isDark) {
     return Text(
       text.toUpperCase(),
       style: TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.5,
-        color: AppColors.textSecondary,
+        color: isDark ? _D.textSecondary : AppColors.textSecondary,
       ),
     );
   }
 
   // ── Category breakdown ────────────────────────────────────────────
 
-  Widget _breakdownTile(Map<String, dynamic> row) {
+  Widget _breakdownTile(Map<String, dynamic> row, bool isDark) {
     final cat = row['category']?.toString() ?? 'misc';
     final total = (row['total'] is num)
         ? (row['total'] as num).toDouble()
@@ -551,8 +580,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         ? (row['percentage'] as num).toDouble()
         : double.tryParse('${row['percentage']}') ?? 0;
     final icon = expenseCategoryIcon(cat);
-    final col = expenseCategoryColor(cat);
-    final bg = expenseCategoryBg(cat);
+    final col = expenseCategoryColor(cat, isDark);
+    final bg = expenseCategoryBg(cat, isDark);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -574,15 +603,16 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               Expanded(
                 child: Text(
                   cat,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
+                    color: isDark ? _D.textPrimary : null,
                   ),
                 ),
               ),
               Text(
                 _fmtMoney.format(total),
-                style: const TextStyle(fontSize: 13),
+                style: TextStyle(fontSize: 13, color: isDark ? _D.textPrimary : null),
               ),
             ],
           ),
@@ -594,7 +624,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               child: LinearProgressIndicator(
                 value: (pct / 100).clamp(0.0, 1.0),
                 minHeight: 5,
-                backgroundColor: AppColors.primaryContainer,
+                backgroundColor: isDark ? _D.violet100 : AppColors.primaryContainer,
                 color: col,
               ),
             ),
@@ -606,7 +636,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
   // ── Empty state ───────────────────────────────────────────────────
 
-  Widget _emptyState() {
+  Widget _emptyState(bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 48),
       child: Column(
@@ -614,14 +644,14 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           Icon(
             Icons.receipt_long_outlined,
             size: 52,
-            color: AppColors.textHint,
+            color: isDark ? _D.textSecondary : AppColors.textHint,
           ),
           const SizedBox(height: 12),
           Text(
             'No expenses found',
             style: TextStyle(
               fontSize: 14,
-              color: AppColors.textSecondary,
+              color: isDark ? _D.textSecondary : AppColors.textSecondary,
             ),
           ),
         ],
@@ -631,9 +661,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
   // ── Expense tile ──────────────────────────────────────────────────
 
-  Widget _expenseTile(ExpenseModel e) {
-    final col = expenseCategoryColor(e.category);
-    final bg = expenseCategoryBg(e.category);
+  Widget _expenseTile(ExpenseModel e, bool isDark) {
+    final col = expenseCategoryColor(e.category, isDark);
+    final bg = expenseCategoryBg(e.category, isDark);
     final icon = expenseCategoryIcon(e.category);
 
     return Padding(
@@ -662,9 +692,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: isDark ? _D.surface : AppColors.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: isDark ? _D.border : AppColors.border),
           ),
           child: Row(
             children: [
@@ -684,9 +714,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   children: [
                     Text(
                       e.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
+                        color: isDark ? _D.textPrimary : null,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -694,7 +725,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                       DateFormat.yMMMd().format(e.date),
                       style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.textSecondary,
+                        color: isDark ? _D.textSecondary : AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -797,6 +828,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final mq = MediaQuery.of(context);
     return DraggableScrollableSheet(
       initialChildSize: 0.88,
@@ -805,9 +837,9 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
       expand: false,
       builder: (ctx, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: isDark ? _D.surface : AppColors.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: EdgeInsets.only(
             bottom: mq.viewInsets.bottom + mq.padding.bottom + 16,
@@ -823,7 +855,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.border,
+                      color: isDark ? _D.border : AppColors.border,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -833,15 +865,17 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                   'Add expense',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: isDark ? _D.textPrimary : AppColors.textPrimary,
                       ),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _titleCtrl,
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: isDark ? _D.textPrimary : null),
+                  decoration: InputDecoration(
                     labelText: 'Title',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: isDark ? _D.textSecondary : null),
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (v) =>
                       (v == null || v.trim().isEmpty) ? 'Enter title' : null,
@@ -851,10 +885,13 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                   controller: _amountCtrl,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: isDark ? _D.textPrimary : null),
+                  decoration: InputDecoration(
                     labelText: 'Amount',
+                    labelStyle: TextStyle(color: isDark ? _D.textSecondary : null),
                     prefixText: '₹ ',
-                    border: OutlineInputBorder(),
+                    prefixStyle: TextStyle(color: isDark ? _D.textPrimary : null),
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) {
@@ -869,9 +906,12 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: _category,
-                  decoration: const InputDecoration(
+                  dropdownColor: isDark ? _D.surface : null,
+                  style: TextStyle(color: isDark ? _D.textPrimary : null),
+                  decoration: InputDecoration(
                     labelText: 'Category',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: isDark ? _D.textSecondary : null),
+                    border: const OutlineInputBorder(),
                   ),
                   items: ExpenseModel.categories
                       .map(
@@ -879,9 +919,9 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                           value: c,
                           child: Row(
                             children: [
-                              Icon(expenseCategoryIcon(c), size: 18),
+                              Icon(expenseCategoryIcon(c), size: 18, color: isDark ? _D.textSecondary : null),
                               const SizedBox(width: 8),
-                              Text(c),
+                              Text(c, style: TextStyle(color: isDark ? _D.textPrimary : null)),
                             ],
                           ),
                         ),
@@ -893,27 +933,30 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: _payment,
-                  decoration: const InputDecoration(
+                  dropdownColor: isDark ? _D.surface : null,
+                  style: TextStyle(color: isDark ? _D.textPrimary : null),
+                  decoration: InputDecoration(
                     labelText: 'Payment method',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: isDark ? _D.textSecondary : null),
+                    border: const OutlineInputBorder(),
                   ),
-                  items: const [
-                    DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                    DropdownMenuItem(value: 'upi', child: Text('UPI')),
+                  items: [
+                    DropdownMenuItem(value: 'cash', child: Text('Cash', style: TextStyle(color: isDark ? _D.textPrimary : null))),
+                    DropdownMenuItem(value: 'upi', child: Text('UPI', style: TextStyle(color: isDark ? _D.textPrimary : null))),
                     DropdownMenuItem(
                         value: 'bank_transfer',
-                        child: Text('Bank transfer')),
-                    DropdownMenuItem(value: 'card', child: Text('Card')),
+                        child: Text('Bank transfer', style: TextStyle(color: isDark ? _D.textPrimary : null))),
+                    DropdownMenuItem(value: 'card', child: Text('Card', style: TextStyle(color: isDark ? _D.textPrimary : null))),
                   ],
                   onChanged: (v) => setState(() => _payment = v ?? 'cash'),
                 ),
                 const SizedBox(height: 12),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Date'),
-                  subtitle: Text(DateFormat.yMMMd().format(_date)),
+                  title: Text('Date', style: TextStyle(color: isDark ? _D.textPrimary : null)),
+                  subtitle: Text(DateFormat.yMMMd().format(_date), style: TextStyle(color: isDark ? _D.textSecondary : null)),
                   trailing:
-                      const Icon(Icons.calendar_today_rounded, size: 20),
+                      Icon(Icons.calendar_today_rounded, size: 20, color: isDark ? _D.textSecondary : null),
                   onTap: () async {
                     final d = await showDatePicker(
                       context: context,
@@ -927,18 +970,22 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _tagsCtrl,
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: isDark ? _D.textPrimary : null),
+                  decoration: InputDecoration(
                     labelText: 'Tags (comma separated)',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: isDark ? _D.textSecondary : null),
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _notesCtrl,
                   maxLines: 3,
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: isDark ? _D.textPrimary : null),
+                  decoration: InputDecoration(
                     labelText: 'Notes',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: isDark ? _D.textSecondary : null),
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 20),

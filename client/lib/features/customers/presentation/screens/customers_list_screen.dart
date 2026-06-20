@@ -24,10 +24,12 @@ import '../../data/customer_api.dart';
 import '../../../profile/data/profile_api.dart';
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
+// Static semantic colors only — no light/dark branching needed here
+// because these are brand/status accents that stay the same in both themes.
 class _P {
   static const g1 = Color(0xFF7B3FE4);
   static const v700 = Color(0xFF5B21B6);
-  static const v100 = Color(0xFFEDE9FE);
+  static const v100 = Color(0xFFEDE9FE); // used only on light surfaces
   static const s900 = Color(0xFF0F172A);
   static const s600 = Color(0xFF475569);
   static const s400 = Color(0xFF94A3B8);
@@ -37,21 +39,113 @@ class _P {
   static const bg = Color(0xFFF0EBFF);
 
   static const greenBg = Color(0xFFF0FDF4);
-
   static const greenTxt = Color(0xFF166534);
-
   static const greenBdr = Color(0xFF86EFAC);
   static const redBg = Color(0xFFFEF2F2);
   static const redTxt = Color(0xFF991B1B);
   static const redBdr = Color(0xFFFCA5A5);
-
   static const amberBg = Color(0xFFFFFBEB);
-
   static const amberTxt = Color(0xFF92400E);
   static const amberBdr = Color(0xFFFCD34D);
   static const green = Color(0xFF22C55E);
   static const amber = Color(0xFFF59E0B);
   static const red = Color(0xFFEF4444);
+}
+
+// ─── Dark-mode equivalents for _P palette ────────────────────────────────────
+// Use these via the helper extension below instead of hardcoding Colors.white
+// or _P.s100 in widget builds.
+extension _ThemeX on BuildContext {
+  bool get _isDark => Theme.of(this).brightness == Brightness.dark;
+  ColorScheme get cs => Theme.of(this).colorScheme;
+
+  // ── Sheet / card backgrounds ──────────────────────────────────────────────
+  Color get sheetBg =>
+      _isDark ? const Color(0xFF1B1F2E) : Colors.white;
+  Color get sheetBorder =>
+      _isDark ? const Color(0xFF2F3347) : _P.s200;
+
+  // ── General surface / scaffold ────────────────────────────────────────────
+  Color get screenBg =>
+      _isDark ? const Color(0xFF0E1020) : _P.bg;
+  Color get rowBg =>
+      _isDark ? const Color(0xFF141625) : Colors.white;
+
+  // ── Search bar ────────────────────────────────────────────────────────────
+  Color get searchBarBg =>
+      _isDark ? const Color(0xFF1B1F2E) : _P.s100;
+  Color get searchBarBorder =>
+      _isDark ? const Color(0xFF2F3347) : _P.s200;
+  Color get searchBarHeaderBg =>
+      _isDark ? const Color(0xFF141625) : Colors.white;
+
+  // ── Dropdown pill ─────────────────────────────────────────────────────────
+  Color get pillBg =>
+      _isDark ? const Color(0xFF1B1F2E) : Colors.white;
+  Color get pillBorder =>
+      _isDark ? const Color(0xFF2F3347) : _P.s300;
+
+  // ── Text ──────────────────────────────────────────────────────────────────
+  Color get textPrimary =>
+      _isDark ? const Color(0xFFF8FAFC) : _P.s900;
+  Color get textSecondary =>
+      _isDark ? const Color(0xFF94A3B8) : _P.s600;
+  Color get textHint =>
+      _isDark ? const Color(0xFF64748B) : _P.s400;
+
+  // ── Icon containers ───────────────────────────────────────────────────────
+  Color get iconContainerBg =>
+      _isDark ? const Color(0xFF252840) : _P.v100;
+  Color get iconContainerBorder =>
+      _isDark ? const Color(0xFF2F3347) : const Color(0xFFDDD6FE);
+
+  // ── Area / label tag ─────────────────────────────────────────────────────
+  Color get areaBg =>
+      _isDark ? const Color(0xFF1E1B3A) : const Color(0xFFF5F3FF);
+  Color get areaBorder =>
+      _isDark ? const Color(0xFF3B3470) : const Color(0xFFDDD6FE);
+  Color get areaText =>
+      _isDark ? const Color(0xFF9B6AF0) : const Color(0xFF5B21B6);
+
+  // ── Slidable action backgrounds ───────────────────────────────────────────
+  Color get slideEditBg =>
+      _isDark ? const Color(0xFF1E1B3A) : _P.v100;
+  Color get slideEditText =>
+      _isDark ? const Color(0xFF9B6AF0) : _P.v700;
+  Color get slideChatBg =>
+      _isDark ? const Color(0xFF0F2A1A) : const Color(0xFFDCFCE7);
+  Color get slideChatText =>
+      _isDark ? const Color(0xFF4ADE80) : const Color(0xFF166534);
+  Color get slideDeleteBg =>
+      _isDark ? const Color(0xFF2A1010) : _P.redBg;
+  Color get slideDeleteText =>
+      _isDark ? const Color(0xFFFCA5A5) : _P.redTxt;
+
+  // ── Danger (logout / delete) ──────────────────────────────────────────────
+  Color get dangerSoft =>
+      _isDark ? const Color(0xFF2A1010) : _P.redBg;
+
+  // ── Sort / status sheet option cards ─────────────────────────────────────
+  Color get optionCardBg =>
+      _isDark ? const Color(0xFF1B1F2E) : Colors.white;
+  Color get optionCardBorderNormal =>
+      _isDark ? const Color(0xFF2F3347) : _P.s200;
+
+  // ── Analytics / tiffins outside cards ────────────────────────────────────
+  Color get analyticCardBg =>
+      _isDark ? const Color(0xFF1B1F2E) : Colors.white;
+  Color get analyticCardBorder =>
+      _isDark ? const Color(0xFF2F3347) : _P.s200;
+
+  // ── Divider ───────────────────────────────────────────────────────────────
+  Color get dividerColor =>
+      _isDark ? const Color(0xFF2F3347) : _P.s200;
+
+  // ── Balance text ─────────────────────────────────────────────────────────
+  Color get balanceNormal =>
+      _isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A);
+  Color get balanceLow =>
+      _isDark ? const Color(0xFFFCD34D) : const Color(0xFF92400E);
 }
 
 Color _accentColor(String? status) {
@@ -96,7 +190,6 @@ enum _CustomerStatusFilter {
 }
 
 class _CustomersListScreenState extends State<CustomersListScreen> {
-  // ── ALL LOGIC UNCHANGED ──
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -109,7 +202,6 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
   bool _isLoadingMore = false;
   List<CustomerModel> _customers = [];
 
-  // ── Added local-only sort/filter state (does not affect API fetching) ──
   _CustomerSort _sort = _CustomerSort.newest;
   final Set<_CustomerStatusFilter> _statusFilters = <_CustomerStatusFilter>{};
   final Set<String> _timeSlotFilters = <String>{};
@@ -117,7 +209,6 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
   bool _zonesLoading = false;
   String? _selectedZone;
 
-  // ── New: card field customization (local-only UI preference) ──
   static const String _prefsKeyCardFields = 'customers.card_fields.v1';
   Set<_CardField> _cardFields = <_CardField>{
     _CardField.name,
@@ -230,9 +321,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
       _updateCustomerZones(list);
       await _loadAllLabels();
     } catch (e, stack) {
-      if (kDebugMode) {
-        debugPrint('❌ _loadCustomers error: $e\n$stack');
-      }
+      if (kDebugMode) debugPrint('❌ _loadCustomers error: $e\n$stack');
       if (mounted) ErrorHandler.show(context, e);
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -277,30 +366,24 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
       _updateCustomerZones(_customers);
       await _loadAllLabels();
     } catch (e, stack) {
-      if (kDebugMode) {
-        debugPrint('_loadMore error: $e\n$stack');
-      }
+      if (kDebugMode) debugPrint('_loadMore error: $e\n$stack');
       if (mounted) ErrorHandler.show(context, e);
     } finally {
       if (mounted) setState(() => _isLoadingMore = false);
     }
   }
 
-  Future<void> _refresh() async {
-    await _loadCustomers(reset: true);
-  }
+  Future<void> _refresh() async => _loadCustomers(reset: true);
 
   Future<void> _openAddCustomer() async {
     final created = await context.push<CustomerModel>(AppRoutes.addCustomer);
     if (!mounted || created == null) return;
-
     final shouldShow =
         _filter == 'all' || _filter == 'active' || created.status == _filter;
     if (shouldShow) {
       setState(() {
-        final withoutDuplicate = _customers
-            .where((customer) => customer.id != created.id)
-            .toList();
+        final withoutDuplicate =
+            _customers.where((c) => c.id != created.id).toList();
         _customers = [created, ...withoutDuplicate];
       });
       await _loadAllLabels();
@@ -329,15 +412,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         final id = c.id.trim();
         if (id.isEmpty) continue;
         final val = prefs.getString('customer_label_$id');
-        if (val != null && val.trim().isNotEmpty) {
-          labels[id] = val.trim();
-        }
+        if (val != null && val.trim().isNotEmpty) labels[id] = val.trim();
       }
       if (mounted) setState(() => _customerLabels = labels);
     } catch (_) {}
   }
 
-  /// Safe map read for list build (avoids odd JS interop edge cases with empty keys).
   String? _labelForCustomer(String id) {
     final k = id.trim();
     if (k.isEmpty) return null;
@@ -351,15 +431,11 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     final trimmed = label.trim();
     if (trimmed.isEmpty) {
       await prefs.remove('customer_label_$id');
-      if (mounted) {
-        setState(() => _customerLabels.remove(id));
-      }
+      if (mounted) setState(() => _customerLabels.remove(id));
       return;
     }
     await prefs.setString('customer_label_$id', trimmed);
-    if (mounted) {
-      setState(() => _customerLabels[id] = trimmed);
-    }
+    if (mounted) setState(() => _customerLabels[id] = trimmed);
   }
 
   static const _labelPresets = [
@@ -369,19 +445,16 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     'Due Payment',
   ];
 
+  // ── Label Sheet ───────────────────────────────────────────────────────────
   Future<void> _openLabelSheet(
     BuildContext context,
     CustomerModel customer,
   ) async {
-    const bg = Colors.white;
-    const divider = _P.s200;
     final current = _labelForCustomer(customer.id);
-    final String initialSelected;
-    if (current != null && current.isNotEmpty) {
-      initialSelected = _labelPresets.contains(current) ? current : '';
-    } else {
-      initialSelected = 'Regular';
-    }
+    final String initialSelected =
+        (current != null && current.isNotEmpty)
+            ? (_labelPresets.contains(current) ? current : '')
+            : 'Regular';
     final customCtrl = TextEditingController(
       text:
           (current != null &&
@@ -397,12 +470,14 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) {
+        // Read theme inside builder so it uses the correct context.
         return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom,
-          ),
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
           child: StatefulBuilder(
             builder: (ctx, setModal) {
+              final bg = ctx.sheetBg;
+              final divider = ctx.sheetBorder;
               return SafeArea(
                 child: Container(
                   margin: const EdgeInsets.all(12),
@@ -412,7 +487,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                     border: Border.all(color: divider),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
+                        color: ctx.cs.shadow.withValues(alpha: 0.08),
                         blurRadius: 18,
                         offset: const Offset(0, 8),
                       ),
@@ -437,8 +512,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                               Expanded(
                                 child: Text(
                                   'Label — ${customer.name}',
-                                  style: const TextStyle(
-                                    color: _P.s900,
+                                  style: TextStyle(
+                                    color: ctx.textPrimary,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 15,
                                   ),
@@ -446,9 +521,9 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                               ),
                               IconButton(
                                 onPressed: () => Navigator.pop(ctx),
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.close_rounded,
-                                  color: _P.s600,
+                                  color: ctx.textSecondary,
                                   size: 20,
                                 ),
                               ),
@@ -462,30 +537,59 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: _P.v100,
+                                color: ctx.iconContainerBg,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: const Color(0xFFDDD6FE),
+                                  color: ctx.iconContainerBorder,
                                   width: 0.5,
                                 ),
                               ),
-                              child: Text(
-                                _businessName!,
-                                style: const TextStyle(
+                              child: const Text(
+                                // businessName shown here; color uses brand purple
+                                '',
+                                style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: _P.v700,
                                 ),
                               ),
                             ),
+                            // Proper text extracted outside const so it reads _businessName
+                            Builder(
+                              builder: (_) => Padding(
+                                padding: const EdgeInsets.only(top: 0),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: ctx.iconContainerBg,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: ctx.iconContainerBorder,
+                                      width: 0.5,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    _businessName!,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: ctx.areaText,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                           const SizedBox(height: 14),
-                          const Text(
+                          Text(
                             'Quick tags',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: _P.s600,
+                              color: ctx.textSecondary,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -506,58 +610,58 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                                     ),
                                   ),
                                   selected: selected == p,
-                                  onSelected: (_) {
-                                    setModal(() {
-                                      selected = p;
-                                      customCtrl.clear();
-                                    });
-                                  },
+                                  onSelected: (_) => setModal(() {
+                                    selected = p;
+                                    customCtrl.clear();
+                                  }),
                                   selectedColor: _P.g1,
                                   checkmarkColor: Colors.white,
-                                  backgroundColor: Colors.white,
-                                  side: const BorderSide(
-                                    color: Color(0xFFDDD6FE),
+                                  backgroundColor: ctx.iconContainerBg,
+                                  side: BorderSide(
+                                    color: ctx.iconContainerBorder,
                                     width: 0.5,
                                   ),
                                 ),
                             ],
                           ),
                           const SizedBox(height: 14),
-                          const Text(
+                          Text(
                             'Custom label',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: _P.s600,
+                              color: ctx.textSecondary,
                             ),
                           ),
                           const SizedBox(height: 6),
                           TextField(
                             controller: customCtrl,
-                            onChanged: (_) {
-                              setModal(() {
-                                selected = '';
-                              });
-                            },
+                            onChanged: (_) => setModal(() => selected = ''),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: ctx.textPrimary,
+                            ),
                             decoration: InputDecoration(
                               hintText: 'Type a custom tag…',
-                              hintStyle: const TextStyle(
+                              hintStyle: TextStyle(
                                 fontSize: 12,
-                                color: _P.s400,
+                                color: ctx.textHint,
                               ),
                               filled: true,
-                              fillColor: _P.s100,
+                              fillColor: ctx.searchBarBg,
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 10,
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(color: divider),
+                                borderSide:
+                                    BorderSide(color: ctx.sheetBorder),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(color: divider),
+                                borderSide:
+                                    BorderSide(color: ctx.sheetBorder),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -566,10 +670,6 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                                   width: 1,
                                 ),
                               ),
-                            ),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: _P.s900,
                             ),
                           ),
                           const SizedBox(height: 18),
@@ -582,14 +682,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                                     if (ctx.mounted) Navigator.pop(ctx);
                                     if (context.mounted) {
                                       AppSnackbar.success(
-                                        context,
-                                        'Label cleared',
-                                      );
+                                          context, 'Label cleared');
                                     }
                                   },
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: _P.s600,
-                                    side: const BorderSide(color: divider),
+                                    foregroundColor: ctx.textSecondary,
+                                    side: BorderSide(color: ctx.sheetBorder),
                                   ),
                                   child: const Text('Clear'),
                                 ),
@@ -609,9 +707,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                                     if (ctx.mounted) Navigator.pop(ctx);
                                     if (context.mounted) {
                                       AppSnackbar.success(
-                                        context,
-                                        'Label applied',
-                                      );
+                                          context, 'Label applied');
                                     }
                                   },
                                   style: FilledButton.styleFrom(
@@ -620,9 +716,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                                   ),
                                   child: const Text(
                                     'Apply',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w800),
                                   ),
                                 ),
                               ),
@@ -642,6 +737,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     customCtrl.dispose();
   }
 
+  // ── Print copies sheet ────────────────────────────────────────────────────
   Future<void> _openPrintCopiesSheet(
     BuildContext context,
     CustomerModel customer,
@@ -657,12 +753,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
               child: Container(
                 margin: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: ctx.sheetBg,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: _P.s200),
+                  border: Border.all(color: ctx.sheetBorder),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
+                      color: ctx.cs.shadow.withValues(alpha: 0.08),
                       blurRadius: 18,
                       offset: const Offset(0, 8),
                     ),
@@ -682,11 +778,11 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                             size: 22,
                           ),
                           const SizedBox(width: 8),
-                          const Expanded(
+                          Expanded(
                             child: Text(
                               'Print Tiffin Label',
                               style: TextStyle(
-                                color: _P.s900,
+                                color: ctx.textPrimary,
                                 fontWeight: FontWeight.w800,
                                 fontSize: 15,
                               ),
@@ -694,9 +790,9 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                           ),
                           IconButton(
                             onPressed: () => Navigator.pop(ctx),
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.close_rounded,
-                              color: _P.s600,
+                              color: ctx.textSecondary,
                               size: 20,
                             ),
                           ),
@@ -704,19 +800,20 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                       ),
                       Text(
                         customer.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: _P.s600,
+                          color: ctx.textSecondary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 14),
                       RadioListTile<int>(
-                        title: const Text(
+                        title: Text(
                           '1 copy (top-left, rest blank)',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
+                            color: ctx.textPrimary,
                           ),
                         ),
                         value: 1,
@@ -724,11 +821,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                         onChanged: (v) => setModal(() => copies = v ?? 1),
                       ),
                       RadioListTile<int>(
-                        title: const Text(
+                        title: Text(
                           '4 copies (full A4, save paper)',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
+                            color: ctx.textPrimary,
                           ),
                         ),
                         value: 4,
@@ -739,11 +837,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                       FilledButton(
                         onPressed: () async {
                           Navigator.pop(ctx);
-                          await _printTiffinLabel(
-                            context,
-                            customer,
-                            copies: copies,
-                          );
+                          await _printTiffinLabel(context, customer,
+                              copies: copies);
                         },
                         style: FilledButton.styleFrom(
                           backgroundColor: _P.g1,
@@ -765,6 +860,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     );
   }
 
+  // ── PDF generation (not UI, no dark-mode changes needed) ──────────────────
   Future<void> _printTiffinLabel(
     BuildContext context,
     CustomerModel customer, {
@@ -804,9 +900,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             children: [
               pw.Container(
                 padding: const pw.EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
+                    horizontal: 10, vertical: 8),
                 decoration: pw.BoxDecoration(
                   color: headerPurple,
                   borderRadius: const pw.BorderRadius.only(
@@ -830,10 +924,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                       pw.SizedBox(height: 2),
                       pw.Text(
                         'Ph: $businessPhone',
-                        style: pw.TextStyle(
-                          color: PdfColors.white,
-                          fontSize: 8,
-                        ),
+                        style:
+                            pw.TextStyle(color: PdfColors.white, fontSize: 8),
                       ),
                     ],
                   ],
@@ -846,34 +938,24 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                   children: [
                     pw.Text(
                       'TO:',
-                      style: pw.TextStyle(
-                        fontSize: 7,
-                        color: PdfColors.grey600,
-                      ),
+                      style: const pw.TextStyle(
+                          fontSize: 7, color: PdfColors.grey600),
                     ),
                     pw.SizedBox(height: 2),
                     pw.Text(
                       customer.name,
                       style: pw.TextStyle(
-                        fontWeight: pw.FontWeight.bold,
-                        fontSize: 12,
-                      ),
+                          fontWeight: pw.FontWeight.bold, fontSize: 12),
                     ),
                     if (address.isNotEmpty) ...[
                       pw.SizedBox(height: 3),
-                      pw.Text(
-                        address,
-                        style: const pw.TextStyle(
-                          fontSize: 9,
-                          color: PdfColors.grey700,
-                        ),
-                      ),
+                      pw.Text(address,
+                          style: const pw.TextStyle(
+                              fontSize: 9, color: PdfColors.grey700)),
                     ],
                     pw.SizedBox(height: 3),
-                    pw.Text(
-                      'Ph: ${customer.phone}',
-                      style: const pw.TextStyle(fontSize: 9),
-                    ),
+                    pw.Text('Ph: ${customer.phone}',
+                        style: const pw.TextStyle(fontSize: 9)),
                     pw.SizedBox(height: 8),
                     pw.Row(
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -882,14 +964,10 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                         if (label != null && label.isNotEmpty)
                           pw.Container(
                             padding: const pw.EdgeInsets.symmetric(
-                              horizontal: 7,
-                              vertical: 3,
-                            ),
+                                horizontal: 7, vertical: 3),
                             decoration: pw.BoxDecoration(
                               border: pw.Border.all(
-                                color: chipPurple,
-                                width: 0.8,
-                              ),
+                                  color: chipPurple, width: 0.8),
                               borderRadius: pw.BorderRadius.circular(4),
                             ),
                             child: pw.Text(
@@ -903,13 +981,9 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                           )
                         else
                           pw.SizedBox(),
-                        pw.Text(
-                          'Date: $dateStr',
-                          style: const pw.TextStyle(
-                            fontSize: 8,
-                            color: PdfColors.grey600,
-                          ),
-                        ),
+                        pw.Text('Date: $dateStr',
+                            style: const pw.TextStyle(
+                                fontSize: 8, color: PdfColors.grey600)),
                       ],
                     ),
                   ],
@@ -933,33 +1007,31 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         pw.Page(
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(16),
-          build: (ctx) {
-            return pw.Column(
-              children: [
-                pw.Expanded(
-                  child: pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-                    children: [
-                      pw.Expanded(child: slots[0]),
-                      pw.SizedBox(width: 8),
-                      pw.Expanded(child: slots[1]),
-                    ],
-                  ),
+          build: (ctx) => pw.Column(
+            children: [
+              pw.Expanded(
+                child: pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+                  children: [
+                    pw.Expanded(child: slots[0]),
+                    pw.SizedBox(width: 8),
+                    pw.Expanded(child: slots[1]),
+                  ],
                 ),
-                pw.SizedBox(height: 8),
-                pw.Expanded(
-                  child: pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-                    children: [
-                      pw.Expanded(child: slots[2]),
-                      pw.SizedBox(width: 8),
-                      pw.Expanded(child: slots[3]),
-                    ],
-                  ),
+              ),
+              pw.SizedBox(height: 8),
+              pw.Expanded(
+                child: pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+                  children: [
+                    pw.Expanded(child: slots[2]),
+                    pw.SizedBox(width: 8),
+                    pw.Expanded(child: slots[3]),
+                  ],
                 ),
-              ],
-            );
-          },
+              ),
+            ],
+          ),
         ),
       );
 
@@ -979,61 +1051,60 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     }
   }
 
+  // ── Customer row menu ─────────────────────────────────────────────────────
   Future<void> _openCustomerRowMenu(CustomerModel customer) async {
-    const bg = Colors.white;
-    const divider = _P.s200;
-    const text = _P.s900;
-
-    Widget item({
-      required IconData icon,
-      required String label,
-      required VoidCallback onTap,
-      Color? iconColor,
-      Color? textColor,
-    }) {
-      return InkWell(
-        onTap: () {
-          Navigator.pop(context);
-          onTap();
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-          child: Row(
-            children: [
-              Icon(icon, color: iconColor ?? _P.v700, size: 20),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: textColor ?? text,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              Icon(Icons.chevron_right_rounded, color: _P.s400, size: 18),
-            ],
-          ),
-        ),
-      );
-    }
-
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) {
+        Widget item({
+          required IconData icon,
+          required String label,
+          required VoidCallback onTap,
+          Color? iconColor,
+          Color? textColor,
+        }) {
+          return InkWell(
+            onTap: () {
+              Navigator.pop(context);
+              onTap();
+            },
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              child: Row(
+                children: [
+                  Icon(icon, color: iconColor ?? _P.v700, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: textColor ?? ctx.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded,
+                      color: ctx.textHint, size: 18),
+                ],
+              ),
+            ),
+          );
+        }
+
         return SafeArea(
           child: Container(
             margin: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: bg,
+              color: ctx.sheetBg,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: divider),
+              border: Border.all(color: ctx.sheetBorder),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: ctx.cs.shadow.withValues(alpha: 0.08),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -1051,8 +1122,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                         Expanded(
                           child: Text(
                             customer.name,
-                            style: const TextStyle(
-                              color: text,
+                            style: TextStyle(
+                              color: ctx.textPrimary,
                               fontWeight: FontWeight.w800,
                               fontSize: 15,
                             ),
@@ -1062,16 +1133,13 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                         ),
                         IconButton(
                           onPressed: () => Navigator.pop(ctx),
-                          icon: const Icon(
-                            Icons.close_rounded,
-                            color: _P.s600,
-                            size: 20,
-                          ),
+                          icon: Icon(Icons.close_rounded,
+                              color: ctx.textSecondary, size: 20),
                         ),
                       ],
                     ),
                   ),
-                  const Divider(height: 1, thickness: 1, color: divider),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   item(
                     icon: Icons.label_outline_rounded,
                     label: 'Label Customer',
@@ -1086,10 +1154,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                     icon: Icons.edit_outlined,
                     label: 'Edit Customer',
                     onTap: () async {
-                      await context.push(
-                        AppRoutes.editCustomer,
-                        extra: customer,
-                      );
+                      await context.push(AppRoutes.editCustomer,
+                          extra: customer);
                       _loadCustomers(reset: true);
                     },
                   ),
@@ -1125,65 +1191,71 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
   }
 
+  // ── Confirm Delete ────────────────────────────────────────────────────────
   void _confirmDelete(BuildContext context, CustomerModel customer) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Delete Customer',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: _P.s900,
-          ),
-        ),
-        content: Text(
-          'Delete ${customer.name}? This cannot be undone.',
-          style: const TextStyle(fontSize: 13, color: _P.s600),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: _P.s600, fontWeight: FontWeight.w600),
+      builder: (ctx) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'Delete Customer',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: ctx.textPrimary,
             ),
           ),
-          GestureDetector(
-            onTap: () async {
-              Navigator.pop(ctx);
-              try {
-                await CustomerApi.delete(customer.id);
-                DeliveryTrackingSocket.instance.notifyDailyOrdersChanged();
-                overviewDashboardTabSelectedTick.value++;
-                if (context.mounted) {
-                  AppSnackbar.success(context, 'Customer deleted');
-                  _loadCustomers(reset: true);
-                }
-              } catch (e) {
-                if (context.mounted) ErrorHandler.show(context, e);
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: _P.redBg,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: _P.redBdr, width: 0.5),
-              ),
-              child: const Text(
-                'Delete',
+          content: Text(
+            'Delete ${customer.name}? This cannot be undone.',
+            style: TextStyle(fontSize: 13, color: ctx.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(
+                'Cancel',
                 style: TextStyle(
-                  color: _P.redTxt,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
+                    color: ctx.textSecondary, fontWeight: FontWeight.w600),
+              ),
+            ),
+            GestureDetector(
+              onTap: () async {
+                Navigator.pop(ctx);
+                try {
+                  await CustomerApi.delete(customer.id);
+                  DeliveryTrackingSocket.instance.notifyDailyOrdersChanged();
+                  overviewDashboardTabSelectedTick.value++;
+                  if (context.mounted) {
+                    AppSnackbar.success(context, 'Customer deleted');
+                    _loadCustomers(reset: true);
+                  }
+                } catch (e) {
+                  if (context.mounted) ErrorHandler.show(context, e);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: ctx.dangerSoft,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: _P.redBdr, width: 0.5),
+                ),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(
+                    color: _P.redTxt,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 
@@ -1196,6 +1268,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     return 'Filter ($label)';
   }
 
+  // ── Main Filter Sheet ─────────────────────────────────────────────────────
   Future<void> _openMainFilterSheet(BuildContext context) async {
     await showModalBottomSheet<void>(
       context: context,
@@ -1210,13 +1283,16 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
               _loadCustomers(reset: true);
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
                   Icon(
-                    sel ? Icons.radio_button_checked : Icons.radio_button_off,
+                    sel
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off,
                     size: 18,
-                    color: sel ? _P.g1 : _P.s400,
+                    color: sel ? _P.g1 : ctx.textHint,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -1225,7 +1301,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: sel ? _P.s900 : _P.s600,
+                        color: sel ? ctx.textPrimary : ctx.textSecondary,
                       ),
                     ),
                   ),
@@ -1239,12 +1315,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
           child: Container(
             margin: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: ctx.sheetBg,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: _P.s200),
+              border: Border.all(color: ctx.sheetBorder),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: ctx.cs.shadow.withValues(alpha: 0.08),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -1259,11 +1335,11 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
                     child: Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Filter',
                             style: TextStyle(
-                              color: _P.s900,
+                              color: ctx.textPrimary,
                               fontWeight: FontWeight.w800,
                               fontSize: 15,
                             ),
@@ -1272,18 +1348,18 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                         IconButton(
                           onPressed: () => Navigator.pop(ctx),
                           icon: const Icon(Icons.close_rounded, size: 20),
-                          color: _P.s600,
+                          color: ctx.textSecondary,
                         ),
                       ],
                     ),
                   ),
-                  Container(height: 1, color: _P.s200),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   item('all', 'All'),
-                  Container(height: 1, color: _P.s200),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   item('active', 'Active'),
-                  Container(height: 1, color: _P.s200),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   item('inactive', 'Inactive'),
-                  Container(height: 1, color: _P.s200),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   item('lowBalance', 'Low Balance'),
                 ],
               ),
@@ -1294,23 +1370,17 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     );
   }
 
-  static const _sheetBg = Color(0xFF1E1E1E);
-  static const _sheetBorder = Color(0x33FFFFFF);
-
   static bool _isLowBalance(CustomerModel c) => c.effectiveWalletBalance < 100;
 
   static String? _diet(CustomerModel c) {
     final dt = c.dietType?.trim().toLowerCase();
     if (dt != null && dt.isNotEmpty) return dt;
-    final tags = (c.tags ?? const [])
-        .map((e) => e.trim().toLowerCase())
-        .toList();
+    final tags =
+        (c.tags ?? const []).map((e) => e.trim().toLowerCase()).toList();
     if (tags.contains('veg') || tags.contains('vegetarian')) return 'veg';
     if (tags.contains('non_veg') ||
         tags.contains('non-veg') ||
-        tags.contains('nonvegetarian')) {
-      return 'non_veg';
-    }
+        tags.contains('nonvegetarian')) return 'non_veg';
     return null;
   }
 
@@ -1334,7 +1404,6 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
       final v = s.trim();
       if (v.isNotEmpty) out.add(v);
     }
-    // Also allow tags to contribute if backend uses tags for slots.
     for (final t in c.tags ?? const <String>[]) {
       final v = t.trim();
       if (v.isNotEmpty &&
@@ -1357,7 +1426,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     final timeSel = _timeSlotFilters;
 
     bool statusMatches(CustomerModel c) {
-      if (statusSel.isEmpty) return true; // means "all 8/8"
+      if (statusSel.isEmpty) return true;
       bool any = false;
       for (final f in statusSel) {
         switch (f) {
@@ -1365,11 +1434,11 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             any = any || _isLowBalance(c);
             break;
           case _CustomerStatusFilter.vegetarian:
-            any = any || (_diet(c) == 'veg' || _diet(c) == 'vegetarian');
+            any =
+                any || (_diet(c) == 'veg' || _diet(c) == 'vegetarian');
             break;
           case _CustomerStatusFilter.nonVegetarian:
-            any =
-                any ||
+            any = any ||
                 (_diet(c) == 'non_veg' ||
                     _diet(c) == 'nonveg' ||
                     _diet(c) == 'non-veg');
@@ -1396,14 +1465,16 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
 
     bool timeMatches(CustomerModel c) {
       if (timeSel.isEmpty) return true;
-      final slots = _customerTimeSlots(c).map((e) => e.toLowerCase()).toSet();
+      final slots =
+          _customerTimeSlots(c).map((e) => e.toLowerCase()).toSet();
       for (final s in timeSel) {
         if (slots.contains(s.toLowerCase())) return true;
       }
       return false;
     }
 
-    final out = base.where((c) => statusMatches(c) && timeMatches(c)).toList();
+    final out =
+        base.where((c) => statusMatches(c) && timeMatches(c)).toList();
 
     int cmpString(String a, String b) =>
         a.toLowerCase().compareTo(b.toLowerCase());
@@ -1412,10 +1483,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
       switch (_sort) {
         case _CustomerSort.newest:
           return (b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0))
-              .compareTo(a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0));
+              .compareTo(
+                  a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0));
         case _CustomerSort.oldest:
           return (a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0))
-              .compareTo(b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0));
+              .compareTo(
+                  b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0));
         case _CustomerSort.nameAz:
           return cmpString(a.name, b.name);
         case _CustomerSort.nameZa:
@@ -1433,19 +1506,16 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     return out;
   }
 
-  String _sortLabel() {
-    final label = switch (_sort) {
-      _CustomerSort.newest => 'Newest',
-      _CustomerSort.oldest => 'Oldest',
-      _CustomerSort.nameAz => 'Name (A-Z)',
-      _CustomerSort.nameZa => 'Name (Z-A)',
-      _CustomerSort.lowestBalance => 'Lowest Balance',
-      _CustomerSort.highestBalance => 'Highest Balance',
-      _CustomerSort.lowestTiffinCounts => 'Lowest Tiffin Counts',
-      _CustomerSort.highestTiffinCounts => 'Highest Tiffin Counts',
-    };
-    return 'Sort By ($label)';
-  }
+  String _sortLabel() => 'Sort By (${switch (_sort) {
+    _CustomerSort.newest => 'Newest',
+    _CustomerSort.oldest => 'Oldest',
+    _CustomerSort.nameAz => 'Name (A-Z)',
+    _CustomerSort.nameZa => 'Name (Z-A)',
+    _CustomerSort.lowestBalance => 'Lowest Balance',
+    _CustomerSort.highestBalance => 'Highest Balance',
+    _CustomerSort.lowestTiffinCounts => 'Lowest Tiffin Counts',
+    _CustomerSort.highestTiffinCounts => 'Highest Tiffin Counts',
+  }})';
 
   String _statusLabel() {
     final sel = _statusFilters.isEmpty
@@ -1454,11 +1524,9 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     return 'Status ($sel/${_CustomerStatusFilter.values.length})';
   }
 
-  String _timeSlotsLabel() {
-    return _timeSlotFilters.isEmpty
-        ? 'Time Slots'
-        : 'Time Slots (${_timeSlotFilters.length})';
-  }
+  String _timeSlotsLabel() => _timeSlotFilters.isEmpty
+      ? 'Time Slots'
+      : 'Time Slots (${_timeSlotFilters.length})';
 
   String _zoneLabel() {
     if (_zonesLoading) return 'Zone (…)';
@@ -1466,9 +1534,9 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     return 'Zone ($_selectedZone)';
   }
 
+  // ── Zone Sheet ────────────────────────────────────────────────────────────
   Future<void> _openZoneSheet(BuildContext context) async {
     if (_zones.isEmpty && !_zonesLoading) return;
-
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -1483,13 +1551,16 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
               _loadCustomers(reset: true);
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
                   Icon(
-                    sel ? Icons.radio_button_checked : Icons.radio_button_off,
+                    sel
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off,
                     size: 18,
-                    color: sel ? _P.g1 : _P.s400,
+                    color: sel ? _P.g1 : ctx.textHint,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -1498,7 +1569,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: sel ? _P.s900 : _P.s600,
+                        color: sel ? ctx.textPrimary : ctx.textSecondary,
                       ),
                     ),
                   ),
@@ -1512,12 +1583,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
           child: Container(
             margin: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: ctx.sheetBg,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: _P.s200),
+              border: Border.all(color: ctx.sheetBorder),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: ctx.cs.shadow.withValues(alpha: 0.08),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -1526,87 +1597,93 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(18),
               child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(ctx).size.height * 0.75,
-                    ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-                            child: Row(
-                              children: [
-                                const Expanded(
-                                  child: Text(
-                                    'Zone',
-                                    style: TextStyle(
-                                      color: _P.s900,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 15,
-                                    ),
+                builder: (context, constraints) => ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(ctx).size.height * 0.75,
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Zone',
+                                  style: TextStyle(
+                                    color: ctx.textPrimary,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 15,
                                   ),
                                 ),
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.pop(ctx);
-                                    setState(() => _selectedZone = null);
-                                    _loadCustomers(reset: true);
-                                  },
-                                  child: const Text(
-                                    'Clear Selection',
-                                    style: TextStyle(
-                                      color: _P.v700,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 12,
-                                    ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  setState(() => _selectedZone = null);
+                                  _loadCustomers(reset: true);
+                                },
+                                child: const Text(
+                                  'Clear Selection',
+                                  style: TextStyle(
+                                    color: _P.v700,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
                                   ),
                                 ),
-                                IconButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  icon: const Icon(Icons.close_rounded, size: 20),
-                                  color: _P.s600,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(height: 1, color: _P.s200),
-                          if (_zonesLoading)
-                            const Padding(
-                              padding: EdgeInsets.all(24),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: _P.g1,
-                                  strokeWidth: 2,
-                                ),
                               ),
-                            )
-                          else if (_zones.isEmpty)
-                            const Padding(
-                              padding: EdgeInsets.all(24),
-                              child: Text(
-                                'No zones available',
-                                style: TextStyle(
-                                  color: _P.s600,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                ),
+                              IconButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                icon: const Icon(Icons.close_rounded,
+                                    size: 20),
+                                color: ctx.textSecondary,
                               ),
-                            )
-                          else ...[
-                            item(null, 'All Zones'),
-                            for (var i = 0; i < _zones.length; i++) ...[
-                              Container(height: 1, color: _P.s200),
-                              item(_zones[i], _zones[i]),
                             ],
+                          ),
+                        ),
+                        Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: ctx.sheetBorder),
+                        if (_zonesLoading)
+                          const Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: _P.g1,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          )
+                        else if (_zones.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Text(
+                              'No zones available',
+                              style: TextStyle(
+                                color: ctx.textSecondary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          )
+                        else ...[
+                          item(null, 'All Zones'),
+                          for (var i = 0; i < _zones.length; i++) ...[
+                            Divider(
+                                height: 1,
+                                thickness: 1,
+                                color: ctx.sheetBorder),
+                            item(_zones[i], _zones[i]),
                           ],
                         ],
-                      ),
+                      ],
                     ),
-                  );
-                },
+                  ),
+                ),
               ),
             ),
           ),
@@ -1615,32 +1692,34 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     );
   }
 
-  Widget _dropdownPill({required String label, required VoidCallback onTap}) {
+  // ── Dropdown Pill ─────────────────────────────────────────────────────────
+  Widget _dropdownPill(
+      {required String label, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.pillBg,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _P.s300, width: 0.5),
+          border: Border.all(color: context.pillBorder, width: 0.5),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: _P.s600,
+                color: context.textSecondary,
               ),
             ),
             const SizedBox(width: 6),
-            const Icon(
+            Icon(
               Icons.keyboard_arrow_down_rounded,
               size: 18,
-              color: _P.s600,
+              color: context.textSecondary,
             ),
           ],
         ),
@@ -1648,10 +1727,9 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     );
   }
 
+  // ── Sort Sheet ────────────────────────────────────────────────────────────
   Future<void> _openSortSheet(
-    BuildContext context,
-    List<CustomerModel> base,
-  ) async {
+      BuildContext context, List<CustomerModel> base) async {
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1665,19 +1743,20 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             },
             child: Container(
               margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: ctx.optionCardBg,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: selected ? _P.g1 : _P.s200,
+                  color: selected ? _P.g1 : ctx.optionCardBorderNormal,
                   width: selected ? 1.6 : 1,
                 ),
               ),
               child: Text(
                 label,
                 style: TextStyle(
-                  color: selected ? _P.v700 : _P.s900,
+                  color: selected ? _P.v700 : ctx.textPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: 13,
                 ),
@@ -1688,14 +1767,15 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
 
         final mq = MediaQuery.of(ctx);
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+          decoration: BoxDecoration(
+            color: ctx.sheetBg,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(18)),
           ),
           child: SafeArea(
             top: false,
             child: SizedBox(
-              height: mq.size.height * 0.74, // prevents bottom overflow
+              height: mq.size.height * 0.74,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -1703,11 +1783,11 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
                     child: Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Sort By',
                             style: TextStyle(
-                              color: _P.s900,
+                              color: ctx.textPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
                             ),
@@ -1730,30 +1810,24 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                       ],
                     ),
                   ),
-                  Container(height: 0.8, color: _P.s200),
+                  Divider(height: 0.8, color: ctx.sheetBorder),
                   Expanded(
                     child: ListView(
                       padding: EdgeInsets.fromLTRB(
-                        16,
-                        14,
-                        16,
-                        mq.padding.bottom + 16,
-                      ),
+                          16, 14, 16, mq.padding.bottom + 16),
                       children: [
                         option(_CustomerSort.newest, 'Newest'),
                         option(_CustomerSort.oldest, 'Oldest'),
                         option(_CustomerSort.nameAz, 'Name (A-Z)'),
                         option(_CustomerSort.nameZa, 'Name (Z-A)'),
-                        option(_CustomerSort.lowestBalance, 'Lowest Balance'),
-                        option(_CustomerSort.highestBalance, 'Highest Balance'),
                         option(
-                          _CustomerSort.lowestTiffinCounts,
-                          'Lowest Tiffin Counts',
-                        ),
+                            _CustomerSort.lowestBalance, 'Lowest Balance'),
                         option(
-                          _CustomerSort.highestTiffinCounts,
-                          'Highest Tiffin Counts',
-                        ),
+                            _CustomerSort.highestBalance, 'Highest Balance'),
+                        option(_CustomerSort.lowestTiffinCounts,
+                            'Lowest Tiffin Counts'),
+                        option(_CustomerSort.highestTiffinCounts,
+                            'Highest Tiffin Counts'),
                       ],
                     ),
                   ),
@@ -1766,35 +1840,29 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     );
   }
 
+  // ── Status Sheet ──────────────────────────────────────────────────────────
   Future<void> _openStatusSheet(
-    BuildContext context,
-    List<CustomerModel> base,
-  ) async {
+      BuildContext context, List<CustomerModel> base) async {
     Map<_CustomerStatusFilter, int> counts() {
       int countWhere(bool Function(CustomerModel c) pred) =>
           base.where(pred).length;
       return <_CustomerStatusFilter, int>{
         _CustomerStatusFilter.lowBalance: countWhere(_isLowBalance),
         _CustomerStatusFilter.vegetarian: countWhere(
-          (c) => _diet(c) == 'veg' || _diet(c) == 'vegetarian',
-        ),
-        _CustomerStatusFilter.nonVegetarian: countWhere(
-          (c) =>
-              _diet(c) == 'non_veg' ||
-              _diet(c) == 'nonveg' ||
-              _diet(c) == 'non-veg',
-        ),
-        _CustomerStatusFilter.active: countWhere(
-          (c) => c.status.toLowerCase() == 'active',
-        ),
-        _CustomerStatusFilter.paused: countWhere(
-          (c) => c.status.toLowerCase() == 'paused',
-        ),
-        _CustomerStatusFilter.blocked: countWhere(
-          (c) => c.status.toLowerCase() == 'blocked',
-        ),
+            (c) => _diet(c) == 'veg' || _diet(c) == 'vegetarian'),
+        _CustomerStatusFilter.nonVegetarian: countWhere((c) =>
+            _diet(c) == 'non_veg' ||
+            _diet(c) == 'nonveg' ||
+            _diet(c) == 'non-veg'),
+        _CustomerStatusFilter.active:
+            countWhere((c) => c.status.toLowerCase() == 'active'),
+        _CustomerStatusFilter.paused:
+            countWhere((c) => c.status.toLowerCase() == 'paused'),
+        _CustomerStatusFilter.blocked:
+            countWhere((c) => c.status.toLowerCase() == 'blocked'),
         _CustomerStatusFilter.inactiveMeals: countWhere(_hasInactiveMeals),
-        _CustomerStatusFilter.customizedMeals: countWhere(_hasCustomizedMeals),
+        _CustomerStatusFilter.customizedMeals:
+            countWhere(_hasCustomizedMeals),
       };
     }
 
@@ -1809,23 +1877,22 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
           final selected = _statusFilters.contains(v);
           final c = cMap[v] ?? 0;
           return GestureDetector(
-            onTap: () {
-              setState(() {
-                if (selected) {
-                  _statusFilters.remove(v);
-                } else {
-                  _statusFilters.add(v);
-                }
-              });
-            },
+            onTap: () => setState(() {
+              if (selected) {
+                _statusFilters.remove(v);
+              } else {
+                _statusFilters.add(v);
+              }
+            }),
             child: Container(
               margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: ctx.optionCardBg,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: selected ? _P.g1 : _P.s200,
+                  color: selected ? _P.g1 : ctx.optionCardBorderNormal,
                   width: selected ? 1.6 : 1,
                 ),
               ),
@@ -1835,7 +1902,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                     child: Text(
                       '$label ($c)',
                       style: TextStyle(
-                        color: selected ? _P.v700 : _P.s900,
+                        color: selected ? _P.v700 : ctx.textPrimary,
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
                       ),
@@ -1850,27 +1917,24 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         }
 
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+          decoration: BoxDecoration(
+            color: ctx.sheetBg,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(18)),
           ),
           padding: EdgeInsets.fromLTRB(
-            16,
-            12,
-            16,
-            MediaQuery.of(ctx).padding.bottom + 16,
-          ),
+              16, 12, 16, MediaQuery.of(ctx).padding.bottom + 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Status',
                       style: TextStyle(
-                        color: _P.s900,
+                        color: ctx.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
@@ -1895,12 +1959,14 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
               const SizedBox(height: 14),
               option(_CustomerStatusFilter.lowBalance, 'Low Balance'),
               option(_CustomerStatusFilter.vegetarian, 'Vegetarian'),
-              option(_CustomerStatusFilter.nonVegetarian, 'Non Vegetarian'),
+              option(
+                  _CustomerStatusFilter.nonVegetarian, 'Non Vegetarian'),
               option(_CustomerStatusFilter.active, 'Active'),
               option(_CustomerStatusFilter.paused, 'Paused'),
               option(_CustomerStatusFilter.blocked, 'Blocked'),
               option(_CustomerStatusFilter.inactiveMeals, 'Inactive Meals'),
-              option(_CustomerStatusFilter.customizedMeals, 'Customized Meals'),
+              option(
+                  _CustomerStatusFilter.customizedMeals, 'Customized Meals'),
               const SizedBox(height: 6),
               FilledButton(
                 onPressed: () => Navigator.pop(ctx),
@@ -1917,10 +1983,9 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     );
   }
 
+  // ── Time Slots Sheet ──────────────────────────────────────────────────────
   Future<void> _openTimeSlotsSheet(
-    BuildContext context,
-    List<CustomerModel> base,
-  ) async {
+      BuildContext context, List<CustomerModel> base) async {
     final allSlots = <String, int>{};
     for (final c in base) {
       for (final s in _customerTimeSlots(c)) {
@@ -1941,23 +2006,22 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
           final selected = _timeSlotFilters.contains(slot);
           final c = allSlots[slot] ?? 0;
           return GestureDetector(
-            onTap: () {
-              setState(() {
-                if (selected) {
-                  _timeSlotFilters.remove(slot);
-                } else {
-                  _timeSlotFilters.add(slot);
-                }
-              });
-            },
+            onTap: () => setState(() {
+              if (selected) {
+                _timeSlotFilters.remove(slot);
+              } else {
+                _timeSlotFilters.add(slot);
+              }
+            }),
             child: Container(
               margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: ctx.optionCardBg,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: selected ? _P.g1 : _P.s200,
+                  color: selected ? _P.g1 : ctx.optionCardBorderNormal,
                   width: selected ? 1.6 : 1,
                 ),
               ),
@@ -1967,7 +2031,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                     child: Text(
                       '$slot ($c)',
                       style: TextStyle(
-                        color: selected ? _P.v700 : _P.s900,
+                        color: selected ? _P.v700 : ctx.textPrimary,
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
                       ),
@@ -1982,27 +2046,24 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         }
 
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+          decoration: BoxDecoration(
+            color: ctx.sheetBg,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(18)),
           ),
           padding: EdgeInsets.fromLTRB(
-            16,
-            12,
-            16,
-            MediaQuery.of(ctx).padding.bottom + 16,
-          ),
+              16, 12, 16, MediaQuery.of(ctx).padding.bottom + 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Time Slots',
                       style: TextStyle(
-                        color: _P.s900,
+                        color: ctx.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
@@ -2026,9 +2087,10 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
               ),
               const SizedBox(height: 14),
               if (keys.isEmpty)
-                const Text(
+                Text(
                   'No time slots found',
-                  style: TextStyle(color: _P.s600, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      color: ctx.textSecondary, fontWeight: FontWeight.w600),
                 )
               else
                 ...keys.map(option),
@@ -2048,62 +2110,58 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     );
   }
 
-  // ── 3-dot menu + actions (local-only, uses already loaded customers) ──
-
+  // ── More Menu ─────────────────────────────────────────────────────────────
   Future<void> _openMoreMenu(List<CustomerModel> current) async {
-    const bg = Colors.white;
-    const card = Colors.white;
-    const divider = _P.s200;
-    const text = _P.s900;
-
-    Widget item({
-      required IconData icon,
-      required String label,
-      required VoidCallback onTap,
-    }) {
-      return InkWell(
-        onTap: () {
-          Navigator.pop(context);
-          onTap();
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-          child: Row(
-            children: [
-              Icon(icon, color: _P.v700, size: 20),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: text,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              const Icon(Icons.chevron_right_rounded, color: _P.s400, size: 18),
-            ],
-          ),
-        ),
-      );
-    }
-
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) {
+        Widget item({
+          required IconData icon,
+          required String label,
+          required VoidCallback onTap,
+        }) {
+          return InkWell(
+            onTap: () {
+              Navigator.pop(context);
+              onTap();
+            },
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              child: Row(
+                children: [
+                  Icon(icon, color: _P.v700, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: ctx.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded,
+                      color: ctx.textHint, size: 18),
+                ],
+              ),
+            ),
+          );
+        }
+
         return SafeArea(
           child: Container(
             margin: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: bg,
+              color: ctx.sheetBg,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: divider),
+              border: Border.all(color: ctx.sheetBorder),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: ctx.cs.shadow.withValues(alpha: 0.08),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -2115,15 +2173,15 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    color: card,
+                    color: ctx.sheetBg,
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
                     child: Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Customers',
                             style: TextStyle(
-                              color: text,
+                              color: ctx.textPrimary,
                               fontWeight: FontWeight.w800,
                               fontSize: 15,
                             ),
@@ -2131,28 +2189,25 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                         ),
                         IconButton(
                           onPressed: () => Navigator.pop(ctx),
-                          icon: const Icon(
-                            Icons.close_rounded,
-                            color: _P.s600,
-                            size: 20,
-                          ),
+                          icon: Icon(Icons.close_rounded,
+                              color: ctx.textSecondary, size: 20),
                         ),
                       ],
                     ),
                   ),
-                  Container(height: 1, color: divider),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   item(
                     icon: Icons.settings_outlined,
                     label: 'Customize Card Info',
                     onTap: _openCustomizeCardInfo,
                   ),
-                  Container(height: 1, color: divider),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   item(
                     icon: Icons.download_rounded,
                     label: 'Download Backup',
                     onTap: () => _openDownloadBackup(current),
                   ),
-                  Container(height: 1, color: divider),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   item(
                     icon: Icons.donut_large_rounded,
                     label: 'Customer Analytics',
@@ -2163,7 +2218,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                       ),
                     ),
                   ),
-                  Container(height: 1, color: divider),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   item(
                     icon: Icons.inventory_2_outlined,
                     label: 'Archived Customers',
@@ -2173,29 +2228,26 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                       ),
                     ),
                   ),
-                  Container(height: 1, color: divider),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   item(
                     icon: Icons.upload_rounded,
                     label: 'Import Bulk Data',
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) => _ImportCustomersScreen(
-                          onImported: (items) {
-                            setState(
-                              () => _customers = [...items, ..._customers],
-                            );
-                          },
+                          onImported: (items) => setState(
+                              () => _customers = [...items, ..._customers]),
                         ),
                       ),
                     ),
                   ),
-                  Container(height: 1, color: divider),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   item(
                     icon: Icons.info_outline_rounded,
                     label: 'Learn More',
                     onTap: _openLearnMore,
                   ),
-                  Container(height: 1, color: divider),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   item(
                     icon: Icons.lock_outline_rounded,
                     label: 'Total Tiffins Outside',
@@ -2210,9 +2262,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     );
   }
 
+  // ── Customize Card Info ───────────────────────────────────────────────────
   Future<void> _openCustomizeCardInfo() async {
-    const bg = Colors.white;
-    const divider = _P.s200;
     var temp = Set<_CardField>.from(_cardFields);
 
     await showModalBottomSheet<void>(
@@ -2234,9 +2285,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                 }),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
+                      horizontal: 16, vertical: 10),
                   child: Row(
                     children: [
                       Checkbox(
@@ -2250,13 +2299,14 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                         }),
                         activeColor: _P.g1,
                         checkColor: Colors.white,
-                        side: const BorderSide(color: _P.s300, width: 1),
+                        side:
+                            BorderSide(color: ctx.sheetBorder, width: 1),
                       ),
                       Expanded(
                         child: Text(
                           f.label,
-                          style: const TextStyle(
-                            color: _P.s900,
+                          style: TextStyle(
+                            color: ctx.textPrimary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -2271,12 +2321,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
               child: Container(
                 margin: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: bg,
+                  color: ctx.sheetBg,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: divider),
+                  border: Border.all(color: ctx.sheetBorder),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
+                      color: ctx.cs.shadow.withValues(alpha: 0.08),
                       blurRadius: 18,
                       offset: const Offset(0, 8),
                     ),
@@ -2288,14 +2338,15 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+                        padding:
+                            const EdgeInsets.fromLTRB(16, 16, 16, 10),
                         child: Row(
                           children: [
-                            const Expanded(
+                            Expanded(
                               child: Text(
                                 'Customize Card Info',
                                 style: TextStyle(
-                                  color: _P.s900,
+                                  color: ctx.textPrimary,
                                   fontWeight: FontWeight.w800,
                                   fontSize: 15,
                                 ),
@@ -2321,12 +2372,18 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                           ],
                         ),
                       ),
-                      Container(height: 1, color: divider),
+                      Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: ctx.sheetBorder),
                       row(_CardField.name),
                       row(_CardField.phone),
                       row(_CardField.area),
                       row(_CardField.balance),
-                      Container(height: 1, color: divider),
+                      Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: ctx.sheetBorder),
                       Padding(
                         padding: const EdgeInsets.all(16),
                         child: SizedBox(
@@ -2343,7 +2400,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                             ),
                             child: const Text(
                               'Apply',
-                              style: TextStyle(fontWeight: FontWeight.w800),
+                              style:
+                                  TextStyle(fontWeight: FontWeight.w800),
                             ),
                           ),
                         ),
@@ -2359,51 +2417,33 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     );
   }
 
+  // ── Download Backup ───────────────────────────────────────────────────────
   Future<void> _openDownloadBackup(List<CustomerModel> current) async {
-    const bg = Colors.white;
-    const divider = _P.s200;
-    const subText = _P.s600;
-
     Future<void> saveCsv() async {
       final header = [
-        'Name',
-        'Phone',
-        'Address',
-        'Zone',
-        'Balance',
-        'Status',
-        'Meal Plan',
-        'Time Slot',
+        'Name', 'Phone', 'Address', 'Zone',
+        'Balance', 'Status', 'Meal Plan', 'Time Slot',
       ];
-      String esc(String v) {
-        final s = v.replaceAll('"', '""');
-        return '"$s"';
-      }
-
+      String esc(String v) => '"${v.replaceAll('"', '""')}"';
       final lines = <String>[header.map(esc).join(',')];
       for (final c in current) {
         final slots = (c.timeSlots ?? const <String>[]).join(' | ');
-        final addr = [
-          c.address ?? '',
-          c.area ?? '',
-        ].where((e) => e.trim().isNotEmpty).join(', ');
-        lines.add(
-          [
-            c.name,
-            c.phone,
-            addr,
-            c.area ?? '',
-            c.effectiveWalletBalance.toStringAsFixed(2),
-            c.status,
-            (c.tags ?? const <String>[]).join(' | '),
-            slots,
-          ].map((e) => esc(e.toString())).join(','),
-        );
+        final addr = [c.address ?? '', c.area ?? '']
+            .where((e) => e.trim().isNotEmpty)
+            .join(', ');
+        lines.add([
+          c.name, c.phone, addr, c.area ?? '',
+          c.effectiveWalletBalance.toStringAsFixed(2),
+          c.status,
+          (c.tags ?? const <String>[]).join(' | '),
+          slots,
+        ].map((e) => esc(e.toString())).join(','));
       }
-
-      final bytes = Uint8List.fromList(lines.join('\n').codeUnits);
+      final bytes =
+          Uint8List.fromList(lines.join('\n').codeUnits);
       await FileSaver.instance.saveFile(
-        name: 'customers_backup_${DateTime.now().millisecondsSinceEpoch}.csv',
+        name:
+            'customers_backup_${DateTime.now().millisecondsSinceEpoch}.csv',
         bytes: bytes,
         mimeType: MimeType.csv,
       );
@@ -2418,50 +2458,37 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
       doc.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
-          build: (ctx) {
-            return [
-              pw.Text(
-                'TiffinCRM — Customers Backup',
+          build: (ctx) => [
+            pw.Text('TiffinCRM — Customers Backup',
                 style: pw.TextStyle(
-                  fontSize: 16,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-              pw.SizedBox(height: 4),
-              pw.Text(
-                'Generated on ${now.day}/${now.month}/${now.year}',
-                style: const pw.TextStyle(fontSize: 10),
-              ),
-              pw.SizedBox(height: 12),
-              pw.TableHelper.fromTextArray(
-                headers: const [
-                  'Name',
-                  'Phone',
-                  'Address/Zone',
-                  'Balance',
-                  'Status',
-                  'Time Slot',
-                ],
-                data: [
-                  for (final c in current)
-                    [
-                      c.name,
-                      c.phone,
-                      '${c.address ?? ''} ${c.area ?? ''}'.trim(),
-                      '₹${c.effectiveWalletBalance.toStringAsFixed(2)}',
-                      c.status,
-                      (c.timeSlots ?? const <String>[]).join(' | '),
-                    ],
-                ],
-                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                cellStyle: const pw.TextStyle(fontSize: 9),
-                cellAlignment: pw.Alignment.centerLeft,
-                headerDecoration: const pw.BoxDecoration(
-                  color: PdfColors.grey300,
-                ),
-              ),
-            ];
-          },
+                    fontSize: 16, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 4),
+            pw.Text('Generated on ${now.day}/${now.month}/${now.year}',
+                style: const pw.TextStyle(fontSize: 10)),
+            pw.SizedBox(height: 12),
+            pw.TableHelper.fromTextArray(
+              headers: const [
+                'Name', 'Phone', 'Address/Zone',
+                'Balance', 'Status', 'Time Slot',
+              ],
+              data: [
+                for (final c in current)
+                  [
+                    c.name, c.phone,
+                    '${c.address ?? ''} ${c.area ?? ''}'.trim(),
+                    '₹${c.effectiveWalletBalance.toStringAsFixed(2)}',
+                    c.status,
+                    (c.timeSlots ?? const <String>[]).join(' | '),
+                  ],
+              ],
+              headerStyle:
+                  pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              cellStyle: const pw.TextStyle(fontSize: 9),
+              cellAlignment: pw.Alignment.centerLeft,
+              headerDecoration:
+                  const pw.BoxDecoration(color: PdfColors.grey300),
+            ),
+          ],
         ),
       );
       final bytes = await doc.save();
@@ -2483,12 +2510,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
           child: Container(
             margin: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: bg,
+              color: ctx.sheetBg,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: divider),
+              border: Border.all(color: ctx.sheetBorder),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: ctx.cs.shadow.withValues(alpha: 0.08),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -2499,15 +2526,16 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(16, 16, 16, 10),
+                  Padding(
+                    padding:
+                        const EdgeInsets.fromLTRB(16, 16, 16, 10),
                     child: Row(
                       children: [
                         Expanded(
                           child: Text(
                             'Download Backup',
                             style: TextStyle(
-                              color: _P.s900,
+                              color: ctx.textPrimary,
                               fontWeight: FontWeight.w800,
                               fontSize: 15,
                             ),
@@ -2516,44 +2544,40 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                       ],
                     ),
                   ),
-                  Container(height: 1, color: divider),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   ListTile(
-                    leading: const Icon(
-                      Icons.table_view_rounded,
-                      color: _P.v700,
-                    ),
-                    title: const Text(
+                    leading: const Icon(Icons.table_view_rounded,
+                        color: _P.v700),
+                    title: Text(
                       'Download as CSV/Excel',
                       style: TextStyle(
-                        color: _P.s900,
+                        color: ctx.textPrimary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    subtitle: const Text(
+                    subtitle: Text(
                       'Exports current loaded customers',
-                      style: TextStyle(color: subText),
+                      style: TextStyle(color: ctx.textSecondary),
                     ),
                     onTap: () async {
                       Navigator.pop(ctx);
                       await saveCsv();
                     },
                   ),
-                  Container(height: 1, color: divider),
+                  Divider(height: 1, thickness: 1, color: ctx.sheetBorder),
                   ListTile(
-                    leading: const Icon(
-                      Icons.picture_as_pdf_rounded,
-                      color: _P.v700,
-                    ),
-                    title: const Text(
+                    leading: const Icon(Icons.picture_as_pdf_rounded,
+                        color: _P.v700),
+                    title: Text(
                       'Download as PDF',
                       style: TextStyle(
-                        color: _P.s900,
+                        color: ctx.textPrimary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    subtitle: const Text(
+                    subtitle: Text(
                       'Generates a clean PDF table',
-                      style: TextStyle(color: subText),
+                      style: TextStyle(color: ctx.textSecondary),
                     ),
                     onTap: () async {
                       Navigator.pop(ctx);
@@ -2570,10 +2594,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     );
   }
 
+  // ── Learn More ────────────────────────────────────────────────────────────
   Future<void> _openLearnMore() async {
-    const bg = Colors.white;
-    const divider = _P.s200;
-    const subText = _P.s600;
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -2584,30 +2606,30 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             margin: const EdgeInsets.all(12),
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
             decoration: BoxDecoration(
-              color: bg,
+              color: ctx.sheetBg,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: divider),
+              border: Border.all(color: ctx.sheetBorder),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: ctx.cs.shadow.withValues(alpha: 0.08),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
               ],
             ),
-            child: const Column(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Learn More',
                   style: TextStyle(
-                    color: _P.s900,
+                    color: ctx.textPrimary,
                     fontWeight: FontWeight.w800,
                     fontSize: 15,
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Text(
                   'Customers helps you manage zones, meal plans, balances and delivery timing.\n\n'
                   '- Use filters to find active/paused/blocked customers.\n'
@@ -2615,7 +2637,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                   '- Low balance helps you track who needs recharge.\n'
                   '- Swipe a customer to Edit, Chat or Delete.\n',
                   style: TextStyle(
-                    color: subText,
+                    color: ctx.textSecondary,
                     height: 1.35,
                     fontWeight: FontWeight.w500,
                   ),
@@ -2631,14 +2653,17 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
   void _openTotalTiffinsOutside(List<CustomerModel> current) {
     final outside = current.where((c) => (c.tiffinCount ?? 0) > 0).toList()
       ..sort((a, b) => (b.tiffinCount ?? 0).compareTo(a.tiffinCount ?? 0));
-    final total = outside.fold<int>(0, (s, c) => s + (c.tiffinCount ?? 0));
+    final total =
+        outside.fold<int>(0, (s, c) => s + (c.tiffinCount ?? 0));
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => _TiffinsOutsideScreen(customers: outside, total: total),
+        builder: (_) =>
+            _TiffinsOutsideScreen(customers: outside, total: total),
       ),
     );
   }
 
+  // ── BUILD ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final searched = _query.isEmpty
@@ -2653,16 +2678,13 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
     final filtered = _applyLocalFiltersAndSort(searched);
 
     return Scaffold(
-      backgroundColor: _P.bg,
+      backgroundColor: context.screenBg,
       appBar: AppBar(
         backgroundColor: _P.g1,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
-            size: 18,
-          ),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white, size: 18),
           onPressed: () {
             if (context.canPop()) context.pop();
           },
@@ -2690,20 +2712,14 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.refresh_rounded,
-              color: Colors.white,
-              size: 20,
-            ),
+            icon: const Icon(Icons.refresh_rounded,
+                color: Colors.white, size: 20),
             onPressed: _isLoading ? null : _refresh,
             tooltip: 'Refresh',
           ),
           IconButton(
-            icon: const Icon(
-              Icons.more_vert_rounded,
-              color: Colors.white,
-              size: 22,
-            ),
+            icon: const Icon(Icons.more_vert_rounded,
+                color: Colors.white, size: 22),
             onPressed: () => _openMoreMenu(filtered),
             tooltip: 'More',
           ),
@@ -2715,12 +2731,11 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         bottom: true,
         child: Column(
           children: [
-            // ── Search + filter chips ──
+            // ── Search + filter chips ──────────────────────────────────────
             Container(
-              color: Colors.white,
+              color: context.searchBarHeaderBg,
               child: Column(
                 children: [
-                  // Search bar
                   Padding(
                     padding: const EdgeInsets.fromLTRB(14, 10, 14, 8),
                     child: Row(
@@ -2728,34 +2743,32 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
-                              color: _P.s100,
+                              color: context.searchBarBg,
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: _P.s200, width: 0.5),
+                              border: Border.all(
+                                  color: context.searchBarBorder,
+                                  width: 0.5),
                             ),
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 0,
-                            ),
+                                horizontal: 12, vertical: 0),
                             child: Row(
                               children: [
-                                const Icon(
-                                  Icons.search_rounded,
-                                  size: 16,
-                                  color: _P.s400,
-                                ),
+                                Icon(Icons.search_rounded,
+                                    size: 16, color: context.textHint),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: TextField(
                                     controller: _searchController,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 13,
-                                      color: _P.s900,
+                                      color: context.textPrimary,
                                     ),
                                     decoration: InputDecoration(
-                                      hintText: 'Search name, phone, email…',
-                                      hintStyle: const TextStyle(
+                                      hintText:
+                                          'Search name, phone, email…',
+                                      hintStyle: TextStyle(
                                         fontSize: 13,
-                                        color: _P.s400,
+                                        color: context.textHint,
                                       ),
                                       border: InputBorder.none,
                                       enabledBorder: InputBorder.none,
@@ -2763,8 +2776,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                                       isDense: true,
                                       contentPadding:
                                           const EdgeInsets.symmetric(
-                                            vertical: 10,
-                                          ),
+                                              vertical: 10),
                                     ),
                                     onChanged: (v) =>
                                         setState(() => _query = v),
@@ -2776,11 +2788,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                                       _searchController.clear();
                                       setState(() => _query = '');
                                     },
-                                    child: const Icon(
-                                      Icons.close_rounded,
-                                      size: 15,
-                                      color: _P.s400,
-                                    ),
+                                    child: Icon(Icons.close_rounded,
+                                        size: 15, color: context.textHint),
                                   ),
                               ],
                             ),
@@ -2789,7 +2798,6 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                       ],
                     ),
                   ),
-                  // Added: Sort / Status / Time Slot dropdown pills (local-only)
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
@@ -2797,7 +2805,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                       children: [
                         _dropdownPill(
                           label: _sortLabel(),
-                          onTap: () => _openSortSheet(context, searched),
+                          onTap: () =>
+                              _openSortSheet(context, searched),
                         ),
                         const SizedBox(width: 8),
                         _dropdownPill(
@@ -2807,12 +2816,14 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                         const SizedBox(width: 8),
                         _dropdownPill(
                           label: _statusLabel(),
-                          onTap: () => _openStatusSheet(context, searched),
+                          onTap: () =>
+                              _openStatusSheet(context, searched),
                         ),
                         const SizedBox(width: 8),
                         _dropdownPill(
                           label: _timeSlotsLabel(),
-                          onTap: () => _openTimeSlotsSheet(context, searched),
+                          onTap: () =>
+                              _openTimeSlotsSheet(context, searched),
                         ),
                         if (_zones.isNotEmpty || _zonesLoading) ...[
                           const SizedBox(width: 8),
@@ -2826,22 +2837,25 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                       ],
                     ),
                   ),
-                  // Bottom border
-                  Container(height: 0.5, color: _P.s200),
+                  Divider(
+                      height: 0.5,
+                      thickness: 0.5,
+                      color: context.dividerColor),
                 ],
               ),
             ),
-            // ── List body ──
+
+            // ── List body ──────────────────────────────────────────────────
             Expanded(
               child: _isLoading && _customers.isEmpty
                   ? const Center(
                       child: CircularProgressIndicator(
-                        color: Color(0xFF7C3AED),
+                        color: _P.g1,
                         strokeWidth: 2,
                       ),
                     )
                   : RefreshIndicator(
-                      color: const Color(0xFF7C3AED),
+                      color: _P.g1,
                       onRefresh: _refresh,
                       child: filtered.isEmpty
                           ? LottieEmptyState(
@@ -2856,16 +2870,16 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                               controller: _scrollController,
                               cacheExtent: 480,
                               padding: EdgeInsets.only(
-                                bottom:
-                                    MediaQuery.of(context).padding.bottom + 24,
+                                bottom: MediaQuery.of(context).padding.bottom +
+                                    24,
                               ),
-                              itemCount:
-                                  filtered.length + (_isLoadingMore ? 1 : 0),
+                              itemCount: filtered.length +
+                                  (_isLoadingMore ? 1 : 0),
                               separatorBuilder: (context, index) =>
-                                  const Divider(
+                                  Divider(
                                     height: 0.5,
                                     thickness: 0.5,
-                                    color: _P.s200,
+                                    color: context.dividerColor,
                                   ),
                               itemBuilder: (context, index) {
                                 if (index >= filtered.length) {
@@ -2873,16 +2887,17 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                                     padding: EdgeInsets.all(16),
                                     child: Center(
                                       child: CircularProgressIndicator(
-                                        color: Color(0xFF7C3AED),
+                                        color: _P.g1,
                                         strokeWidth: 2,
                                       ),
                                     ),
                                   );
                                 }
                                 final customer = filtered[index];
-                                final rowKey = customer.id.isNotEmpty
-                                    ? 'c_${customer.id}'
-                                    : 'c_row_$index';
+                                final rowKey =
+                                    customer.id.isNotEmpty
+                                        ? 'c_${customer.id}'
+                                        : 'c_row_$index';
                                 return RepaintBoundary(
                                   child: AnimatedListItem(
                                     index: index,
@@ -2891,7 +2906,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                                       rowIndex: index,
                                       customer: customer,
                                       fields: _cardFields,
-                                      label: _labelForCustomer(customer.id),
+                                      label:
+                                          _labelForCustomer(customer.id),
                                       onMoreTap: () =>
                                           _openCustomerRowMenu(customer),
                                       onTap: () async {
@@ -2900,14 +2916,12 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                                           MaterialPageRoute<void>(
                                             builder: (_) =>
                                                 CustomerDetailsScreen(
-                                                  customerId: customer.id,
-                                                  customerName: customer.name,
-                                                ),
+                                              customerId: customer.id,
+                                              customerName: customer.name,
+                                            ),
                                           ),
                                         );
-                                        _loadCustomers(
-                                          reset: true,
-                                        ); // detail/edit se wapas aane pe list refresh
+                                        _loadCustomers(reset: true);
                                       },
                                       onEdit: () async {
                                         await context.push(
@@ -2916,18 +2930,18 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                                         );
                                         _loadCustomers(reset: true);
                                       },
-                                      onWhatsApp: () => WhatsAppHelper.openChat(
-                                        customer.phone,
-                                      ),
-                                      onDelete: () =>
-                                          _confirmDelete(context, customer),
+                                      onWhatsApp: () =>
+                                          WhatsAppHelper.openChat(
+                                              customer.phone),
+                                      onDelete: () => _confirmDelete(
+                                          context, customer),
                                     ),
                                   ),
                                 );
                               },
                             ),
-                    ), // RefreshIndicator / Center
-            ), // Expanded
+                    ),
+            ),
           ],
         ),
       ),
@@ -2938,7 +2952,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         backgroundColor: _P.g1,
         foregroundColor: Colors.white,
         elevation: 6,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         icon: const Icon(Icons.add, size: 18),
         label: const Text(
           'Add Customer',
@@ -2949,7 +2964,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
   }
 }
 
-// ─── Customer row widget ──────────────────────────────────────────────────────
+// ─── Customer Row ─────────────────────────────────────────────────────────────
 class _CustomerRow extends StatelessWidget {
   const _CustomerRow({
     super.key,
@@ -2999,6 +3014,7 @@ class _CustomerRow extends StatelessWidget {
     final slideKey = customer.id.trim().isNotEmpty
         ? 'slidable_${customer.id}'
         : 'slidable_row_$rowIndex';
+
     return Slidable(
       key: ValueKey(slideKey),
       endActionPane: ActionPane(
@@ -3007,18 +3023,19 @@ class _CustomerRow extends StatelessWidget {
         children: [
           CustomSlidableAction(
             onPressed: (_) => onEdit(),
-            backgroundColor: _P.v100,
+            backgroundColor: context.slideEditBg,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.edit_outlined, color: _P.v700, size: 18),
-                SizedBox(height: 3),
+              children: [
+                Icon(Icons.edit_outlined,
+                    color: context.slideEditText, size: 18),
+                const SizedBox(height: 3),
                 Text(
                   'Edit',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: _P.v700,
+                    color: context.slideEditText,
                   ),
                 ),
               ],
@@ -3026,22 +3043,19 @@ class _CustomerRow extends StatelessWidget {
           ),
           CustomSlidableAction(
             onPressed: (_) => onWhatsApp(),
-            backgroundColor: Color(0xFFDCFCE7),
+            backgroundColor: context.slideChatBg,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(
-                  Icons.chat_bubble_outline_rounded,
-                  color: Color(0xFF166534),
-                  size: 18,
-                ),
-                SizedBox(height: 3),
+              children: [
+                Icon(Icons.chat_bubble_outline_rounded,
+                    color: context.slideChatText, size: 18),
+                const SizedBox(height: 3),
                 Text(
                   'Chat',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF166534),
+                    color: context.slideChatText,
                   ),
                 ),
               ],
@@ -3049,18 +3063,19 @@ class _CustomerRow extends StatelessWidget {
           ),
           CustomSlidableAction(
             onPressed: (_) => onDelete(),
-            backgroundColor: _P.redBg,
+            backgroundColor: context.slideDeleteBg,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.delete_outline_rounded, color: _P.redTxt, size: 18),
-                SizedBox(height: 3),
+              children: [
+                Icon(Icons.delete_outline_rounded,
+                    color: context.slideDeleteText, size: 18),
+                const SizedBox(height: 3),
                 Text(
                   'Delete',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: _P.redTxt,
+                    color: context.slideDeleteText,
                   ),
                 ),
               ],
@@ -3074,20 +3089,18 @@ class _CustomerRow extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── Left accent bar — 3px, full height ──
+              // Left accent bar
               Container(width: 3, color: accent),
 
-              // ── Row content ──
+              // Row content
               Expanded(
                 child: Container(
-                  color: Colors.white,
+                  color: context.rowBg,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 11,
-                  ),
+                      horizontal: 12, vertical: 11),
                   child: Row(
                     children: [
-                      // Avatar with rounded square
+                      // Avatar
                       Container(
                         width: 40,
                         height: 40,
@@ -3116,10 +3129,10 @@ class _CustomerRow extends StatelessWidget {
                             if (showName)
                               Text(
                                 customer.name,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF0F172A),
+                                  color: context.textPrimary,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -3128,9 +3141,9 @@ class _CustomerRow extends StatelessWidget {
                               const SizedBox(height: 2),
                               Text(
                                 customer.phone,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
-                                  color: Color(0xFF64748B),
+                                  color: context.textSecondary,
                                 ),
                               ),
                             ],
@@ -3138,23 +3151,21 @@ class _CustomerRow extends StatelessWidget {
                               const SizedBox(height: 4),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 7,
-                                  vertical: 2,
-                                ),
+                                    horizontal: 7, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF5F3FF),
+                                  color: context.areaBg,
                                   borderRadius: BorderRadius.circular(4),
                                   border: Border.all(
-                                    color: const Color(0xFFDDD6FE),
+                                    color: context.areaBorder,
                                     width: 0.5,
                                   ),
                                 ),
                                 child: Text(
                                   customer.area!,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF5B21B6),
+                                    color: context.areaText,
                                   ),
                                 ),
                               ),
@@ -3163,23 +3174,21 @@ class _CustomerRow extends StatelessWidget {
                               const SizedBox(height: 4),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 7,
-                                  vertical: 2,
-                                ),
+                                    horizontal: 7, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: _P.v100,
+                                  color: context.iconContainerBg,
                                   borderRadius: BorderRadius.circular(4),
                                   border: Border.all(
-                                    color: const Color(0xFFDDD6FE),
+                                    color: context.iconContainerBorder,
                                     width: 0.5,
                                   ),
                                 ),
                                 child: Text(
                                   label!,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w600,
-                                    color: _P.v700,
+                                    color: context.areaText,
                                   ),
                                 ),
                               ),
@@ -3189,7 +3198,7 @@ class _CustomerRow extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
 
-                      // Balance column (same source as detail: walletBalance ?? balance, ≥ 0)
+                      // Balance
                       if (showBalance)
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -3201,15 +3210,15 @@ class _CustomerRow extends StatelessWidget {
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                                 color: isLowBal
-                                    ? const Color(0xFF92400E)
-                                    : const Color(0xFF0F172A),
+                                    ? context.balanceLow
+                                    : context.balanceNormal,
                               ),
                             ),
-                            const Text(
+                            Text(
                               'balance',
                               style: TextStyle(
                                 fontSize: 9,
-                                color: Color(0xFF94A3B8),
+                                color: context.textHint,
                               ),
                             ),
                           ],
@@ -3219,14 +3228,9 @@ class _CustomerRow extends StatelessWidget {
                         visualDensity: VisualDensity.compact,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(
-                          minWidth: 32,
-                          minHeight: 32,
-                        ),
-                        icon: const Icon(
-                          Icons.more_vert_rounded,
-                          color: _P.s400,
-                          size: 18,
-                        ),
+                            minWidth: 32, minHeight: 32),
+                        icon: Icon(Icons.more_vert_rounded,
+                            color: context.textHint, size: 18),
                       ),
                     ],
                   ),
@@ -3240,10 +3244,7 @@ class _CustomerRow extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Customer menu helpers / screens (added feature)
-// ─────────────────────────────────────────────────────────────────────────────
-
+// ─── Card Field enum ──────────────────────────────────────────────────────────
 enum _CardField { name, phone, area, balance }
 
 extension _CardFieldX on _CardField {
@@ -3261,40 +3262,34 @@ extension _CardFieldX on _CardField {
     _CardField.balance => 'Balance',
   };
 
-  static _CardField? tryParse(String raw) {
-    switch (raw) {
-      case 'name':
-        return _CardField.name;
-      case 'phone':
-        return _CardField.phone;
-      case 'area':
-        return _CardField.area;
-      case 'balance':
-        return _CardField.balance;
-      default:
-        return null;
-    }
-  }
+  static _CardField? tryParse(String raw) => switch (raw) {
+    'name' => _CardField.name,
+    'phone' => _CardField.phone,
+    'area' => _CardField.area,
+    'balance' => _CardField.balance,
+    _ => null,
+  };
 }
 
+// ─── Analytics Screen ─────────────────────────────────────────────────────────
 final class _CustomerAnalyticsScreen extends StatelessWidget {
   const _CustomerAnalyticsScreen({required this.customers});
-
   final List<CustomerModel> customers;
 
   @override
   Widget build(BuildContext context) {
     int countWhere(bool Function(CustomerModel) test) =>
         customers.where(test).length;
-
-    final active = countWhere((c) => (c.status).toLowerCase() == 'active');
-    final paused = countWhere((c) => (c.status).toLowerCase() == 'paused');
-    final blocked = countWhere((c) => (c.status).toLowerCase() == 'blocked');
-    final lowBal = countWhere((c) => c.effectiveWalletBalance < 100);
-
+    final active =
+        countWhere((c) => c.status.toLowerCase() == 'active');
+    final paused =
+        countWhere((c) => c.status.toLowerCase() == 'paused');
+    final blocked =
+        countWhere((c) => c.status.toLowerCase() == 'blocked');
+    final lowBal =
+        countWhere((c) => c.effectiveWalletBalance < 100);
     final veg = countWhere(
-      (c) => (c.dietType ?? '').toLowerCase().contains('veg'),
-    );
+        (c) => (c.dietType ?? '').toLowerCase().contains('veg'));
     final nonVeg = countWhere((c) {
       final d = (c.dietType ?? '').toLowerCase();
       return d.contains('non') || d.contains('nv');
@@ -3313,28 +3308,29 @@ final class _CustomerAnalyticsScreen extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.analyticCardBg,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _P.s200, width: 0.5),
+          border:
+              Border.all(color: context.analyticCardBorder, width: 0.5),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: _P.s900,
+                color: context.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: _P.s600,
+                color: context.textSecondary,
               ),
             ),
           ],
@@ -3343,7 +3339,7 @@ final class _CustomerAnalyticsScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: _P.bg,
+      backgroundColor: context.screenBg,
       appBar: AppBar(
         backgroundColor: _P.g1,
         foregroundColor: Colors.white,
@@ -3352,65 +3348,59 @@ final class _CustomerAnalyticsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(14),
         children: [
-          Row(
-            children: [
-              Expanded(child: card('Total customers', '${customers.length}')),
-              const SizedBox(width: 10),
-              Expanded(child: card('Low balance', '$lowBal')),
-            ],
-          ),
+          Row(children: [
+            Expanded(child: card('Total customers', '${customers.length}')),
+            const SizedBox(width: 10),
+            Expanded(child: card('Low balance', '$lowBal')),
+          ]),
           const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(child: card('Active', '$active')),
-              const SizedBox(width: 10),
-              Expanded(child: card('Paused', '$paused')),
-            ],
-          ),
+          Row(children: [
+            Expanded(child: card('Active', '$active')),
+            const SizedBox(width: 10),
+            Expanded(child: card('Paused', '$paused')),
+          ]),
           const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(child: card('Blocked', '$blocked')),
-              const SizedBox(width: 10),
-              Expanded(child: card('Veg / Non-Veg', '$veg / $nonVeg')),
-            ],
-          ),
+          Row(children: [
+            Expanded(child: card('Blocked', '$blocked')),
+            const SizedBox(width: 10),
+            Expanded(child: card('Veg / Non-Veg', '$veg / $nonVeg')),
+          ]),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Zone wise distribution',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w800,
-              color: _P.s600,
+              color: context.textSecondary,
               letterSpacing: 0.4,
             ),
           ),
           const SizedBox(height: 8),
           if (zoneList.isEmpty)
-            const Text(
+            Text(
               'No zones available',
-              style: TextStyle(color: _P.s600, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  color: context.textSecondary, fontWeight: FontWeight.w600),
             )
           else
-            ...zoneList
-                .take(12)
-                .map(
+            ...zoneList.take(12).map(
                   (e) => Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.analyticCardBg,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: _P.s200, width: 0.5),
+                      border: Border.all(
+                          color: context.analyticCardBorder, width: 0.5),
                     ),
                     child: Row(
                       children: [
                         Expanded(
                           child: Text(
                             e.key,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w700,
-                              color: _P.s900,
+                              color: context.textPrimary,
                             ),
                           ),
                         ),
@@ -3431,38 +3421,42 @@ final class _CustomerAnalyticsScreen extends StatelessWidget {
   }
 }
 
+// ─── Archived Customers ───────────────────────────────────────────────────────
 final class _ArchivedCustomersScreen extends StatelessWidget {
   const _ArchivedCustomersScreen();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _P.bg,
+      backgroundColor: context.screenBg,
       appBar: AppBar(
         backgroundColor: _P.g1,
         foregroundColor: Colors.white,
         title: const Text('Archived Customers'),
       ),
-      body: const Center(
+      body: Center(
         child: Text(
           'No archived customers yet',
-          style: TextStyle(color: _P.s600, fontWeight: FontWeight.w600),
+          style: TextStyle(
+              color: context.textSecondary, fontWeight: FontWeight.w600),
         ),
       ),
     );
   }
 }
 
+// ─── Import Customers ─────────────────────────────────────────────────────────
 final class _ImportCustomersScreen extends StatefulWidget {
   const _ImportCustomersScreen({required this.onImported});
-
   final void Function(List<CustomerModel>) onImported;
 
   @override
-  State<_ImportCustomersScreen> createState() => _ImportCustomersScreenState();
+  State<_ImportCustomersScreen> createState() =>
+      _ImportCustomersScreenState();
 }
 
-final class _ImportCustomersScreenState extends State<_ImportCustomersScreen> {
+final class _ImportCustomersScreenState
+    extends State<_ImportCustomersScreen> {
   final _ctrl = TextEditingController();
   List<Map<String, String>> _preview = const [];
   bool _importing = false;
@@ -3501,7 +3495,8 @@ final class _ImportCustomersScreenState extends State<_ImportCustomersScreen> {
       return out;
     }
 
-    final headers = splitLine(lines.first).map((e) => e.toLowerCase()).toList();
+    final headers =
+        splitLine(lines.first).map((e) => e.toLowerCase()).toList();
     final rows = <Map<String, String>>[];
     for (final l in lines.skip(1)) {
       final cells = splitLine(l);
@@ -3514,9 +3509,7 @@ final class _ImportCustomersScreenState extends State<_ImportCustomersScreen> {
     return rows;
   }
 
-  void _updatePreview() {
-    setState(() => _preview = _parseCsv(_ctrl.text));
-  }
+  void _updatePreview() => setState(() => _preview = _parseCsv(_ctrl.text));
 
   Future<void> _import() async {
     if (_preview.isEmpty || _importing) return;
@@ -3535,7 +3528,8 @@ final class _ImportCustomersScreenState extends State<_ImportCustomersScreen> {
       final warnings = result['warnings'];
       if (!mounted) return;
       widget.onImported(items);
-      var msg = 'Imported $imported customer${imported == 1 ? '' : 's'}';
+      var msg =
+          'Imported $imported customer${imported == 1 ? '' : 's'}';
       if (skipped > 0) msg += ' ($skipped skipped)';
       if (warnings is List && warnings.isNotEmpty) {
         msg +=
@@ -3553,7 +3547,7 @@ final class _ImportCustomersScreenState extends State<_ImportCustomersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _P.bg,
+      backgroundColor: context.screenBg,
       appBar: AppBar(
         backgroundColor: _P.g1,
         foregroundColor: Colors.white,
@@ -3562,9 +3556,10 @@ final class _ImportCustomersScreenState extends State<_ImportCustomersScreen> {
       body: ListView(
         padding: const EdgeInsets.all(14),
         children: [
-          const Text(
+          Text(
             'Paste CSV data',
-            style: TextStyle(fontWeight: FontWeight.w800, color: _P.s900),
+            style: TextStyle(
+                fontWeight: FontWeight.w800, color: context.textPrimary),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -3574,35 +3569,36 @@ final class _ImportCustomersScreenState extends State<_ImportCustomersScreen> {
               hintText:
                   'name,phone,address,zone\nJohn,9876543210,Street 1,Zone A',
               filled: true,
-              fillColor: Colors.white,
+              fillColor: context.sheetBg,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+                  borderRadius: BorderRadius.circular(12)),
             ),
             onChanged: (_) => _updatePreview(),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Preview',
-            style: TextStyle(fontWeight: FontWeight.w800, color: _P.s900),
+            style: TextStyle(
+                fontWeight: FontWeight.w800, color: context.textPrimary),
           ),
           const SizedBox(height: 8),
           if (_preview.isEmpty)
-            const Text(
+            Text(
               'No rows found',
-              style: TextStyle(color: _P.s600, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  color: context.textSecondary,
+                  fontWeight: FontWeight.w600),
             )
           else
-            ..._preview
-                .take(8)
-                .map(
+            ..._preview.take(8).map(
                   (r) => Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.analyticCardBg,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: _P.s200, width: 0.5),
+                      border: Border.all(
+                          color: context.analyticCardBorder, width: 0.5),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3611,15 +3607,15 @@ final class _ImportCustomersScreenState extends State<_ImportCustomersScreen> {
                           (r['name'] ?? '').isEmpty
                               ? '(missing name)'
                               : r['name']!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            color: _P.s900,
+                            color: context.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           (r['phone'] ?? r['mobile'] ?? '').toString(),
-                          style: const TextStyle(color: _P.s600),
+                          style: TextStyle(color: context.textSecondary),
                         ),
                       ],
                     ),
@@ -3633,17 +3629,14 @@ final class _ImportCustomersScreenState extends State<_ImportCustomersScreen> {
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
+                  borderRadius: BorderRadius.circular(14)),
             ),
             child: _importing
                 ? const SizedBox(
                     height: 22,
                     width: 22,
                     child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
+                        strokeWidth: 2, color: Colors.white),
                   )
                 : const Text(
                     'Confirm Import',
@@ -3656,16 +3649,17 @@ final class _ImportCustomersScreenState extends State<_ImportCustomersScreen> {
   }
 }
 
+// ─── Tiffins Outside ──────────────────────────────────────────────────────────
 final class _TiffinsOutsideScreen extends StatelessWidget {
-  const _TiffinsOutsideScreen({required this.customers, required this.total});
-
+  const _TiffinsOutsideScreen(
+      {required this.customers, required this.total});
   final List<CustomerModel> customers;
   final int total;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _P.bg,
+      backgroundColor: context.screenBg,
       appBar: AppBar(
         backgroundColor: _P.g1,
         foregroundColor: Colors.white,
@@ -3677,20 +3671,21 @@ final class _TiffinsOutsideScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.analyticCardBg,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: _P.s200, width: 0.5),
+              border: Border.all(
+                  color: context.analyticCardBorder, width: 0.5),
             ),
             child: Row(
               children: [
                 const Icon(Icons.shopping_bag_outlined, color: _P.v700),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Total outside',
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: _P.s900,
+                      color: context.textPrimary,
                     ),
                   ),
                 ),
@@ -3707,12 +3702,14 @@ final class _TiffinsOutsideScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           if (customers.isEmpty)
-            const Center(
+            Center(
               child: Padding(
-                padding: EdgeInsets.only(top: 40),
+                padding: const EdgeInsets.only(top: 40),
                 child: Text(
                   'No tiffins outside right now',
-                  style: TextStyle(color: _P.s600, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      color: context.textSecondary,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
             )
@@ -3722,9 +3719,10 @@ final class _TiffinsOutsideScreen extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.analyticCardBg,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: _P.s200, width: 0.5),
+                  border: Border.all(
+                      color: context.analyticCardBorder, width: 0.5),
                 ),
                 child: Row(
                   children: [
@@ -3734,15 +3732,16 @@ final class _TiffinsOutsideScreen extends StatelessWidget {
                         children: [
                           Text(
                             c.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w700,
-                              color: _P.s900,
+                              color: context.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             c.area ?? '',
-                            style: const TextStyle(color: _P.s600),
+                            style:
+                                TextStyle(color: context.textSecondary),
                           ),
                         ],
                       ),

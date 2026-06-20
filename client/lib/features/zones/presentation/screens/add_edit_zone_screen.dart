@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/app_snackbar.dart';
 import '../../../../core/utils/error_handler.dart';
 import '../../data/zone_api.dart';
 import '../../models/zone_model.dart';
+
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+}
 
 class AddEditZoneScreen extends StatefulWidget {
   const AddEditZoneScreen({super.key, this.zone});
@@ -145,9 +156,10 @@ class _AddEditZoneScreenState extends State<AddEditZoneScreen> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.zone != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: isDark ? _D.bg : _bg,
       appBar: AppBar(
         backgroundColor: _violet700,
         foregroundColor: Colors.white,
@@ -270,18 +282,19 @@ class _AddEditZoneScreenState extends State<AddEditZoneScreen> {
 
   // ── Preview card ──────────────────────────────────────────────────────────
   Widget _buildPreviewCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final accentColor = _colorCtrl.text.trim().isNotEmpty
         ? _parseColor(_colorCtrl.text.trim())
-        : _violet600;
+        : (isDark ? AppColors.primary : _violet600);
 
     return Container(
       decoration: BoxDecoration(
-        color: _surface,
+        color: isDark ? _D.surface : _surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border),
+        border: Border.all(color: isDark ? _D.border : _border),
         boxShadow: [
           BoxShadow(
-            color: _violet900.withValues(alpha: 0.06),
+            color: isDark ? Colors.black.withValues(alpha: 0.2) : _violet900.withValues(alpha: 0.06),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -336,8 +349,8 @@ class _AddEditZoneScreenState extends State<AddEditZoneScreen> {
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
                           color: _zoneName().isEmpty
-                              ? _textSecondary
-                              : _textPrimary,
+                              ? (isDark ? _D.textSecondary : _textSecondary)
+                              : (isDark ? _D.textPrimary : _textPrimary),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -350,8 +363,8 @@ class _AddEditZoneScreenState extends State<AddEditZoneScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           color: _descCtrl.text.trim().isEmpty
-                              ? _textSecondary.withValues(alpha: 0.5)
-                              : _textSecondary,
+                              ? (isDark ? _D.textSecondary.withValues(alpha: 0.5) : _textSecondary.withValues(alpha: 0.5))
+                              : (isDark ? _D.textSecondary : _textSecondary),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -363,12 +376,22 @@ class _AddEditZoneScreenState extends State<AddEditZoneScreen> {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: _isActive ? _successSoft : _dangerSoft,
+                          color: isDark
+                              ? (_isActive
+                                  ? AppColors.success.withValues(alpha: 0.15)
+                                  : AppColors.error.withValues(alpha: 0.15))
+                              : (_isActive
+                                  ? _successSoft
+                                  : _dangerSoft),
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
-                            color: _isActive
-                                ? _success.withValues(alpha: 0.3)
-                                : _danger.withValues(alpha: 0.3),
+                            color: isDark
+                                ? (_isActive
+                                    ? AppColors.success.withValues(alpha: 0.35)
+                                    : AppColors.error.withValues(alpha: 0.35))
+                                : (_isActive
+                                    ? _success.withValues(alpha: 0.3)
+                                    : _danger.withValues(alpha: 0.3)),
                           ),
                         ),
                         child: Row(
@@ -378,7 +401,9 @@ class _AddEditZoneScreenState extends State<AddEditZoneScreen> {
                               width: 5,
                               height: 5,
                               decoration: BoxDecoration(
-                                color: _isActive ? _success : _danger,
+                                color: isDark
+                                    ? (_isActive ? AppColors.success : AppColors.error)
+                                    : (_isActive ? _success : _danger),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -386,10 +411,11 @@ class _AddEditZoneScreenState extends State<AddEditZoneScreen> {
                             Text(
                               _isActive ? 'Active' : 'Inactive',
                               style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: _isActive ? _success : _danger,
-                              ),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark
+                                      ? (_isActive ? AppColors.success : AppColors.error)
+                                      : (_isActive ? _success : _danger)),
                             ),
                           ],
                         ),
@@ -406,246 +432,268 @@ class _AddEditZoneScreenState extends State<AddEditZoneScreen> {
   }
 
   // ── Color section ─────────────────────────────────────────────────────────
-  Widget _buildColorSection() => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      // Color presets
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: _colorPresets.map((hex) {
-          final color = _parseColor(hex);
-          final selected =
-              _colorCtrl.text.trim().toLowerCase() == hex.toLowerCase();
-          return GestureDetector(
-            onTap: () {
-              setState(() => _colorCtrl.text = hex);
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: selected ? _textPrimary : Colors.transparent,
-                  width: 2.5,
+  Widget _buildColorSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Color presets
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: _colorPresets.map((hex) {
+            final color = _parseColor(hex);
+            final selected =
+                _colorCtrl.text.trim().toLowerCase() == hex.toLowerCase();
+            return GestureDetector(
+              onTap: () {
+                setState(() => _colorCtrl.text = hex);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: selected ? (isDark ? _D.textPrimary : _textPrimary) : Colors.transparent,
+                    width: 2.5,
+                  ),
+                  boxShadow: selected
+                      ? [
+                          BoxShadow(
+                            color: color.withValues(alpha: 0.5),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
-                boxShadow: selected
-                    ? [
-                        BoxShadow(
-                          color: color.withValues(alpha: 0.5),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
+                child: selected
+                    ? const Icon(
+                        Icons.check_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      )
                     : null,
               ),
-              child: selected
-                  ? const Icon(
-                      Icons.check_rounded,
-                      color: Colors.white,
-                      size: 16,
-                    )
-                  : null,
-            ),
-          );
-        }).toList(),
-      ),
-      const SizedBox(height: 10),
-      // Custom hex input
-      _VioletField(
-        controller: _colorCtrl,
-        label: 'Custom color hex (optional)',
-        hint: '#FF0000',
-        icon: Icons.palette_outlined,
-        onChanged: (_) => setState(() {}),
-      ),
-    ],
-  );
-
-  // ── Status toggle ─────────────────────────────────────────────────────────
-  Widget _buildStatusToggle() => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    decoration: BoxDecoration(
-      color: _surface,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: _border),
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: _isActive ? _successSoft : _divider,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(
-            _isActive
-                ? Icons.check_circle_outline_rounded
-                : Icons.cancel_outlined,
-            size: 18,
-            color: _isActive ? _success : _textSecondary,
-          ),
+            );
+          }).toList(),
         ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _isActive ? 'Active' : 'Inactive',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: _textPrimary,
-                ),
-              ),
-              Text(
-                _isActive
-                    ? 'Zone is visible and accepting deliveries'
-                    : 'Zone is hidden from delivery assignments',
-                style: const TextStyle(fontSize: 11, color: _textSecondary),
-              ),
-            ],
-          ),
-        ),
-        GestureDetector(
-          onTap: () => setState(() => _isActive = !_isActive),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 52,
-            height: 28,
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              color: _isActive ? _violet600 : const Color(0xFFD0C8E8),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: _isActive ? _violet700 : const Color(0xFFB0A8D0),
-                width: 1.5,
-              ),
-            ),
-            child: AnimatedAlign(
-              duration: const Duration(milliseconds: 200),
-              alignment: _isActive
-                  ? Alignment.centerRight
-                  : Alignment.centerLeft,
-              child: Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  _isActive ? Icons.check_rounded : Icons.close_rounded,
-                  size: 12,
-                  color: _isActive ? _violet600 : const Color(0xFFB0A8D0),
-                ),
-              ),
-            ),
-          ),
+        const SizedBox(height: 10),
+        // Custom hex input
+        _VioletField(
+          controller: _colorCtrl,
+          label: 'Custom color hex (optional)',
+          hint: '#FF0000',
+          icon: Icons.palette_outlined,
+          onChanged: (_) => setState(() {}),
         ),
       ],
-    ),
-  );
+    );
+  }
 
-  // ── Section label ─────────────────────────────────────────────────────────
-  Widget _sectionLabel(String text) => Row(
-    children: [
-      Container(
-        width: 3,
-        height: 14,
-        decoration: BoxDecoration(
-          color: _violet600,
-          borderRadius: BorderRadius.circular(2),
-        ),
-      ),
-      const SizedBox(width: 8),
-      Text(
-        text.toUpperCase(),
-        style: const TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: _textSecondary,
-          letterSpacing: 1.2,
-        ),
-      ),
-    ],
-  );
-
-  // ── Save button ───────────────────────────────────────────────────────────
-  Widget _saveButton(bool isEdit) => SizedBox(
-    height: 52,
-    child: DecoratedBox(
+  // ── Status toggle ─────────────────────────────────────────────────────────
+  Widget _buildStatusToggle() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [_violet700, _violet500],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-        borderRadius: BorderRadius.circular(13),
-        boxShadow: [
-          BoxShadow(
-            color: _violet600.withValues(alpha: 0.38),
-            blurRadius: 16,
-            offset: const Offset(0, 5),
+        color: isDark ? _D.surface : _surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isDark ? _D.border : _border),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: isDark
+                  ? (_isActive ? AppColors.success.withValues(alpha: 0.15) : _D.violet50)
+                  : (_isActive ? _successSoft : _divider),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              _isActive
+                  ? Icons.check_circle_outline_rounded
+                  : Icons.cancel_outlined,
+              size: 18,
+              color: isDark
+                  ? (_isActive ? AppColors.success : _D.textSecondary)
+                  : (_isActive ? _success : _textSecondary),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _isActive ? 'Active' : 'Inactive',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? _D.textPrimary : _textPrimary,
+                  ),
+                ),
+                Text(
+                  _isActive
+                      ? 'Zone is visible and accepting deliveries'
+                      : 'Zone is hidden from delivery assignments',
+                  style: TextStyle(fontSize: 11, color: isDark ? _D.textSecondary : _textSecondary),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => setState(() => _isActive = !_isActive),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 52,
+              height: 28,
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: _isActive 
+                    ? (isDark ? AppColors.primary : _violet600) 
+                    : (isDark ? _D.violet100 : const Color(0xFFD0C8E8)),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: _isActive 
+                      ? (isDark ? AppColors.primaryLight : _violet700) 
+                      : (isDark ? _D.border : const Color(0xFFB0A8D0)),
+                  width: 1.5,
+                ),
+              ),
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 200),
+                alignment: _isActive
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    _isActive ? Icons.check_rounded : Icons.close_rounded,
+                    size: 12,
+                    color: _isActive 
+                        ? (isDark ? AppColors.primary : _violet600) 
+                        : (isDark ? _D.textSecondary : const Color(0xFFB0A8D0)),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
-      child: ElevatedButton(
-        onPressed: _saving ? null : _save,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          disabledBackgroundColor: const Color(0xFFCDBEFA),
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(13),
+    );
+  }
+
+  // ── Section label ─────────────────────────────────────────────────────────
+  Widget _sectionLabel(String text) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Row(
+      children: [
+        Container(
+          width: 3,
+          height: 14,
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.primary : _violet600,
+            borderRadius: BorderRadius.circular(2),
           ),
         ),
-        child: _saving
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    isEdit
-                        ? Icons.check_circle_outline_rounded
-                        : Icons.add_location_alt_outlined,
-                    size: 18,
+        const SizedBox(width: 8),
+        Text(
+          text.toUpperCase(),
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: isDark ? _D.textSecondary : _textSecondary,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Save button ───────────────────────────────────────────────────────────
+  Widget _saveButton(bool isEdit) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return SizedBox(
+      height: 52,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark ? [AppColors.primary, AppColors.lightAccent] : [_violet700, _violet500],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(13),
+          boxShadow: [
+            BoxShadow(
+              color: isDark ? AppColors.primary.withValues(alpha: 0.3) : _violet600.withValues(alpha: 0.38),
+              blurRadius: 16,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: ElevatedButton(
+          onPressed: _saving ? null : _save,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            disabledBackgroundColor: isDark ? _D.surface : const Color(0xFFCDBEFA),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(13),
+            ),
+          ),
+          child: _saving
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    isEdit ? 'Save Changes' : 'Create Zone',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.3,
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      isEdit
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.add_location_alt_outlined,
+                      size: 18,
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 8),
+                    Text(
+                      isEdit ? 'Save Changes' : 'Create Zone',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -682,49 +730,52 @@ class _VioletField extends StatelessWidget {
   static const _textSecondary = Color(0xFF7B6DAB);
 
   @override
-  Widget build(BuildContext context) => TextFormField(
-    controller: controller,
-    validator: validator,
-    keyboardType: keyboardType,
-    maxLines: maxLines,
-    onChanged: onChanged,
-    style: const TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      color: _textPrimary,
-    ),
-    decoration: InputDecoration(
-      labelText: label,
-      hintText: hint,
-      labelStyle: const TextStyle(fontSize: 13, color: _textSecondary),
-      hintStyle: TextStyle(
-        fontSize: 13,
-        color: _textSecondary.withOpacity(0.5),
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      onChanged: onChanged,
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: isDark ? _D.textPrimary : _textPrimary,
       ),
-      prefixIcon: Padding(
-        padding: const EdgeInsets.only(left: 14, right: 10),
-        child: Icon(icon, size: 18, color: _violet600),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        labelStyle: TextStyle(fontSize: 13, color: isDark ? _D.textSecondary : _textSecondary),
+        hintStyle: TextStyle(
+          fontSize: 13,
+          color: isDark ? _D.textSecondary.withValues(alpha: 0.5) : _textSecondary.withOpacity(0.5),
+        ),
+        prefixIcon: Padding(
+          padding: const EdgeInsets.only(left: 14, right: 10),
+          child: Icon(icon, size: 18, color: isDark ? AppColors.primaryLight : _violet600),
+        ),
+        prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+        filled: true,
+        fillColor: isDark ? _D.violet50 : _violet50,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(11),
+          borderSide: BorderSide(color: isDark ? _D.border : _border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(11),
+          borderSide: BorderSide(color: isDark ? AppColors.primaryAccent : _violet500, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(11),
+          borderSide: BorderSide(color: isDark ? AppColors.error : const Color(0xFFD93025)),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(11),
+          borderSide: BorderSide(color: isDark ? AppColors.error : const Color(0xFFD93025), width: 1.5),
+        ),
       ),
-      prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-      filled: true,
-      fillColor: _violet50,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(11),
-        borderSide: const BorderSide(color: _border),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(11),
-        borderSide: const BorderSide(color: _violet500, width: 1.5),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(11),
-        borderSide: const BorderSide(color: Color(0xFFD93025)),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(11),
-        borderSide: const BorderSide(color: Color(0xFFD93025), width: 1.5),
-      ),
-    ),
-  );
+    );
+  }
 }

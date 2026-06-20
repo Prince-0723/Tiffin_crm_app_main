@@ -16,6 +16,41 @@ import 'dashboard_home_screen.dart';
 import 'delivery_screen.dart';
 import 'finance_shell.dart';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Theme-aware color helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+extension _ShellColors on BuildContext {
+  bool get _isDark => Theme.of(this).brightness == Brightness.dark;
+
+  // Bottom nav bar background
+  Color get navBarBg =>
+      _isDark ? const Color(0xFF141625) : AppColors.surface;
+
+  // Bottom nav bar top border
+  Color get navBarBorder =>
+      _isDark ? const Color(0xFF1E1B3A) : AppColors.border;
+
+  // Bottom nav bar shadow
+  Color get navBarShadow =>
+      _isDark
+          ? AppColors.primary.withValues(alpha: 0.12)
+          : AppColors.primary.withValues(alpha: 0.06);
+
+  // Selected / unselected nav item colors
+  Color get navSelected =>
+      _isDark ? const Color(0xFF9B6AF0) : AppColors.bottomNavSelected;
+  Color get navUnselected =>
+      _isDark ? const Color(0xFF94A3B8) : AppColors.bottomNavUnselected;
+
+  // AppBar bottom separator line
+  Color get appBarBottomLine => Colors.white.withValues(alpha: 0.12);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DashboardShell
+// ─────────────────────────────────────────────────────────────────────────────
+
 class DashboardShell extends StatefulWidget {
   const DashboardShell({super.key, this.adminName = 'Vendor'});
   final String adminName;
@@ -80,7 +115,7 @@ class _DashboardShellState extends State<DashboardShell>
     return 'Vendor';
   }
 
-  // ─── Nav items (4 tabs — no Invoice) ──────────────────────────────────────
+  // ─── Nav items ─────────────────────────────────────────────────────────────
 
   static const List<_NavItem> _navItems = [
     _NavItem(
@@ -114,15 +149,16 @@ class _DashboardShellState extends State<DashboardShell>
         flexibleSpace: Stack(
           fit: StackFit.expand,
           children: [
+            // Gradient — same in both modes (brand header)
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
                     AppColors.primary,
-                    AppColors.primary.withValues(alpha: 0.92),
-                    const Color(0xFF3B1578),
+                    Color(0xFF6B35C8),
+                    Color(0xFF3B1578),
                   ],
                 ),
               ),
@@ -137,7 +173,7 @@ class _DashboardShellState extends State<DashboardShell>
           ],
         ),
         leading: Builder(
-          builder: (context) => IconButton(
+          builder: (ctx) => IconButton(
             icon: const PhosphorIcon(
               PhosphorIconsRegular.list,
               size: 22,
@@ -145,7 +181,7 @@ class _DashboardShellState extends State<DashboardShell>
             ),
             onPressed: () {
               HapticFeedback.lightImpact();
-              Scaffold.of(context).openDrawer();
+              Scaffold.of(ctx).openDrawer();
             },
             tooltip: 'Open menu',
           ),
@@ -163,9 +199,7 @@ class _DashboardShellState extends State<DashboardShell>
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.onPrimary,
         elevation: 0,
-        actions: const [
-          _DashboardNotificationAction(),
-        ],
+        actions: const [_DashboardNotificationAction()],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(
@@ -178,28 +212,20 @@ class _DashboardShellState extends State<DashboardShell>
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          RepaintBoundary(
-            child: DashboardHomeScreen(adminName: _vendorDisplayName),
-          ),
-          const RepaintBoundary(
-            child: DeliveryScreen(embeddedInShell: true),
-          ),
-          const RepaintBoundary(
-            child: CustomersListScreen(),
-          ),
-          const RepaintBoundary(
-            child: FinanceShell(),
-          ),
+          RepaintBoundary(child: DashboardHomeScreen(adminName: _vendorDisplayName)),
+          const RepaintBoundary(child: DeliveryScreen(embeddedInShell: true)),
+          const RepaintBoundary(child: CustomersListScreen()),
+          const RepaintBoundary(child: FinanceShell()),
         ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.navBarBg,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.navBarBorder),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.06),
+              color: context.navBarShadow,
               blurRadius: 16,
               offset: const Offset(0, -4),
             ),
@@ -211,18 +237,15 @@ class _DashboardShellState extends State<DashboardShell>
             currentIndex: _selectedIndex,
             onTap: (index) {
               HapticFeedback.lightImpact();
-              if (index == 0) {
-                overviewDashboardTabSelectedTick.value++;
-              } else if (index == 3) {
-                financeDashboardTabSelectedTick.value++;
-              }
+              if (index == 0) overviewDashboardTabSelectedTick.value++;
+              if (index == 3) financeDashboardTabSelectedTick.value++;
               setState(() => _selectedIndex = index);
             },
             type: BottomNavigationBarType.fixed,
-            backgroundColor: AppColors.surface,
+            backgroundColor: context.navBarBg,
             elevation: 0,
-            selectedItemColor: AppColors.bottomNavSelected,
-            unselectedItemColor: AppColors.bottomNavUnselected,
+            selectedItemColor: context.navSelected,
+            unselectedItemColor: context.navUnselected,
             selectedLabelStyle: GoogleFonts.inter(
               fontWeight: FontWeight.w600,
               fontSize: 12,
@@ -253,8 +276,10 @@ class _DashboardShellState extends State<DashboardShell>
   }
 }
 
-/// Badge + bell only rebuild when [NotificationBadgeService.unreadCount] changes,
-/// not on every vendor profile or tab update.
+// ─────────────────────────────────────────────────────────────────────────────
+// Notification bell — only rebuilds when unread count changes
+// ─────────────────────────────────────────────────────────────────────────────
+
 class _DashboardNotificationAction extends StatelessWidget {
   const _DashboardNotificationAction();
 
@@ -330,6 +355,10 @@ class _DashboardNotificationAction extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// _NavItem
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _NavItem {
   const _NavItem({

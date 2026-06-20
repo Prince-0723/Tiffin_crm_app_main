@@ -7,6 +7,15 @@ import '../../../../core/utils/error_handler.dart';
 import '../../../orders/data/order_api.dart';
 import '../../data/portal_announcement_api.dart';
 
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+}
+
 /// Vendor: view and edit the customer portal announcement.
 class PortalAnnouncementScreen extends StatefulWidget {
   const PortalAnnouncementScreen({super.key});
@@ -146,11 +155,12 @@ class _PortalAnnouncementScreenState extends State<PortalAnnouncementScreen> {
   }
 
   Future<void> _openEditor({required String initialText}) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: isDark ? _D.surface : AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -173,8 +183,9 @@ class _PortalAnnouncementScreenState extends State<PortalAnnouncementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? _D.bg : AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
@@ -207,7 +218,7 @@ class _PortalAnnouncementScreenState extends State<PortalAnnouncementScreen> {
                   ),
                 )
           : RefreshIndicator(
-              color: AppColors.primaryAccent,
+              color: isDark ? AppColors.primaryLight : AppColors.primaryAccent,
               onRefresh: _load,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -218,9 +229,9 @@ class _PortalAnnouncementScreenState extends State<PortalAnnouncementScreen> {
                     Container(
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: isDark ? _D.surface : AppColors.surface,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: isDark ? _D.border : AppColors.border),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,23 +241,23 @@ class _PortalAnnouncementScreenState extends State<PortalAnnouncementScreen> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryContainer,
+                                  color: isDark ? _D.violet100 : AppColors.primaryContainer,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.campaign_rounded,
-                                  color: AppColors.primaryAccent,
+                                  color: isDark ? AppColors.primaryLight : AppColors.primaryAccent,
                                   size: 22,
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              const Expanded(
+                              Expanded(
                                 child: Text(
                                   'Current announcement',
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.textSecondary,
+                                    color: isDark ? _D.textSecondary : AppColors.textSecondary,
                                   ),
                                 ),
                               ),
@@ -261,8 +272,8 @@ class _PortalAnnouncementScreenState extends State<PortalAnnouncementScreen> {
                               fontSize: 15,
                               height: 1.45,
                               color: _text.trim().isEmpty
-                                  ? AppColors.textHint
-                                  : AppColors.textPrimary,
+                                  ? (isDark ? _D.textSecondary.withValues(alpha: 0.6) : AppColors.textHint)
+                                  : (isDark ? _D.textPrimary : AppColors.textPrimary),
                               fontStyle: _text.trim().isEmpty
                                   ? FontStyle.italic
                                   : FontStyle.normal,
@@ -272,9 +283,9 @@ class _PortalAnnouncementScreenState extends State<PortalAnnouncementScreen> {
                             const SizedBox(height: 16),
                             Text(
                               'Last updated: ${_dateFmt.format(_updatedAt!.toLocal())}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textSecondary,
+                                color: isDark ? _D.textSecondary : AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -284,7 +295,7 @@ class _PortalAnnouncementScreenState extends State<PortalAnnouncementScreen> {
                             style: TextStyle(
                               fontSize: 11,
                               height: 1.35,
-                              color: AppColors.textSecondary.withValues(alpha: 0.95),
+                              color: isDark ? _D.textSecondary : AppColors.textSecondary.withValues(alpha: 0.95),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -303,8 +314,8 @@ class _PortalAnnouncementScreenState extends State<PortalAnnouncementScreen> {
                                     _text.trim().isEmpty ? 'Add' : 'Edit',
                                   ),
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: AppColors.primary,
-                                    side: const BorderSide(color: AppColors.border),
+                                    foregroundColor: isDark ? AppColors.primaryLight : AppColors.primary,
+                                    side: BorderSide(color: isDark ? _D.border : AppColors.border),
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                       vertical: 12,
@@ -341,7 +352,7 @@ class _PortalAnnouncementScreenState extends State<PortalAnnouncementScreen> {
                             style: TextStyle(
                               fontSize: 11,
                               height: 1.35,
-                              color: AppColors.textSecondary.withValues(alpha: 0.9),
+                              color: isDark ? _D.textSecondary : AppColors.textSecondary.withValues(alpha: 0.9),
                             ),
                           ),
                         ],
@@ -407,6 +418,8 @@ class _EditAnnouncementSheetState extends State<_EditAnnouncementSheet> {
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     final isAdd = widget.initialText.trim().isEmpty;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: EdgeInsets.only(bottom: bottom),
       child: SingleChildScrollView(
@@ -421,7 +434,7 @@ class _EditAnnouncementSheetState extends State<_EditAnnouncementSheet> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.outlineVariant,
+                    color: isDark ? _D.border : AppColors.outlineVariant,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -429,10 +442,10 @@ class _EditAnnouncementSheetState extends State<_EditAnnouncementSheet> {
               const SizedBox(height: 16),
               Text(
                 isAdd ? 'Make announcement' : 'Edit announcement',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: isDark ? _D.textPrimary : AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 14),
@@ -440,32 +453,37 @@ class _EditAnnouncementSheetState extends State<_EditAnnouncementSheet> {
                 controller: _controller,
                 maxLines: 8,
                 maxLength: 5000,
+                style: TextStyle(color: isDark ? _D.textPrimary : null),
                 decoration: InputDecoration(
                   hintText: 'Announcement text…',
+                  hintStyle: TextStyle(color: isDark ? _D.textSecondary.withValues(alpha: 0.6) : null),
                   filled: true,
-                  fillColor: AppColors.surfaceContainerLow,
+                  fillColor: isDark ? _D.bg : AppColors.surfaceContainerLow,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.border),
+                    borderSide: BorderSide(color: isDark ? _D.border : AppColors.border),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.border),
+                    borderSide: BorderSide(color: isDark ? _D.border : AppColors.border),
                   ),
                 ),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Notify all customers'),
+                title: Text(
+                  'Notify all customers',
+                  style: TextStyle(color: isDark ? _D.textPrimary : null),
+                ),
                 value: _notifyAll,
-                activeThumbColor: AppColors.primaryAccent,
-                inactiveThumbColor: AppColors.textHint,
-                inactiveTrackColor: AppColors.surfaceContainerLow,
+                activeThumbColor: isDark ? AppColors.primaryLight : AppColors.primaryAccent,
+                inactiveThumbColor: isDark ? _D.textSecondary : AppColors.textHint,
+                inactiveTrackColor: isDark ? _D.bg : AppColors.surfaceContainerLow,
                 trackOutlineColor: WidgetStateProperty.resolveWith(
                   (states) =>
                       states.contains(WidgetState.selected)
-                          ? AppColors.primaryAccent
-                          : AppColors.border,
+                          ? (isDark ? AppColors.primaryLight : AppColors.primaryAccent)
+                          : (isDark ? _D.border : AppColors.border),
                 ),
                 onChanged: _saving
                     ? null

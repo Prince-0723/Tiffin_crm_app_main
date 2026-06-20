@@ -17,6 +17,18 @@ import '../../services/finance_calculator.dart';
 import '../../services/finance_service.dart';
 import 'finance_refresh_signal.dart';
 
+
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const divider = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+}
+
 class FinanceScreen extends StatefulWidget {
   const FinanceScreen({super.key});
 
@@ -198,6 +210,7 @@ class _FinanceScreenState extends State<FinanceScreen>
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setModal) {
+            final isDark = Theme.of(ctx).brightness == Brightness.dark;
             Future<void> pickFrom() async {
               final picked = await showDatePicker(
                 context: ctx,
@@ -233,12 +246,12 @@ class _FinanceScreenState extends State<FinanceScreen>
 
             return Container(
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: isDark ? _D.surface : AppColors.surface,
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(20)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.shadow.withValues(alpha: 0.12),
+                    color: isDark ? Colors.black.withValues(alpha: 0.35) : AppColors.shadow.withValues(alpha: 0.12),
                     blurRadius: 24,
                     offset: const Offset(0, -4),
                   ),
@@ -263,7 +276,7 @@ class _FinanceScreenState extends State<FinanceScreen>
                     textAlign: TextAlign.center,
                     style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
+                          color: isDark ? _D.textPrimary : AppColors.textPrimary,
                         ),
                   ),
                   const SizedBox(height: 16),
@@ -274,6 +287,7 @@ class _FinanceScreenState extends State<FinanceScreen>
                           label: 'From',
                           value: df.format(temp.start),
                           onTap: pickFrom,
+                          isDark: isDark,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -282,6 +296,7 @@ class _FinanceScreenState extends State<FinanceScreen>
                           label: 'To',
                           value: df.format(temp.end),
                           onTap: pickTo,
+                          isDark: isDark,
                         ),
                       ),
                     ],
@@ -307,6 +322,7 @@ class _FinanceScreenState extends State<FinanceScreen>
     required String label,
     required String value,
     required VoidCallback onTap,
+    required bool isDark,
   }) {
     return Material(
       color: Colors.transparent,
@@ -316,9 +332,9 @@ class _FinanceScreenState extends State<FinanceScreen>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.surfaceContainerLow,
+            color: isDark ? _D.violet50 : AppColors.surfaceContainerLow,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: isDark ? _D.border : AppColors.border),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,7 +342,7 @@ class _FinanceScreenState extends State<FinanceScreen>
               Text(
                 label,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: isDark ? _D.textSecondary : AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
                     ),
               ),
@@ -334,7 +350,7 @@ class _FinanceScreenState extends State<FinanceScreen>
               Text(
                 value,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: AppColors.textPrimary,
+                      color: isDark ? _D.textPrimary : AppColors.textPrimary,
                       fontWeight: FontWeight.w800,
                     ),
               ),
@@ -356,6 +372,7 @@ class _FinanceScreenState extends State<FinanceScreen>
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setModal) {
+            final isDark = Theme.of(ctx).brightness == Brightness.dark;
             Widget monthButton(int m) {
               final isSel = (year == _selectedMonth.year && m == selectedMonth);
               return InkWell(
@@ -369,10 +386,10 @@ class _FinanceScreenState extends State<FinanceScreen>
                   decoration: BoxDecoration(
                     color: isSel
                         ? AppColors.primary.withValues(alpha: 0.10)
-                        : AppColors.surface,
+                        : (isDark ? _D.surface : AppColors.surface),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSel ? AppColors.primary : AppColors.border,
+                      color: isSel ? AppColors.primary : (isDark ? _D.border : AppColors.border),
                     ),
                   ),
                   child: Text(
@@ -380,7 +397,7 @@ class _FinanceScreenState extends State<FinanceScreen>
                     style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w700,
                           color:
-                              isSel ? AppColors.primary : AppColors.textPrimary,
+                              isSel ? AppColors.primary : (isDark ? _D.textPrimary : AppColors.textPrimary),
                         ),
                   ),
                 ),
@@ -389,12 +406,12 @@ class _FinanceScreenState extends State<FinanceScreen>
 
             return Container(
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: isDark ? _D.surface : AppColors.surface,
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(20)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.shadow.withValues(alpha: 0.12),
+                    color: isDark ? Colors.black.withValues(alpha: 0.35) : AppColors.shadow.withValues(alpha: 0.12),
                     blurRadius: 24,
                     offset: const Offset(0, -4),
                   ),
@@ -427,7 +444,7 @@ class _FinanceScreenState extends State<FinanceScreen>
                           textAlign: TextAlign.center,
                           style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w800,
-                                color: AppColors.textPrimary,
+                                color: isDark ? _D.textPrimary : AppColors.textPrimary,
                               ),
                         ),
                       ),
@@ -462,11 +479,12 @@ class _FinanceScreenState extends State<FinanceScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: isDark ? _D.bg : AppColors.background,
         appBar: AppBar(
           automaticallyImplyLeading: false,
           centerTitle: false,
@@ -637,6 +655,7 @@ class _RevenueTabState extends State<_RevenueTab> {
   }
 
   Widget _viewToggle() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     Widget pill(String label, bool sel, VoidCallback onTap) {
       return GestureDetector(
         onTap: onTap,
@@ -644,10 +663,10 @@ class _RevenueTabState extends State<_RevenueTab> {
           duration: const Duration(milliseconds: 160),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: sel ? AppColors.primary.withValues(alpha: 0.10) : AppColors.surface,
+            color: sel ? AppColors.primary.withValues(alpha: 0.10) : (isDark ? _D.surface : AppColors.surface),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: sel ? AppColors.primary : AppColors.border,
+              color: sel ? AppColors.primary : (isDark ? _D.border : AppColors.border),
               width: 1,
             ),
           ),
@@ -656,7 +675,7 @@ class _RevenueTabState extends State<_RevenueTab> {
               label,
               style: widget.theme.textTheme.labelSmall?.copyWith(
                 fontWeight: FontWeight.w800,
-                color: sel ? AppColors.primary : AppColors.textSecondary,
+                color: sel ? AppColors.primary : (isDark ? _D.textSecondary : AppColors.textSecondary),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -766,6 +785,7 @@ class _RevenueTabState extends State<_RevenueTab> {
   }
 
   Widget _dailyTableLikeScreenshot(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final now = DateTime.now();
     final isCurrentMonth = _isCurrentMonth();
     final today = DateTime(now.year, now.month, now.day);
@@ -791,16 +811,16 @@ class _RevenueTabState extends State<_RevenueTab> {
     double profit(DailyFinanceRow r) => FinanceCalculator.fromDailyRow(r).profit;
 
     final headerStyle = widget.theme.textTheme.labelSmall?.copyWith(
-      color: AppColors.textSecondary,
+      color: isDark ? _D.textSecondary : AppColors.textSecondary,
       fontWeight: FontWeight.w900,
       letterSpacing: 0.2,
     );
     final cellStyle = widget.theme.textTheme.bodySmall?.copyWith(
-          color: AppColors.textPrimary,
+          color: isDark ? _D.textPrimary : AppColors.textPrimary,
           fontWeight: FontWeight.w700,
         ) ??
-        const TextStyle(
-          color: AppColors.textPrimary,
+        TextStyle(
+          color: isDark ? _D.textPrimary : AppColors.textPrimary,
           fontWeight: FontWeight.w700,
           fontSize: 12,
         );
@@ -851,27 +871,27 @@ class _RevenueTabState extends State<_RevenueTab> {
             child: Text(
               t,
               style: cellStyle.copyWith(
-                color: muted ? AppColors.textSecondary : AppColors.textPrimary,
+                color: muted ? (isDark ? _D.textSecondary : AppColors.textSecondary) : (isDark ? _D.textPrimary : AppColors.textPrimary),
                 fontWeight: FontWeight.w800,
               ),
             ),
           ),
         );
 
-    Widget vSep() => Container(width: 1, height: 44, color: AppColors.border);
+    Widget vSep() => Container(width: 1, height: 44, color: isDark ? _D.border : AppColors.border);
 
     if (filtered.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: isDark ? _D.surface : AppColors.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: isDark ? _D.border : AppColors.border),
         ),
         child: Text(
           'No daily data',
           style: widget.theme.textTheme.bodyMedium?.copyWith(
-            color: AppColors.textSecondary,
+            color: isDark ? _D.textSecondary : AppColors.textSecondary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -880,12 +900,12 @@ class _RevenueTabState extends State<_RevenueTab> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? _D.surface : AppColors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: isDark ? _D.border : AppColors.border),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.06),
+            color: isDark ? Colors.black.withValues(alpha: 0.2) : AppColors.shadow.withValues(alpha: 0.06),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -901,9 +921,9 @@ class _RevenueTabState extends State<_RevenueTab> {
               // Header
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerLow,
+                  color: isDark ? _D.violet50 : AppColors.surfaceContainerLow,
                   border: Border(
-                    bottom: BorderSide(color: AppColors.border, width: 1),
+                    bottom: BorderSide(color: isDark ? _D.border : AppColors.border, width: 1),
                   ),
                 ),
                 child: Row(
@@ -930,7 +950,7 @@ class _RevenueTabState extends State<_RevenueTab> {
                     final r = filtered[i];
                     final isAlt = i.isOdd;
                     final rowBg =
-                        isAlt ? AppColors.surfaceContainerLow : AppColors.surface;
+                        isAlt ? (isDark ? _D.violet50 : AppColors.surfaceContainerLow) : (isDark ? _D.surface : AppColors.surface);
                     final muted = r.processedAmount <= 0.0001 &&
                         r.incomes <= 0.0001 &&
                         r.deposits <= 0.0001 &&
@@ -942,7 +962,7 @@ class _RevenueTabState extends State<_RevenueTab> {
                         color: rowBg,
                         border: Border(
                           bottom:
-                              BorderSide(color: AppColors.border, width: 1),
+                              BorderSide(color: isDark ? _D.border : AppColors.border, width: 1),
                         ),
                       ),
                       child: Row(
@@ -1017,6 +1037,7 @@ class FinanceMiniCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final c = color ?? AppColors.primary;
     final bg = c.withValues(alpha: 0.08);
 
@@ -1027,7 +1048,7 @@ class FinanceMiniCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
+          border: Border.all(color: (isDark ? _D.border : AppColors.border).withValues(alpha: 0.6)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1054,7 +1075,7 @@ class FinanceMiniCard extends StatelessWidget {
             Text(
               title,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: AppColors.textSecondary,
+                color: isDark ? _D.textSecondary : AppColors.textSecondary,
                 fontWeight: FontWeight.w700,
               ),
               maxLines: 1,
@@ -1082,10 +1103,11 @@ class _TransactionsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final bottomPad = MediaQuery.of(context).padding.bottom;
 
     return Container(
-      color: AppColors.background,
+      color: isDark ? _D.bg : AppColors.background,
       child: SafeArea(
         top: false,
         bottom: true,
@@ -1106,7 +1128,7 @@ class _TransactionsTab extends StatelessWidget {
                               child: Text(
                                 'No transactions this month',
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: isDark ? _D.textSecondary : AppColors.textSecondary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -1136,10 +1158,10 @@ class _TransactionsTab extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 14, vertical: 12),
                             decoration: BoxDecoration(
-                              color: AppColors.surface,
+                              color: isDark ? _D.surface : AppColors.surface,
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
-                                color: AppColors.border,
+                                color: isDark ? _D.border : AppColors.border,
                               ),
                             ),
                             child: Row(
@@ -1161,7 +1183,7 @@ class _TransactionsTab extends StatelessWidget {
                                       Text(
                                         dateStr,
                                         style: theme.textTheme.bodySmall?.copyWith(
-                                          color: AppColors.textSecondary,
+                                          color: isDark ? _D.textSecondary : AppColors.textSecondary,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -1175,14 +1197,14 @@ class _TransactionsTab extends StatelessWidget {
                                     // Keeping icon to match requested UI.
                                   },
                                   icon: const Icon(Icons.edit_outlined, size: 20),
-                                  color: AppColors.textSecondary,
+                                  color: isDark ? _D.textSecondary : AppColors.textSecondary,
                                   tooltip: 'Edit',
                                 ),
                                 IconButton(
                                   onPressed: () => _confirmDelete(context, t),
                                   icon: const Icon(Icons.delete_outline_rounded,
                                       size: 22),
-                                  color: AppColors.textSecondary,
+                                  color: isDark ? _D.textSecondary : AppColors.textSecondary,
                                   tooltip: 'Delete',
                                 ),
                               ],
@@ -1197,10 +1219,10 @@ class _TransactionsTab extends StatelessWidget {
             Container(
               padding: EdgeInsets.fromLTRB(16, 10, 16, bottomPad + 12),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: isDark ? _D.surface : AppColors.surface,
                 border: Border(
                   top: BorderSide(
-                    color: AppColors.border,
+                    color: isDark ? _D.border : AppColors.border,
                     width: 1,
                   ),
                 ),
@@ -1319,6 +1341,7 @@ class _ErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -1334,7 +1357,7 @@ class _ErrorState extends StatelessWidget {
             Text(
               message,
               style: theme.textTheme.titleSmall?.copyWith(
-                color: AppColors.textPrimary,
+                color: isDark ? _D.textPrimary : AppColors.textPrimary,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -1342,7 +1365,7 @@ class _ErrorState extends StatelessWidget {
             Text(
               'Tap to retry',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
+                color: isDark ? _D.textSecondary : AppColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),

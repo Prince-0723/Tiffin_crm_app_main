@@ -4,6 +4,17 @@ import '../../../../core/utils/error_handler.dart';
 import '../../data/delivery_api.dart';
 import '../../models/delivery_staff_model.dart';
 
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const divider = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+}
+
 class AddEditStaffScreen extends StatefulWidget {
   const AddEditStaffScreen({super.key, this.staff});
   final DeliveryStaffModel? staff;
@@ -107,9 +118,10 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.staff != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: isDark ? _D.bg : _bg,
       appBar: AppBar(
         backgroundColor: _violet700,
         foregroundColor: Colors.white,
@@ -146,11 +158,11 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // ── Identity preview card ─────────────────────────────────
-              _buildPreviewCard(),
+              _buildPreviewCard(isDark),
               const SizedBox(height: 24),
 
               // ── Personal info ─────────────────────────────────────────
-              _sectionLabel('Personal Information'),
+              _sectionLabel('Personal Information', isDark),
               const SizedBox(height: 10),
               _VioletField(
                 controller: _nameCtrl,
@@ -173,7 +185,7 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
               const SizedBox(height: 22),
 
               // ── Delivery areas ────────────────────────────────────────
-              _sectionLabel('Delivery Areas'),
+              _sectionLabel('Delivery Areas', isDark),
               const SizedBox(height: 10),
               _VioletField(
                 controller: _areasCtrl,
@@ -187,16 +199,16 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
                 padding: const EdgeInsets.only(left: 4),
                 child: Text(
                   'Separate multiple areas with a comma',
-                  style: TextStyle(fontSize: 11, color: _textSecondary),
+                  style: TextStyle(fontSize: 11, color: isDark ? _D.textSecondary : _textSecondary),
                 ),
               ),
 
               const SizedBox(height: 22),
 
               // ── Status ────────────────────────────────────────────────
-              _sectionLabel('Status'),
+              _sectionLabel('Status', isDark),
               const SizedBox(height: 10),
-              _buildStatusToggle(),
+              _buildStatusToggle(isDark),
 
               const SizedBox(height: 32),
 
@@ -210,19 +222,21 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
   }
 
   // ── Preview card ──────────────────────────────────────────────────────────
-  Widget _buildPreviewCard() {
+  Widget _buildPreviewCard(bool isDark) {
     final name = _nameCtrl.text.trim();
     final phone = _phoneCtrl.text.trim();
     final initial = name.isEmpty ? '?' : name[0].toUpperCase();
 
     return Container(
       decoration: BoxDecoration(
-        color: _surface,
+        color: isDark ? _D.surface : _surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border),
+        border: Border.all(color: isDark ? _D.border : _border),
         boxShadow: [
           BoxShadow(
-            color: _violet900.withValues(alpha: 0.06),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.35)
+                : _violet900.withValues(alpha: 0.06),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -250,17 +264,17 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        color: _violet100,
+                        color: isDark ? _D.violet100 : _violet100,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: _border),
+                        border: Border.all(color: isDark ? _D.border : _border),
                       ),
                       child: Center(
                         child: Text(
                           initial,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
-                            color: _violet700,
+                            color: isDark ? const Color(0xFFA78BFA) : _violet700,
                           ),
                         ),
                       ),
@@ -273,9 +287,11 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
                         width: 14,
                         height: 14,
                         decoration: BoxDecoration(
-                          color: _isActive ? _success : _textSecondary,
+                          color: _isActive
+                              ? (isDark ? const Color(0xFF4ADE80) : _success)
+                              : (isDark ? _D.textSecondary : _textSecondary),
                           shape: BoxShape.circle,
-                          border: Border.all(color: _surface, width: 2),
+                          border: Border.all(color: isDark ? _D.surface : _surface, width: 2),
                         ),
                       ),
                     ),
@@ -291,7 +307,9 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: name.isEmpty ? _textSecondary : _textPrimary,
+                          color: name.isEmpty
+                              ? (isDark ? _D.textSecondary : _textSecondary)
+                              : (isDark ? _D.textPrimary : _textPrimary),
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -300,8 +318,8 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           color: phone.isEmpty
-                              ? _textSecondary.withValues(alpha: 0.5)
-                              : _textSecondary,
+                              ? (isDark ? _D.textSecondary : _textSecondary).withValues(alpha: 0.5)
+                              : (isDark ? _D.textSecondary : _textSecondary),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -312,13 +330,13 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: _isActive
-                              ? _successSoft
-                              : const Color(0xFFEEEBFA),
+                              ? (isDark ? const Color(0xFF0F2A1C) : _successSoft)
+                              : (isDark ? _D.divider : const Color(0xFFEEEBFA)),
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
                             color: _isActive
-                                ? _success.withValues(alpha: 0.3)
-                                : _border,
+                                ? (isDark ? const Color(0xFF1F6B3F) : _success.withValues(alpha: 0.3))
+                                : (isDark ? _D.border : _border),
                           ),
                         ),
                         child: Row(
@@ -328,7 +346,9 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
                               width: 5,
                               height: 5,
                               decoration: BoxDecoration(
-                                color: _isActive ? _success : _textSecondary,
+                                color: _isActive
+                                    ? (isDark ? const Color(0xFF4ADE80) : _success)
+                                    : (isDark ? _D.textSecondary : _textSecondary),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -338,7 +358,9 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
-                                color: _isActive ? _success : _textSecondary,
+                                color: _isActive
+                                    ? (isDark ? const Color(0xFF4ADE80) : _success)
+                                    : (isDark ? _D.textSecondary : _textSecondary),
                               ),
                             ),
                           ],
@@ -356,12 +378,12 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
   }
 
   // ── Status toggle card ────────────────────────────────────────────────────
-  Widget _buildStatusToggle() => Container(
+  Widget _buildStatusToggle(bool isDark) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     decoration: BoxDecoration(
-      color: _surface,
+      color: isDark ? _D.surface : _surface,
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: _border),
+      border: Border.all(color: isDark ? _D.border : _border),
     ),
     child: Row(
       children: [
@@ -369,7 +391,9 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: _isActive ? _successSoft : const Color(0xFFEEEBFA),
+            color: _isActive
+                ? (isDark ? const Color(0xFF0F2A1C) : _successSoft)
+                : (isDark ? _D.divider : const Color(0xFFEEEBFA)),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
@@ -377,7 +401,9 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
                 ? Icons.check_circle_outline_rounded
                 : Icons.cancel_outlined,
             size: 18,
-            color: _isActive ? _success : _textSecondary,
+            color: _isActive
+                ? (isDark ? const Color(0xFF4ADE80) : _success)
+                : (isDark ? _D.textSecondary : _textSecondary),
           ),
         ),
         const SizedBox(width: 14),
@@ -387,24 +413,24 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
             children: [
               Text(
                 _isActive ? 'Active' : 'Inactive',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: _textPrimary,
+                  color: isDark ? _D.textPrimary : _textPrimary,
                 ),
               ),
               Text(
                 _isActive
                     ? 'Staff member is available for deliveries'
                     : 'Staff member will not receive new deliveries',
-                style: const TextStyle(fontSize: 11, color: _textSecondary),
+                style: TextStyle(fontSize: 11, color: isDark ? _D.textSecondary : _textSecondary),
               ),
             ],
           ),
         ),
         Switch(
           value: _isActive,
-          activeColor: _violet600,
+          activeColor: isDark ? const Color(0xFFA78BFA) : _violet600,
           onChanged: (v) => setState(() => _isActive = v),
         ),
       ],
@@ -412,7 +438,7 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
   );
 
   // ── Section label ─────────────────────────────────────────────────────────
-  Widget _sectionLabel(String text) => Row(
+  Widget _sectionLabel(String text, bool isDark) => Row(
     children: [
       Container(
         width: 3,
@@ -425,10 +451,10 @@ class _AddEditStaffScreenState extends State<AddEditStaffScreen> {
       const SizedBox(width: 8),
       Text(
         text.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
-          color: _textSecondary,
+          color: isDark ? _D.textSecondary : _textSecondary,
           letterSpacing: 1.2,
         ),
       ),
@@ -534,49 +560,52 @@ class _VioletField extends StatelessWidget {
   static const _textSecondary = Color(0xFF7B6DAB);
 
   @override
-  Widget build(BuildContext context) => TextFormField(
-    controller: controller,
-    validator: validator,
-    keyboardType: keyboardType,
-    maxLines: maxLines,
-    onChanged: onChanged,
-    style: const TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      color: _textPrimary,
-    ),
-    decoration: InputDecoration(
-      labelText: label,
-      hintText: hint,
-      labelStyle: const TextStyle(fontSize: 13, color: _textSecondary),
-      hintStyle: TextStyle(
-        fontSize: 13,
-        color: _textSecondary.withOpacity(0.5),
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      onChanged: onChanged,
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: isDark ? const Color(0xFFF8FAFC) : _textPrimary,
       ),
-      prefixIcon: Padding(
-        padding: const EdgeInsets.only(left: 14, right: 10),
-        child: Icon(icon, size: 18, color: _violet600),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        labelStyle: TextStyle(fontSize: 13, color: isDark ? const Color(0xFF94A3B8) : _textSecondary),
+        hintStyle: TextStyle(
+          fontSize: 13,
+          color: (isDark ? const Color(0xFF94A3B8) : _textSecondary).withValues(alpha: 0.5),
+        ),
+        prefixIcon: Padding(
+          padding: const EdgeInsets.only(left: 14, right: 10),
+          child: Icon(icon, size: 18, color: isDark ? const Color(0xFFA78BFA) : _violet600),
+        ),
+        prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+        filled: true,
+        fillColor: isDark ? const Color(0xFF141625) : _violet50,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(11),
+          borderSide: BorderSide(color: isDark ? const Color(0xFF2F3347) : _border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(11),
+          borderSide: const BorderSide(color: _violet500, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(11),
+          borderSide: const BorderSide(color: Color(0xFFD93025)),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(11),
+          borderSide: const BorderSide(color: Color(0xFFD93025), width: 1.5),
+        ),
       ),
-      prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-      filled: true,
-      fillColor: _violet50,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(11),
-        borderSide: const BorderSide(color: _border),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(11),
-        borderSide: const BorderSide(color: _violet500, width: 1.5),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(11),
-        borderSide: const BorderSide(color: Color(0xFFD93025)),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(11),
-        borderSide: const BorderSide(color: Color(0xFFD93025), width: 1.5),
-      ),
-    ),
-  );
+    );
+  }
 }

@@ -5,6 +5,14 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/finance_monthly_api.dart';
 
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+}
+
 /// Monthly finance overview (vendor): summary, orders chart, daily breakdown.
 class MonthlyFinanceScreen extends StatefulWidget {
   const MonthlyFinanceScreen({super.key, this.embeddedInFinanceShell = false});
@@ -72,17 +80,18 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final body = _buildBody();
 
     if (widget.embeddedInFinanceShell) {
       return ColoredBox(
-        color: AppColors.background,
+        color: isDark ? _D.bg : AppColors.background,
         child: body,
       );
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? _D.bg : AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
@@ -113,6 +122,7 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
   }
 
   Widget _buildBodyBelowPicker(double bottomPad) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -129,13 +139,13 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
                 color: AppColors.error,
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Could not load finance data.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: isDark ? _D.textPrimary : AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 20),
@@ -160,7 +170,7 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
     }
 
     return RefreshIndicator(
-      color: AppColors.primaryAccent,
+      color: isDark ? AppColors.primaryLight : AppColors.primaryAccent,
       onRefresh: _load,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -190,35 +200,36 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
   }
 
   Widget _monthPicker() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? _D.surface : AppColors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: isDark ? _D.border : AppColors.border),
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: _prevMonth,
             icon: const Icon(Icons.chevron_left_rounded),
-            color: AppColors.primary,
+            color: isDark ? AppColors.primaryLight : AppColors.primary,
           ),
           Expanded(
             child: Text(
               _formatMonthTitle(_month),
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: isDark ? _D.textPrimary : AppColors.textPrimary,
               ),
             ),
           ),
           IconButton(
             onPressed: _nextMonth,
             icon: const Icon(Icons.chevron_right_rounded),
-            color: AppColors.primary,
+            color: isDark ? AppColors.primaryLight : AppColors.primary,
           ),
         ],
       ),
@@ -226,14 +237,15 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
   }
 
   Widget _summaryRow(MonthlyFinanceSummary s) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
         Expanded(
           child: _sumCard(
             'Revenue',
             _money.format(s.revenue),
-            AppColors.successChipBg,
-            AppColors.successChipText,
+            isDark ? AppColors.success.withValues(alpha: 0.15) : AppColors.successChipBg,
+            isDark ? AppColors.success : AppColors.successChipText,
           ),
         ),
         const SizedBox(width: 8),
@@ -241,7 +253,7 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
           child: _sumCard(
             'Expenses',
             _money.format(s.expenses),
-            AppColors.errorContainer,
+            isDark ? AppColors.error.withValues(alpha: 0.15) : AppColors.errorContainer,
             AppColors.error,
           ),
         ),
@@ -250,8 +262,14 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
           child: _sumCard(
             'Profit',
             _money.format(s.profit),
-            AppColors.primaryContainer,
-            s.profit >= 0 ? AppColors.successChipText : AppColors.error,
+            isDark 
+                ? (s.profit >= 0 
+                    ? AppColors.success.withValues(alpha: 0.15) 
+                    : AppColors.error.withValues(alpha: 0.15))
+                : AppColors.primaryContainer,
+            isDark
+                ? (s.profit >= 0 ? AppColors.success : AppColors.error)
+                : (s.profit >= 0 ? AppColors.successChipText : AppColors.error),
           ),
         ),
       ],
@@ -259,22 +277,23 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
   }
 
   Widget _sumCard(String label, String value, Color bg, Color fg) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: isDark ? _D.border : AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
+              color: isDark ? _D.textSecondary : AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 6),
@@ -294,17 +313,18 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
   }
 
   Widget _chartCard(List<OrderChartPointDto> points) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (points.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: isDark ? _D.surface : AppColors.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: isDark ? _D.border : AppColors.border),
         ),
-        child: const Text(
+        child: Text(
           'No order data for this month.',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: isDark ? _D.textSecondary : AppColors.textSecondary),
         ),
       );
     }
@@ -321,21 +341,21 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? _D.surface : AppColors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: isDark ? _D.border : AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 8, bottom: 8),
+          Padding(
+            padding: const EdgeInsets.only(left: 8, bottom: 8),
             child: Text(
               'Orders delivered (by day)',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: isDark ? _D.textPrimary : AppColors.textPrimary,
               ),
             ),
           ),
@@ -372,9 +392,9 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
                       interval: maxY <= 5 ? 1 : null,
                       getTitlesWidget: (value, meta) => Text(
                         value.toInt().toString(),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
-                          color: AppColors.textSecondary,
+                          color: isDark ? _D.textSecondary : AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -398,9 +418,9 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
                             label,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 9,
-                              color: AppColors.textSecondary,
+                              color: isDark ? _D.textSecondary : AppColors.textSecondary,
                             ),
                           ),
                         );
@@ -419,7 +439,7 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
                   drawVerticalLine: false,
                   horizontalInterval: maxY <= 5 ? 1 : maxY / 4,
                   getDrawingHorizontalLine: (_) => FlLine(
-                    color: AppColors.border,
+                    color: isDark ? _D.border : AppColors.border,
                     strokeWidth: 1,
                     dashArray: const [4, 4],
                   ),
@@ -436,7 +456,7 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(4),
                           ),
-                          color: AppColors.primaryAccent,
+                          color: isDark ? AppColors.primaryLight : AppColors.primaryAccent,
                         ),
                       ],
                     ),
@@ -458,17 +478,19 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
   }
 
   Widget _sectionLabel(String text) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w700,
-        color: AppColors.textSecondary,
+        color: isDark ? _D.textSecondary : AppColors.textSecondary,
       ),
     );
   }
 
   Widget _dailyTile(DailyFinanceRowDto row) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final d = DateTime.tryParse(row.date);
     final dateLabel = d != null ? _formatDailyRowDate(d) : row.date;
     final ordersBit =
@@ -478,9 +500,9 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? _D.surface : AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: isDark ? _D.border : AppColors.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -489,10 +511,10 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
             width: 100,
             child: Text(
               dateLabel,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: isDark ? _D.textPrimary : AppColors.textPrimary,
               ),
             ),
           ),
@@ -502,19 +524,19 @@ class _MonthlyFinanceScreenState extends State<MonthlyFinanceScreen> {
               children: [
                 Text(
                   ordersBit,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: isDark ? _D.textPrimary : AppColors.textPrimary,
                   ),
                   textAlign: TextAlign.right,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Refund ${_money.format(row.refund)}  ·  Expenses ${_money.format(row.expenses)}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    color: AppColors.textSecondary,
+                    color: isDark ? _D.textSecondary : AppColors.textSecondary,
                   ),
                   textAlign: TextAlign.right,
                 ),

@@ -153,31 +153,21 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFEDE9F8),
+      backgroundColor: isDark ? cs.surface : const Color(0xFFEDE9F8),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF6B21D4),
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        shape: const RoundedRectangleBorder(),
+        // AppBarTheme in app_theme.dart already sets backgroundColor to AppColors.primary
+        // and foregroundColor to AppColors.onPrimary — no overrides needed here.
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
-            size: 20,
-          ),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
         ),
         title: Text(
           widget._isEditMode ? 'Edit Customer' : 'Add Customer',
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-            letterSpacing: 0.2,
-          ),
         ),
-        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(
@@ -195,7 +185,7 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
               if (!widget._isEditMode) ...[
                 _ImportContactButton(onTap: _importFromContacts),
                 const SizedBox(height: 20),
-                _OrDivider(),
+                const _OrDivider(),
                 const SizedBox(height: 20),
               ],
               const _SectionLabel(text: 'Customer details'),
@@ -255,68 +245,27 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
                       }
                     },
                   ),
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: _isSaving ? null : _openLocationPicker,
-                    icon: const Icon(Icons.add_location_alt_outlined, size: 20),
-                    label: Text(_hasMapPin ? 'Update map location' : 'Set location'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF6B21D4),
-                      side: const BorderSide(color: Color(0xFF6B21D4)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
-                  if (_hasMapPin)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6, bottom: 4),
-                      child: Text(
-                        'Map pin: ${_mapLat!.toStringAsFixed(5)}, ${_mapLng!.toStringAsFixed(5)}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                    ),
+
                 ],
               ),
               const SizedBox(height: 12),
               Text(
                 'WhatsApp uses the same number as phone.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
-                  height: 1.35,
-                ),
+                style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 24),
               SizedBox(
                 height: 54,
                 child: FilledButton(
                   onPressed: _isSaving ? null : _save,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF6B21D4),
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: const Color(
-                      0xFF6B21D4,
-                    ).withValues(alpha: 0.45),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 0,
-                    textStyle: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
                   child: _isSaving
-                      ? const SizedBox(
+                      ? SizedBox(
                           height: 22,
                           width: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            color: Colors.white,
+                            color: cs.onPrimary,
                           ),
                         )
                       : Text(
@@ -334,6 +283,10 @@ class _AddEditCustomerScreenState extends State<AddEditCustomerScreen> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Supporting private widgets
+// ---------------------------------------------------------------------------
+
 class _SectionLabel extends StatelessWidget {
   final String text;
   const _SectionLabel({required this.text});
@@ -344,10 +297,10 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4),
       child: Text(
         text.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF7B6FA0),
+          color: Theme.of(context).colorScheme.primary.withOpacity(0.9),
           letterSpacing: 1.0,
         ),
       ),
@@ -361,6 +314,7 @@ class _ImportContactButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -368,14 +322,14 @@ class _ImportContactButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         child: Ink(
           decoration: BoxDecoration(
-            color: const Color(0xFFEEEDFE),
+            color: cs.primaryContainer,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: const Color(0xFF6B21D4).withValues(alpha: 0.35),
+              color: cs.primary.withOpacity(0.35),
               width: 1.2,
             ),
           ),
-          child: const SizedBox(
+          child: SizedBox(
             height: 54,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -383,15 +337,15 @@ class _ImportContactButton extends StatelessWidget {
                 Icon(
                   Icons.person_add_outlined,
                   size: 20,
-                  color: Color(0xFF6B21D4),
+                  color: cs.primary,
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Text(
                   'Import from Contacts',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF6B21D4),
+                    color: cs.primary,
                   ),
                 ),
               ],
@@ -404,11 +358,15 @@ class _ImportContactButton extends StatelessWidget {
 }
 
 class _OrDivider extends StatelessWidget {
+  const _OrDivider();
+
   @override
   Widget build(BuildContext context) {
+    final dividerColor = Theme.of(context).dividerColor;
+    final hintColor = Theme.of(context).hintColor;
     return Row(
       children: [
-        const Expanded(child: Divider(color: Color(0xFFCCBBEE), thickness: 1)),
+        Expanded(child: Divider(color: dividerColor, thickness: 1)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Text(
@@ -416,12 +374,12 @@ class _OrDivider extends StatelessWidget {
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: Colors.grey.shade500,
+              color: hintColor,
               letterSpacing: 0.8,
             ),
           ),
         ),
-        const Expanded(child: Divider(color: Color(0xFFCCBBEE), thickness: 1)),
+        Expanded(child: Divider(color: dividerColor, thickness: 1)),
       ],
     );
   }
@@ -433,13 +391,14 @@ class _FormCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6B21D4).withValues(alpha: 0.06),
+            color: cs.shadow.withOpacity(0.06),
             blurRadius: 12,
             offset: const Offset(0, 3),
           ),
@@ -482,6 +441,14 @@ class _Field extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final dividerColor = Theme.of(context).dividerColor;
+
+    BorderSide enabledSide = BorderSide(color: dividerColor, width: 1);
+    BorderSide focusedSide = BorderSide(color: cs.primary.withOpacity(0.5), width: 1);
+    BorderSide errorSide = BorderSide(color: cs.error, width: 1);
+    BorderSide focusedErrorSide = BorderSide(color: cs.error, width: 1.5);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -493,53 +460,39 @@ class _Field extends StatelessWidget {
           validator: validator,
           maxLines: maxLines,
           textCapitalization: textCapitalization,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF1A1A2E),
+            color: cs.onSurface,
           ),
           decoration: InputDecoration(
+            // Override the global InputDecorationTheme for this flat card style
+            filled: false,
             labelText: required ? '$label *' : label,
             hintText: hint,
-            hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
-            labelStyle: const TextStyle(
+            hintStyle: TextStyle(fontSize: 13, color: cs.onSurfaceVariant.withOpacity(0.6)),
+            labelStyle: TextStyle(
               fontSize: 13,
-              color: Color(0xFF888888),
+              color: cs.onSurfaceVariant,
               fontWeight: FontWeight.w500,
             ),
-            floatingLabelStyle: const TextStyle(
+            floatingLabelStyle: TextStyle(
               fontSize: 12,
-              color: Color(0xFF6B21D4),
+              color: cs.primary,
               fontWeight: FontWeight.w600,
             ),
-            prefixIcon: Icon(icon, size: 20, color: const Color(0xFF9E9E9E)),
-            filled: false,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
+            prefixIcon: Icon(icon, size: 20, color: cs.onSurfaceVariant),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             errorStyle: const TextStyle(fontSize: 0, height: 0),
             border: InputBorder.none,
             enabledBorder: !isLast
-                ? const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFF0F0F0), width: 1),
-                  )
+                ? UnderlineInputBorder(borderSide: enabledSide)
                 : InputBorder.none,
             focusedBorder: !isLast
-                ? const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFCCBBEE), width: 1),
-                  )
+                ? UnderlineInputBorder(borderSide: focusedSide)
                 : InputBorder.none,
-            errorBorder: !isLast
-                ? const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFE53935), width: 1),
-                  )
-                : const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFE53935), width: 1),
-                  ),
-            focusedErrorBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFFE53935), width: 1.5),
-            ),
+            errorBorder: UnderlineInputBorder(borderSide: errorSide),
+            focusedErrorBorder: UnderlineInputBorder(borderSide: focusedErrorSide),
           ),
         ),
         if (validator != null)
@@ -581,31 +534,26 @@ class _ErrorBannerState extends State<_ErrorBanner> {
   @override
   Widget build(BuildContext context) {
     if (_error == null) return const SizedBox.shrink();
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFFCEBEB),
+        color: cs.errorContainer,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: const Color(0xFFE53935).withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: cs.error.withOpacity(0.3)),
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.error_outline_rounded,
-            size: 14,
-            color: Color(0xFFE53935),
-          ),
+          Icon(Icons.error_outline_rounded, size: 14, color: cs.error),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
               _error!,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFFB71C1C),
+                color: cs.onErrorContainer,
                 fontWeight: FontWeight.w500,
               ),
             ),

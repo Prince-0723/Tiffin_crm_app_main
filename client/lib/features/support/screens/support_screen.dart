@@ -1,5 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/theme/app_colors.dart';
+
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+}
 
 class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
@@ -7,6 +18,7 @@ class SupportScreen extends StatefulWidget {
   @override
   State<SupportScreen> createState() => _SupportScreenState();
 }
+
 
 class _SupportScreenState extends State<SupportScreen> {
   // ── Violet palette ────────────────────────────────────────────────────────
@@ -82,8 +94,9 @@ class _SupportScreenState extends State<SupportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: isDark ? _D.bg : _bg,
       appBar: AppBar(
         backgroundColor: _violet700,
         foregroundColor: Colors.white,
@@ -119,11 +132,12 @@ class _SupportScreenState extends State<SupportScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: _violet700,
+              color: isDark ? _D.surface : _violet700,
               borderRadius: BorderRadius.circular(16),
+              border: isDark ? Border.all(color: _D.border) : null,
               boxShadow: [
                 BoxShadow(
-                  color: _violet900.withValues(alpha: 0.2),
+                  color: isDark ? Colors.black.withValues(alpha: 0.2) : _violet900.withValues(alpha: 0.2),
                   blurRadius: 20,
                   offset: const Offset(0, 6),
                 ),
@@ -135,17 +149,17 @@ class _SupportScreenState extends State<SupportScreen> {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
+                    color: isDark ? _D.violet100 : Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.headset_mic_rounded,
                     size: 26,
-                    color: Colors.white,
+                    color: isDark ? AppColors.primaryLight : Colors.white,
                   ),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -154,13 +168,16 @@ class _SupportScreenState extends State<SupportScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                          color: isDark ? _D.textPrimary : Colors.white,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         'Available 24/7, always here for you',
-                        style: TextStyle(fontSize: 12, color: Colors.white70),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? _D.textSecondary : Colors.white70,
+                        ),
                       ),
                     ],
                   ),
@@ -178,13 +195,13 @@ class _SupportScreenState extends State<SupportScreen> {
           // WhatsApp
           _contactCard(
             icon: Icons.chat_rounded,
-            iconBg: const Color(0xFFE6F4EA),
-            iconColor: const Color(0xFF1B7A3A),
+            iconBg: isDark ? AppColors.success.withValues(alpha: 0.15) : const Color(0xFFE6F4EA),
+            iconColor: isDark ? AppColors.success : const Color(0xFF1B7A3A),
             title: 'WhatsApp',
             subtitle: 'Chat with us instantly',
             badgeText: 'Fastest',
-            badgeColor: const Color(0xFF1B7A3A),
-            badgeBg: const Color(0xFFE6F4EA),
+            badgeColor: isDark ? AppColors.success : const Color(0xFF1B7A3A),
+            badgeBg: isDark ? AppColors.success.withValues(alpha: 0.15) : const Color(0xFFE6F4EA),
             onTap: _openWhatsApp,
           ),
           const SizedBox(height: 8),
@@ -192,8 +209,8 @@ class _SupportScreenState extends State<SupportScreen> {
           // Call
           _contactCard(
             icon: Icons.phone_rounded,
-            iconBg: _violet100,
-            iconColor: _violet600,
+            iconBg: isDark ? _D.violet100 : _violet100,
+            iconColor: isDark ? AppColors.primaryLight : _violet600,
             title: 'Call Us',
             subtitle: _phoneNumber,
             onTap: _openPhone,
@@ -203,8 +220,8 @@ class _SupportScreenState extends State<SupportScreen> {
           // Email
           _contactCard(
             icon: Icons.email_outlined,
-            iconBg: const Color(0xFFE6F1FB),
-            iconColor: const Color(0xFF185FA5),
+            iconBg: isDark ? const Color(0xFF185FA5).withValues(alpha: 0.15) : const Color(0xFFE6F1FB),
+            iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF185FA5),
             title: 'Email Support',
             subtitle: _emailAddress,
             onTap: _openEmail,
@@ -227,15 +244,17 @@ class _SupportScreenState extends State<SupportScreen> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   decoration: BoxDecoration(
-                    color: _surface,
+                    color: isDark ? _D.surface : _surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isOpen ? _violet600 : _border,
+                      color: isOpen
+                          ? (isDark ? AppColors.primaryLight : _violet600)
+                          : (isDark ? _D.border : _border),
                       width: isOpen ? 1.5 : 1,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: _violet900.withValues(alpha: 0.04),
+                        color: isDark ? Colors.black.withValues(alpha: 0.1) : _violet900.withValues(alpha: 0.04),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -252,7 +271,9 @@ class _SupportScreenState extends State<SupportScreen> {
                               width: 24,
                               height: 24,
                               decoration: BoxDecoration(
-                                color: isOpen ? _violet600 : _violet50,
+                                color: isOpen
+                                    ? (isDark ? AppColors.primaryLight : _violet600)
+                                    : (isDark ? _D.violet50 : _violet50),
                                 borderRadius: BorderRadius.circular(7),
                               ),
                               child: Icon(
@@ -260,7 +281,9 @@ class _SupportScreenState extends State<SupportScreen> {
                                     ? Icons.remove_rounded
                                     : Icons.add_rounded,
                                 size: 14,
-                                color: isOpen ? Colors.white : _violet600,
+                                color: isOpen
+                                    ? Colors.white
+                                    : (isDark ? AppColors.primaryLight : _violet600),
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -270,7 +293,9 @@ class _SupportScreenState extends State<SupportScreen> {
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: isOpen ? _violet600 : _textPrimary,
+                                  color: isOpen
+                                      ? (isDark ? AppColors.primaryLight : _violet600)
+                                      : (isDark ? _D.textPrimary : _textPrimary),
                                 ),
                               ),
                             ),
@@ -282,9 +307,9 @@ class _SupportScreenState extends State<SupportScreen> {
                             padding: const EdgeInsets.only(left: 34),
                             child: Text(
                               a,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
-                                color: _textSecondary,
+                                color: isDark ? _D.textSecondary : _textSecondary,
                                 height: 1.5,
                               ),
                             ),
@@ -312,110 +337,119 @@ class _SupportScreenState extends State<SupportScreen> {
     String? badgeText,
     Color? badgeColor,
     Color? badgeBg,
-  }) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(12),
-    splashColor: _violet100,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-      decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _border),
-        boxShadow: [
-          BoxShadow(
-            color: _violet900.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(12),
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      splashColor: isDark ? _D.violet100 : _violet100,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        decoration: BoxDecoration(
+          color: isDark ? _D.surface : _surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isDark ? _D.border : _border),
+          boxShadow: [
+            BoxShadow(
+              color: isDark ? Colors.black.withValues(alpha: 0.1) : _violet900.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            child: Icon(icon, size: 20, color: iconColor),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: _textPrimary,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: iconBg,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 20, color: iconColor),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? _D.textPrimary : _textPrimary,
+                        ),
                       ),
-                    ),
-                    if (badgeText != null) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: badgeBg,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Text(
-                          badgeText,
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            color: badgeColor,
+                      if (badgeText != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: badgeBg,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Text(
+                            badgeText,
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              color: badgeColor,
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(fontSize: 12, color: _textSecondary),
-                ),
-              ],
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? _D.textSecondary : _textSecondary,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Icon(
-            Icons.arrow_forward_ios_rounded,
-            size: 14,
-            color: _textSecondary.withValues(alpha: 0.5),
-          ),
-        ],
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: isDark ? _D.textSecondary.withValues(alpha: 0.5) : _textSecondary.withValues(alpha: 0.5),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 
-  Widget _sectionLabel(String text) => Row(
-    children: [
-      Container(
-        width: 3,
-        height: 14,
-        decoration: BoxDecoration(
-          color: _violet600,
-          borderRadius: BorderRadius.circular(2),
+  Widget _sectionLabel(String text) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Row(
+      children: [
+        Container(
+          width: 3,
+          height: 14,
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.primary : _violet600,
+            borderRadius: BorderRadius.circular(2),
+          ),
         ),
-      ),
-      const SizedBox(width: 8),
-      Text(
-        text.toUpperCase(),
-        style: const TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: _textSecondary,
-          letterSpacing: 1.2,
+        const SizedBox(width: 8),
+        Text(
+          text.toUpperCase(),
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: isDark ? _D.textSecondary : _textSecondary,
+            letterSpacing: 1.2,
+          ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }

@@ -1,5 +1,16 @@
 import 'package:flutter/material.dart';
 
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const divider = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+}
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -16,8 +27,9 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: isDark ? _D.bg : _bg,
       appBar: AppBar(
         backgroundColor: _violet700,
         foregroundColor: Colors.white,
@@ -54,12 +66,14 @@ class ProfileScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
               decoration: BoxDecoration(
-                color: _surface,
+                color: isDark ? _D.surface : _surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _border),
+                border: Border.all(color: isDark ? _D.border : _border),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2D1B69).withValues(alpha: 0.06),
+                    color: isDark
+                        ? Colors.black.withValues(alpha: 0.35)
+                        : const Color(0xFF2D1B69).withValues(alpha: 0.06),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
@@ -71,9 +85,9 @@ class ProfileScreen extends StatelessWidget {
                   Container(
                     width: 84,
                     height: 84,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         colors: [Color(0xFF4C2DB8), Color(0xFF6C42F5)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -83,17 +97,17 @@ class ProfileScreen extends StatelessWidget {
                       child: Container(
                         width: 78,
                         height: 78,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Color(0xFFEDE8FD),
+                          color: isDark ? _D.violet100 : const Color(0xFFEDE8FD),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             'A',
                             style: TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF4C2DB8),
+                              color: isDark ? const Color(0xFFA78BFA) : const Color(0xFF4C2DB8),
                             ),
                           ),
                         ),
@@ -101,19 +115,22 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  const Text(
+                  Text(
                     'Admin User',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
-                      color: _textPrimary,
+                      color: isDark ? _D.textPrimary : _textPrimary,
                       letterSpacing: 0.1,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  Text(
                     '+91 9876543210',
-                    style: TextStyle(fontSize: 14, color: _textSecondary),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? _D.textSecondary : _textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   // Role badge
@@ -123,16 +140,16 @@ class ProfileScreen extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: _violet100,
+                      color: isDark ? _D.violet100 : _violet100,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: _border),
+                      border: Border.all(color: isDark ? _D.border : _border),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Administrator',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: _violet600,
+                        color: isDark ? const Color(0xFFA78BFA) : _violet600,
                         letterSpacing: 0.3,
                       ),
                     ),
@@ -144,14 +161,14 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // ── Section label ─────────────────────────────────────────────
-            const Padding(
-              padding: EdgeInsets.only(bottom: 10),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
               child: Text(
                 'ACCOUNT SETTINGS',
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: _textSecondary,
+                  color: isDark ? _D.textSecondary : _textSecondary,
                   letterSpacing: 1.2,
                 ),
               ),
@@ -220,74 +237,79 @@ class _ProfileTile extends StatelessWidget {
   static const _textSecondary = Color(0xFF7B6DAB);
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      splashColor: _violet100,
-      highlightColor: _violet50,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-        decoration: BoxDecoration(
-          color: _surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _border),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF2D1B69).withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: _violet50,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: _border),
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        splashColor: isDark ? _D.violet100 : _violet100,
+        highlightColor: isDark ? _D.violet50 : _violet50,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          decoration: BoxDecoration(
+            color: isDark ? _D.surface : _surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: isDark ? _D.border : _border),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.20)
+                    : const Color(0xFF2D1B69).withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
-              child: Icon(icon, size: 18, color: _violet600),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: _textPrimary,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: isDark ? _D.violet50 : _violet50,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: isDark ? _D.border : _border),
+                ),
+                child: Icon(icon, size: 18, color: isDark ? const Color(0xFFA78BFA) : _violet600),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Text(
-                      subtitle!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: _textSecondary,
+                      title,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? _D.textPrimary : _textPrimary,
                       ),
                     ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? _D.textSecondary : _textSecondary,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            Icon(
-              Icons.chevron_right_rounded,
-              size: 18,
-              color: _textSecondary.withValues(alpha: 0.5),
-            ),
-          ],
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: (isDark ? _D.textSecondary : _textSecondary).withValues(alpha: 0.5),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

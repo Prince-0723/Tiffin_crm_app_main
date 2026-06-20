@@ -3,6 +3,17 @@ import '../../../../core/utils/app_snackbar.dart';
 import '../../../../core/utils/error_handler.dart';
 import '../../data/profile_api.dart';
 
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const divider = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+}
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -144,8 +155,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: isDark ? _D.bg : _bg,
       appBar: AppBar(
         backgroundColor: _violet700,
         foregroundColor: Colors.white,
@@ -172,7 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: (!_initialized || _loading)
           ? Center(
               child: CircularProgressIndicator(
-                color: _violet600,
+                color: isDark ? const Color(0xFFA78BFA) : _violet600,
                 strokeWidth: 2.5,
               ),
             )
@@ -188,10 +200,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildIdentityCard(),
+                    _buildIdentityCard(isDark),
                     const SizedBox(height: 24),
 
-                    _sectionLabel('Business Details'),
+                    _sectionLabel('Business Details', isDark),
                     const SizedBox(height: 10),
                     _VioletField(
                       controller: _businessNameCtrl,
@@ -219,7 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     const SizedBox(height: 22),
 
-                    _sectionLabel('Address'),
+                    _sectionLabel('Address', isDark),
                     const SizedBox(height: 10),
                     _VioletField(
                       controller: _addressCtrl,
@@ -251,13 +263,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
 
                     const SizedBox(height: 22),
-                    _sectionLabel('UPI for customers'),
+                    _sectionLabel('UPI for customers', isDark),
                     const SizedBox(height: 6),
                     Text(
                       'Shown in the customer app so they can pay you (e.g. yourname@paytm).',
                       style: TextStyle(
                         fontSize: 12,
-                        color: _textSecondary.withValues(alpha: 0.9),
+                        color: (isDark ? _D.textSecondary : _textSecondary).withValues(alpha: 0.9),
                         height: 1.35,
                       ),
                     ),
@@ -279,14 +291,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // ── Identity hero card ────────────────────────────────────────────────────
-  Widget _buildIdentityCard() => Container(
+  Widget _buildIdentityCard(bool isDark) => Container(
     decoration: BoxDecoration(
-      color: _surface,
+      color: isDark ? _D.surface : _surface,
       borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: _border),
+      border: Border.all(color: isDark ? _D.border : _border),
       boxShadow: [
         BoxShadow(
-          color: _violet900.withValues(alpha: 0.07),
+          color: isDark
+              ? Colors.black.withValues(alpha: 0.35)
+              : _violet900.withValues(alpha: 0.07),
           blurRadius: 20,
           offset: const Offset(0, 4),
         ),
@@ -316,10 +330,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: 58,
                     height: 58,
                     decoration: BoxDecoration(
-                      color: _violet700.withValues(alpha: 0.10),
+                      color: isDark ? _D.violet100 : _violet700.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: _violet700.withValues(alpha: 0.22),
+                        color: isDark ? _D.border : _violet700.withValues(alpha: 0.22),
                         width: 1.5,
                       ),
                     ),
@@ -327,7 +341,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Icon(
                         Icons.person_rounded,
                         size: 30,
-                        color: _violet700.withValues(alpha: 0.85),
+                        color: isDark ? const Color(0xFFA78BFA) : _violet700.withValues(alpha: 0.85),
                       ),
                     ),
                   ),
@@ -341,7 +355,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       decoration: BoxDecoration(
                         color: _violet700,
                         borderRadius: BorderRadius.circular(7),
-                        border: Border.all(color: _surface, width: 2),
+                        border: Border.all(color: isDark ? _D.surface : _surface, width: 2),
                       ),
                       child: Center(
                         child: Text(
@@ -369,10 +383,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _safe(_businessNameCtrl).isEmpty
                           ? 'Your Business'
                           : _safe(_businessNameCtrl),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
-                        color: _textPrimary,
+                        color: isDark ? _D.textPrimary : _textPrimary,
                         letterSpacing: 0.1,
                       ),
                       maxLines: 1,
@@ -383,9 +397,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _safe(_ownerNameCtrl).isEmpty
                           ? 'Owner name'
                           : '${_safe(_ownerNameCtrl)}  ·  ${_safe(_phoneCtrl)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: _textSecondary,
+                        color: isDark ? _D.textSecondary : _textSecondary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -398,10 +412,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: _successSoft,
+                        color: isDark ? const Color(0xFF0F2A1C) : _successSoft,
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: _success.withValues(alpha: 0.25),
+                          color: isDark ? const Color(0xFF1F6B3F) : _success.withValues(alpha: 0.25),
                         ),
                       ),
                       child: Row(
@@ -410,18 +424,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Container(
                             width: 6,
                             height: 6,
-                            decoration: const BoxDecoration(
-                              color: _success,
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF4ADE80) : _success,
                               shape: BoxShape.circle,
                             ),
                           ),
                           const SizedBox(width: 5),
-                          const Text(
+                          Text(
                             'Active Account',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: _success,
+                              color: isDark ? const Color(0xFF4ADE80) : _success,
                             ),
                           ),
                         ],
@@ -437,14 +451,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // ── Meta row ────────────────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
-          child: Divider(color: _divider, height: 1, thickness: 1),
+          child: Divider(color: isDark ? _D.divider : _divider, height: 1, thickness: 1),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(18, 0, 18, 16),
           child: Row(
             children: [
               // Location
-              Icon(Icons.location_on_outlined, size: 13, color: _textSecondary),
+              Icon(Icons.location_on_outlined, size: 13, color: isDark ? _D.textSecondary : _textSecondary),
               const SizedBox(width: 4),
               Expanded(
                 child: _LocationText(
@@ -454,11 +468,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(width: 16),
               // Profile completeness
-              Icon(Icons.task_alt_rounded, size: 13, color: _success),
+              Icon(Icons.task_alt_rounded, size: 13, color: isDark ? const Color(0xFF4ADE80) : _success),
               const SizedBox(width: 4),
-              const Text(
+              Text(
                 'Profile complete',
-                style: TextStyle(fontSize: 12, color: _textSecondary),
+                style: TextStyle(fontSize: 12, color: isDark ? _D.textSecondary : _textSecondary),
               ),
             ],
           ),
@@ -468,7 +482,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   );
 
   // ── Section label ─────────────────────────────────────────────────────────
-  Widget _sectionLabel(String text) => Row(
+  Widget _sectionLabel(String text, bool isDark) => Row(
     children: [
       Container(
         width: 3,
@@ -481,10 +495,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       const SizedBox(width: 8),
       Text(
         text.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
-          color: _textSecondary,
+          color: isDark ? _D.textSecondary : _textSecondary,
           letterSpacing: 1.2,
         ),
       ),
@@ -590,6 +604,7 @@ class _VioletField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final ctrl = controller;
     if (ctrl == null) return const SizedBox.shrink();
     return TextFormField(
@@ -598,33 +613,33 @@ class _VioletField extends StatelessWidget {
       keyboardType: keyboardType,
       maxLines: maxLines,
       onChanged: onChanged,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: _textPrimary,
+        color: isDark ? const Color(0xFFF8FAFC) : _textPrimary,
       ),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        labelStyle: const TextStyle(fontSize: 13, color: _textSecondary),
+        labelStyle: TextStyle(fontSize: 13, color: isDark ? const Color(0xFF94A3B8) : _textSecondary),
         hintStyle: TextStyle(
           fontSize: 13,
-          color: _textSecondary.withValues(alpha: 0.5),
+          color: (isDark ? const Color(0xFF94A3B8) : _textSecondary).withValues(alpha: 0.5),
         ),
         prefixIcon: Padding(
           padding: const EdgeInsets.only(left: 14, right: 10),
-          child: Icon(icon, size: 18, color: _violet600),
+          child: Icon(icon, size: 18, color: isDark ? const Color(0xFFA78BFA) : _violet600),
         ),
         prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
         filled: true,
-        fillColor: _violet50,
+        fillColor: isDark ? const Color(0xFF141625) : _violet50,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 14,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(11),
-          borderSide: const BorderSide(color: _border),
+          borderSide: BorderSide(color: isDark ? const Color(0xFF2F3347) : _border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(11),
@@ -656,13 +671,15 @@ class _LocationText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final parts = [city, address].where((s) => s.isNotEmpty).toList();
     final label = parts.isEmpty ? 'Location not set' : parts.join(', ');
     return Text(
       label,
-      style: const TextStyle(fontSize: 12, color: _textSecondary),
+      style: TextStyle(fontSize: 12, color: isDark ? _D.textSecondary : _textSecondary),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
   }
 }
+

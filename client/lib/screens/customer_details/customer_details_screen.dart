@@ -15,6 +15,10 @@ class _P {
   static const s600 = Color(0xFF475569);
 }
 
+class _D {
+  static const bg = Color(0xFF0E1020);
+}
+
 /// Tabbed customer workspace: info, meal plan, transactions, balance, deliveries.
 class CustomerDetailsScreen extends StatefulWidget {
   const CustomerDetailsScreen({
@@ -61,8 +65,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: _P.bg,
+      backgroundColor: isDark ? _D.bg : _P.bg,
       appBar: AppBar(
         backgroundColor: _P.g1,
         elevation: 0,

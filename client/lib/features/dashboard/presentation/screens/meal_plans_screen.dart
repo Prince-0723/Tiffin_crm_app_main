@@ -6,6 +6,17 @@ import '../../../../core/utils/error_handler.dart';
 import '../../../plans/data/plan_api.dart';
 import '../../../plans/models/plan_model.dart';
 
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const divider = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+}
+
 class MealPlansScreen extends StatefulWidget {
   const MealPlansScreen({super.key});
 
@@ -55,25 +66,27 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
   }
 
   void _confirmDelete(PlanModel plan) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? _D.surface : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        title: Text(
           'Delete Plan',
-          style: TextStyle(fontWeight: FontWeight.w700, color: _textPrimary),
+          style: TextStyle(fontWeight: FontWeight.w700, color: isDark ? _D.textPrimary : _textPrimary),
         ),
         content: Text(
           'Are you sure you want to delete "${plan.planName}"?',
-          style: const TextStyle(color: _textSecondary, fontSize: 14),
+          style: TextStyle(color: isDark ? _D.textSecondary : _textSecondary, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: TextStyle(
-                color: _textSecondary,
+                color: isDark ? _D.textSecondary : _textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -92,7 +105,7 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: _danger,
+              backgroundColor: isDark ? const Color(0xFFEF4444) : _danger,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -112,6 +125,7 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final globalPlans = _plans
         .where((p) => p.customerId == null || p.customerId!.isEmpty)
         .toList();
@@ -120,7 +134,7 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
         .toList();
 
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: isDark ? _D.bg : _bg,
       appBar: AppBar(
         backgroundColor: _violet700,
         foregroundColor: Colors.white,
@@ -189,7 +203,7 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
       body: _isLoading
           ? Center(
               child: CircularProgressIndicator(
-                color: _violet600,
+                color: isDark ? const Color(0xFFA78BFA) : _violet600,
                 strokeWidth: 2.5,
               ),
             )
@@ -210,10 +224,11 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
                     'Global Plans',
                     globalPlans.length,
                     Icons.public_rounded,
+                    isDark,
                   ),
                   const SizedBox(height: 10),
                   if (globalPlans.isEmpty)
-                    _emptyCard('No global plans yet')
+                    _emptyCard('No global plans yet', isDark)
                   else
                     ...globalPlans.map(
                       (plan) => _PlanCard(
@@ -241,10 +256,11 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
                     'Custom Plans',
                     customPlans.length,
                     Icons.tune_rounded,
+                    isDark,
                   ),
                   const SizedBox(height: 10),
                   if (customPlans.isEmpty)
-                    _emptyCard('No custom plans yet')
+                    _emptyCard('No custom plans yet', isDark)
                   else
                     ...customPlans.map(
                       (plan) => _PlanCard(
@@ -271,23 +287,23 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
   }
 
   // ── Section header ────────────────────────────────────────────────────────
-  Widget _sectionHeader(String title, int count, IconData icon) => Row(
+  Widget _sectionHeader(String title, int count, IconData icon, bool isDark) => Row(
     children: [
       Container(
         width: 3,
         height: 14,
         decoration: BoxDecoration(
-          color: _violet600,
+          color: isDark ? const Color(0xFFA78BFA) : _violet600,
           borderRadius: BorderRadius.circular(2),
         ),
       ),
       const SizedBox(width: 8),
       Text(
         title.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
-          color: _textSecondary,
+          color: isDark ? _D.textSecondary : _textSecondary,
           letterSpacing: 1.2,
         ),
       ),
@@ -295,15 +311,15 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
         decoration: BoxDecoration(
-          color: _violet100,
+          color: isDark ? _D.violet100 : _violet100,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
           '$count',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: _violet600,
+            color: isDark ? const Color(0xFFA78BFA) : _violet600,
           ),
         ),
       ),
@@ -311,12 +327,12 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
   );
 
   // ── Empty card ────────────────────────────────────────────────────────────
-  Widget _emptyCard(String msg) => Container(
+  Widget _emptyCard(String msg, bool isDark) => Container(
     padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
     decoration: BoxDecoration(
-      color: _surface,
+      color: isDark ? _D.surface : _surface,
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: _border),
+      border: Border.all(color: isDark ? _D.border : _border),
     ),
     child: Row(
       children: [
@@ -324,21 +340,21 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: _violet100,
+            color: isDark ? _D.violet100 : _violet100,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.edit_note_rounded,
             size: 18,
-            color: _violet600,
+            color: isDark ? const Color(0xFFA78BFA) : _violet600,
           ),
         ),
         const SizedBox(width: 12),
         Text(
           msg,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
-            color: _textSecondary,
+            color: isDark ? _D.textSecondary : _textSecondary,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -384,20 +400,37 @@ class _PlanCard extends StatelessWidget {
   static const _successSoft = Color(0xFFE6F4EA);
 
   // Plan type meta
-  static (Color, Color, IconData) _typeMeta(String type) {
-    switch (type.toLowerCase()) {
-      case 'monthly':
-        return (
-          Color(0xFFEDE8FD),
-          Color(0xFF4C2DB8),
-          Icons.calendar_month_rounded,
-        );
-      case 'weekly':
-        return (Color(0xFFE1F5EE), Color(0xFF0F6E56), Icons.date_range_rounded);
-      case 'daily':
-        return (Color(0xFFFAEEDA), Color(0xFF854F0B), Icons.today_rounded);
-      default:
-        return (Color(0xFFEEEBFA), Color(0xFF7B6DAB), Icons.event_rounded);
+  static (Color, Color, IconData) _typeMeta(String type, bool isDark) {
+    if (isDark) {
+      switch (type.toLowerCase()) {
+        case 'monthly':
+          return (
+            const Color(0xFF241B42),
+            const Color(0xFFA78BFA),
+            Icons.calendar_month_rounded,
+          );
+        case 'weekly':
+          return (const Color(0xFF102E26), const Color(0xFF34D399), Icons.date_range_rounded);
+        case 'daily':
+          return (const Color(0xFF2E2418), const Color(0xFFFBBF24), Icons.today_rounded);
+        default:
+          return (const Color(0xFF1E1F30), const Color(0xFF94A3B8), Icons.event_rounded);
+      }
+    } else {
+      switch (type.toLowerCase()) {
+        case 'monthly':
+          return (
+            const Color(0xFFEDE8FD),
+            const Color(0xFF4C2DB8),
+            Icons.calendar_month_rounded,
+          );
+        case 'weekly':
+          return (const Color(0xFFE1F5EE), const Color(0xFF0F6E56), Icons.date_range_rounded);
+        case 'daily':
+          return (const Color(0xFFFAEEDA), const Color(0xFF854F0B), Icons.today_rounded);
+        default:
+          return (const Color(0xFFEEEBFA), const Color(0xFF7B6DAB), Icons.event_rounded);
+      }
     }
   }
 
@@ -419,18 +452,19 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (typeBg, typeColor, typeIcon) = _typeMeta(plan.planType);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final (typeBg, typeColor, typeIcon) = _typeMeta(plan.planType, isDark);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
         decoration: BoxDecoration(
-          color: _surface,
+          color: isDark ? _D.surface : _surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _border),
+          border: Border.all(color: isDark ? _D.border : _border),
           boxShadow: [
             BoxShadow(
-              color: _violet900.withValues(alpha: 0.05),
+              color: isDark ? Colors.transparent : _violet900.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -466,10 +500,10 @@ class _PlanCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 plan.planName,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w800,
-                                  color: _textPrimary,
+                                  color: isDark ? _D.textPrimary : _textPrimary,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -483,20 +517,20 @@ class _PlanCard extends StatelessWidget {
                                   vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFBEAF0),
+                                  color: isDark ? const Color(0xFF2E1821) : const Color(0xFFFBEAF0),
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                    color: const Color(
-                                      0xFF993556,
-                                    ).withValues(alpha: 0.3),
+                                    color: isDark
+                                        ? const Color(0xFFF472B6).withValues(alpha: 0.3)
+                                        : const Color(0xFF993556).withValues(alpha: 0.3),
                                   ),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Custom',
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF993556),
+                                    color: isDark ? const Color(0xFFF472B6) : const Color(0xFF993556),
                                   ),
                                 ),
                               ),
@@ -507,17 +541,17 @@ class _PlanCard extends StatelessWidget {
                           children: [
                             Text(
                               '₹${plan.price.toStringAsFixed(0)}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
-                                color: _violet700,
+                                color: isDark ? const Color(0xFFA78BFA) : _violet700,
                               ),
                             ),
                             Text(
                               ' / plan',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: _textSecondary,
+                                color: isDark ? _D.textSecondary : _textSecondary,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -549,13 +583,13 @@ class _PlanCard extends StatelessWidget {
                   // Action buttons
                   IconButton(
                     icon: const Icon(Icons.edit_outlined, size: 18),
-                    color: _textSecondary,
+                    color: isDark ? _D.textSecondary : _textSecondary,
                     onPressed: onEdit,
                     visualDensity: VisualDensity.compact,
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                    color: _danger,
+                    color: isDark ? const Color(0xFFF87171) : _danger,
                     onPressed: onDelete,
                     visualDensity: VisualDensity.compact,
                   ),
@@ -578,9 +612,9 @@ class _PlanCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: _violet50,
+                            color: isDark ? const Color(0xFF141625) : _violet50,
                             borderRadius: BorderRadius.circular(7),
-                            border: Border.all(color: _border),
+                            border: Border.all(color: isDark ? _D.border : _border),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -588,15 +622,15 @@ class _PlanCard extends StatelessWidget {
                               Icon(
                                 _slotIcon(s.slot),
                                 size: 12,
-                                color: _textSecondary,
+                                color: isDark ? _D.textSecondary : _textSecondary,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 s.slot[0].toUpperCase() + s.slot.substring(1),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
-                                  color: _textPrimary,
+                                  color: isDark ? _D.textPrimary : _textPrimary,
                                 ),
                               ),
                             ],
@@ -610,7 +644,7 @@ class _PlanCard extends StatelessWidget {
 
             // ── Assign button ─────────────────────────────────────────────────
             Divider(
-              color: _divider,
+              color: isDark ? _D.divider : _divider,
               height: 1,
               thickness: 1,
               indent: 0,
@@ -633,29 +667,29 @@ class _PlanCard extends StatelessWidget {
                       width: 26,
                       height: 26,
                       decoration: BoxDecoration(
-                        color: _violet100,
+                        color: isDark ? _D.violet100 : _violet100,
                         borderRadius: BorderRadius.circular(7),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.person_add_outlined,
                         size: 14,
-                        color: _violet600,
+                        color: isDark ? const Color(0xFFA78BFA) : _violet600,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'Assign to Customer',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: _violet600,
+                        color: isDark ? const Color(0xFFA78BFA) : _violet600,
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(
+                    Icon(
                       Icons.arrow_forward_rounded,
                       size: 14,
-                      color: _violet600,
+                      color: isDark ? const Color(0xFFA78BFA) : _violet600,
                     ),
                   ],
                 ),

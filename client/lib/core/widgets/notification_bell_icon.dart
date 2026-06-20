@@ -17,6 +17,8 @@ class NotificationBellIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final iconWithBadge = ValueListenableBuilder<int>(
       valueListenable: NotificationBadgeService.unreadCount,
       builder: (context, count, child) {
@@ -35,7 +37,7 @@ class NotificationBellIcon extends StatelessWidget {
                     color: AppColors.error,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.surface,
+                      color: isDark ? const Color(0xFF1B1F2E) : AppColors.surface,
                       width: 1.5,
                     ),
                   ),
@@ -47,7 +49,7 @@ class NotificationBellIcon extends StatelessWidget {
       child: PhosphorIcon(
         PhosphorIconsRegular.bell,
         size: size,
-        color: AppColors.textPrimary,
+        color: isDark ? const Color(0xFFF8FAFC) : AppColors.textPrimary,
       ),
     );
 

@@ -6,6 +6,17 @@ import '../../../../core/utils/error_handler.dart';
 import '../../data/delivery_api.dart';
 import '../../models/delivery_staff_model.dart';
 
+class _D {
+  static const bg = Color(0xFF0E1020);
+  static const surface = Color(0xFF1B1F2E);
+  static const border = Color(0xFF2F3347);
+  static const divider = Color(0xFF2F3347);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const violet100 = Color(0xFF241B42);
+  static const violet50 = Color(0xFF141625);
+}
+
 class DeliveryStaffListScreen extends StatefulWidget {
   const DeliveryStaffListScreen({super.key});
 
@@ -59,25 +70,27 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
   }
 
   void _confirmDelete(DeliveryStaffModel staff) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? _D.surface : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        title: Text(
           'Remove Staff Member',
-          style: TextStyle(fontWeight: FontWeight.w700, color: _textPrimary),
+          style: TextStyle(fontWeight: FontWeight.w700, color: isDark ? _D.textPrimary : _textPrimary),
         ),
         content: Text(
           'Are you sure you want to remove ${staff.name}? This action cannot be undone.',
-          style: const TextStyle(color: _textSecondary, fontSize: 14),
+          style: TextStyle(color: isDark ? _D.textSecondary : _textSecondary, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: TextStyle(
-                color: _textSecondary,
+                color: isDark ? _D.textSecondary : _textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -96,7 +109,7 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: _danger,
+              backgroundColor: isDark ? const Color(0xFFEF4444) : _danger,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -129,8 +142,9 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: isDark ? _D.bg : _bg,
       appBar: AppBar(
         backgroundColor: _violet700,
         foregroundColor: Colors.white,
@@ -237,14 +251,14 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
       body: _loading
           ? Center(
               child: CircularProgressIndicator(
-                color: _violet600,
+                color: isDark ? const Color(0xFFA78BFA) : _violet600,
                 strokeWidth: 2.5,
               ),
             )
           : RefreshIndicator(
               color: _violet600,
               onRefresh: _load,
-              child: _staff.isEmpty ? _buildEmptyState() : _buildList(),
+              child: _staff.isEmpty ? _buildEmptyState(isDark) : _buildList(isDark),
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
@@ -264,7 +278,7 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
   }
 
   // ── Empty state ───────────────────────────────────────────────────────────
-  Widget _buildEmptyState() => ListView(
+  Widget _buildEmptyState(bool isDark) => ListView(
     padding: EdgeInsets.only(
       bottom: MediaQuery.of(context).padding.bottom + 24,
     ),
@@ -277,28 +291,28 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: _violet100,
+                color: isDark ? _D.violet100 : _violet100,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.groups_outlined,
                 size: 36,
-                color: _violet600,
+                color: isDark ? const Color(0xFFA78BFA) : _violet600,
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'No delivery staff',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: _textPrimary,
+                color: isDark ? _D.textPrimary : _textPrimary,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Tap + Add Staff to get started',
-              style: TextStyle(fontSize: 13, color: _textSecondary),
+              style: TextStyle(fontSize: 13, color: isDark ? _D.textSecondary : _textSecondary),
             ),
           ],
         ),
@@ -307,7 +321,7 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
   );
 
   // ── Staff list ────────────────────────────────────────────────────────────
-  Widget _buildList() => ListView.builder(
+  Widget _buildList(bool isDark) => ListView.builder(
     padding: EdgeInsets.fromLTRB(
       16,
       16,
@@ -315,11 +329,11 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
       MediaQuery.of(context).padding.bottom + 100,
     ),
     itemCount: _staff.length,
-    itemBuilder: (context, index) => _buildStaffCard(_staff[index]),
+    itemBuilder: (context, index) => _buildStaffCard(_staff[index], isDark),
   );
 
   // ── Staff card ────────────────────────────────────────────────────────────
-  Widget _buildStaffCard(DeliveryStaffModel s) {
+  Widget _buildStaffCard(DeliveryStaffModel s, bool isDark) {
     final initials = _getInitials(s.name);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -332,16 +346,18 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
           if (updated == true && mounted) _load();
         },
         borderRadius: BorderRadius.circular(14),
-        splashColor: _violet100,
-        highlightColor: _violet50,
+        splashColor: isDark ? _D.violet100 : _violet100,
+        highlightColor: isDark ? _D.violet50 : _violet50,
         child: Container(
           decoration: BoxDecoration(
-            color: _surface,
+            color: isDark ? _D.surface : _surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: _border),
+            border: Border.all(color: isDark ? _D.border : _border),
             boxShadow: [
               BoxShadow(
-                color: _violet900.withValues(alpha: 0.05),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.35)
+                    : _violet900.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -359,7 +375,9 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
                       width: 46,
                       height: 46,
                       decoration: BoxDecoration(
-                        color: s.isActive ? _violet100 : _divider,
+                        color: s.isActive
+                            ? (isDark ? _D.violet100 : _violet100)
+                            : (isDark ? _D.divider : _divider),
                         borderRadius: BorderRadius.circular(13),
                       ),
                       child: Center(
@@ -368,7 +386,9 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: s.isActive ? _violet700 : _textSecondary,
+                            color: s.isActive
+                                ? (isDark ? const Color(0xFFA78BFA) : _violet700)
+                                : (isDark ? _D.textSecondary : _textSecondary),
                           ),
                         ),
                       ),
@@ -385,10 +405,10 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
                               Expanded(
                                 child: Text(
                                   s.name,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
-                                    color: _textPrimary,
+                                    color: isDark ? _D.textPrimary : _textPrimary,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -400,12 +420,14 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
                                   vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: s.isActive ? _successSoft : _divider,
+                                  color: s.isActive
+                                      ? (isDark ? const Color(0xFF0F2A1C) : _successSoft)
+                                      : (isDark ? _D.divider : _divider),
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
                                     color: s.isActive
-                                        ? _success.withValues(alpha: 0.3)
-                                        : _border,
+                                        ? (isDark ? const Color(0xFF1F6B3F) : _success.withValues(alpha: 0.3))
+                                        : (isDark ? _D.border : _border),
                                   ),
                                 ),
                                 child: Row(
@@ -416,8 +438,8 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
                                       height: 5,
                                       decoration: BoxDecoration(
                                         color: s.isActive
-                                            ? _success
-                                            : _textSecondary,
+                                            ? (isDark ? const Color(0xFF4ADE80) : _success)
+                                            : (isDark ? _D.textSecondary : _textSecondary),
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -428,8 +450,8 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
                                         fontSize: 10,
                                         fontWeight: FontWeight.w700,
                                         color: s.isActive
-                                            ? _success
-                                            : _textSecondary,
+                                            ? (isDark ? const Color(0xFF4ADE80) : _success)
+                                            : (isDark ? _D.textSecondary : _textSecondary),
                                       ),
                                     ),
                                   ],
@@ -440,17 +462,17 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
                           const SizedBox(height: 3),
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.phone_outlined,
                                 size: 12,
-                                color: _textSecondary,
+                                color: isDark ? _D.textSecondary : _textSecondary,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 s.phone,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
-                                  color: _textSecondary,
+                                  color: isDark ? _D.textSecondary : _textSecondary,
                                 ),
                               ),
                             ],
@@ -459,18 +481,18 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
                             const SizedBox(height: 2),
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.map_outlined,
                                   size: 12,
-                                  color: _textSecondary,
+                                  color: isDark ? _D.textSecondary : _textSecondary,
                                 ),
                                 const SizedBox(width: 4),
                                 Expanded(
                                   child: Text(
                                     s.areas.join(' · '),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11,
-                                      color: _textSecondary,
+                                      color: isDark ? _D.textSecondary : _textSecondary,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -506,12 +528,12 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
                         decoration: BoxDecoration(
                           color: s.isActive
                               ? _violet600
-                              : const Color(0xFFD0C8E8),
+                              : (isDark ? const Color(0xFF242238) : const Color(0xFFD0C8E8)),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: s.isActive
                                 ? _violet700
-                                : const Color(0xFFB0A8D0),
+                                : (isDark ? const Color(0xFF3B335C) : const Color(0xFFB0A8D0)),
                             width: 1.5,
                           ),
                         ),
@@ -541,7 +563,7 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
                               size: 12,
                               color: s.isActive
                                   ? _violet600
-                                  : const Color(0xFFB0A8D0),
+                                  : (isDark ? const Color(0xFF5A527A) : const Color(0xFFB0A8D0)),
                             ),
                           ),
                         ),
@@ -553,7 +575,7 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
 
               // ── Divider ───────────────────────────────────────────────────
               Divider(
-                color: _divider,
+                color: isDark ? _D.divider : _divider,
                 height: 1,
                 thickness: 1,
                 indent: 14,
@@ -568,8 +590,8 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
                     _ActionBtn(
                       icon: Icons.edit_outlined,
                       label: 'Edit',
-                      color: _violet600,
-                      bg: _violet50,
+                      color: isDark ? const Color(0xFFA78BFA) : _violet600,
+                      bg: isDark ? _D.violet100 : _violet50,
                       onTap: () async {
                         final updated = await context.push<bool?>(
                           AppRoutes.editDeliveryStaff,
@@ -581,15 +603,15 @@ class _DeliveryStaffListScreenState extends State<DeliveryStaffListScreen> {
                     _ActionBtn(
                       icon: Icons.map_outlined,
                       label: 'Track',
-                      color: const Color(0xFF185FA5),
-                      bg: const Color(0xFFE6F1FB),
+                      color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF185FA5),
+                      bg: isDark ? const Color(0xFF0E253A) : const Color(0xFFE6F1FB),
                       onTap: () => context.push(AppRoutes.maps, extra: s),
                     ),
                     _ActionBtn(
                       icon: Icons.delete_outline_rounded,
                       label: 'Remove',
-                      color: _danger,
-                      bg: _dangerSoft,
+                      color: isDark ? const Color(0xFFF87171) : _danger,
+                      bg: isDark ? const Color(0xFF381A1C) : _dangerSoft,
                       onTap: () => _confirmDelete(s),
                     ),
                   ],
