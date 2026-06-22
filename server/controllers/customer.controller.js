@@ -25,6 +25,7 @@ import {
   displayWalletBalance,
   effectiveWallet,
 } from "../utils/customerWallet.js";
+import { effectiveRemaining } from "../utils/subscriptionBalance.js";
 import { notifyIfWalletJustHitZero } from "../utils/walletZeroNotification.js";
 import { ApiResponse } from "../class/apiResponseClass.js";
 import { ApiError } from "../class/apiErrorClass.js";
@@ -191,13 +192,37 @@ export const listCustomers = asyncHandler(async (req, res) => {
 
   const totalPages = Math.ceil(total / limit);
 
+  const customerIds = data.map((c) => c._id);
+  const activeSubs = customerIds.length
+    ? await Subscription.find({
+        ownerId,
+        customerId: { $in: customerIds },
+        status: { $in: ["active", "paused"] },
+        endDate: { $gte: new Date() },
+      })
+        .sort({ endDate: -1 })
+        .select("customerId remainingBalance totalAmount paidAmount")
+        .lean()
+    : [];
+
+  const subscriptionBalanceByCustomerId = new Map();
+  for (const sub of activeSubs) {
+    const cid = sub.customerId.toString();
+    if (!subscriptionBalanceByCustomerId.has(cid)) {
+      subscriptionBalanceByCustomerId.set(cid, effectiveRemaining(sub));
+    }
+  }
+
   // Prefer the dedicated whatsapp number if set; fall back to the registered phone.
   const enriched = data.map((c) => {
     const w = displayWalletBalance(c);
+    const cid = c._id.toString();
+    const subBal = subscriptionBalanceByCustomerId.get(cid);
     return {
       ...c,
       balance: w,
       walletBalance: w,
+      subscriptionBalance: subBal != null ? subBal : null,
       whatsappUrl: `https://wa.me/91${c.whatsapp || c.phone}`,
     };
   });

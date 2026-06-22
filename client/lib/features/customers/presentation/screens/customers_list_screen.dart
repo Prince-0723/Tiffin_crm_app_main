@@ -1299,7 +1299,8 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
   static const _sheetBg = Color(0xFF1E1E1E);
   static const _sheetBorder = Color(0x33FFFFFF);
 
-  static bool _isLowBalance(CustomerModel c) => c.effectiveWalletBalance < 100;
+  static bool _isLowBalance(CustomerModel c) =>
+      c.effectiveSubscriptionBalance < 100;
 
   static String? _diet(CustomerModel c) {
     final dt = c.dietType?.trim().toLowerCase();
@@ -1423,9 +1424,11 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         case _CustomerSort.nameZa:
           return cmpString(b.name, a.name);
         case _CustomerSort.lowestBalance:
-          return a.effectiveWalletBalance.compareTo(b.effectiveWalletBalance);
+          return a.effectiveSubscriptionBalance
+              .compareTo(b.effectiveSubscriptionBalance);
         case _CustomerSort.highestBalance:
-          return b.effectiveWalletBalance.compareTo(a.effectiveWalletBalance);
+          return b.effectiveSubscriptionBalance
+              .compareTo(a.effectiveSubscriptionBalance);
         case _CustomerSort.lowestTiffinCounts:
           return _tiffinCount(a).compareTo(_tiffinCount(b));
         case _CustomerSort.highestTiffinCounts:
@@ -2363,7 +2366,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
         'Phone',
         'Address',
         'Zone',
-        'Balance',
+        'Remaining Balance',
         'Status',
         'Meal Plan',
         'Time Slot',
@@ -2386,7 +2389,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
             c.phone,
             addr,
             c.area ?? '',
-            c.effectiveWalletBalance.toStringAsFixed(2),
+            c.effectiveSubscriptionBalance.toStringAsFixed(2),
             c.status,
             (c.tags ?? const <String>[]).join(' | '),
             slots,
@@ -2431,7 +2434,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                   'Name',
                   'Phone',
                   'Address/Zone',
-                  'Balance',
+                  'Remaining Balance',
                   'Status',
                   'Time Slot',
                 ],
@@ -2441,7 +2444,7 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                       c.name,
                       c.phone,
                       '${c.address ?? ''} ${c.area ?? ''}'.trim(),
-                      '₹${c.effectiveWalletBalance.toStringAsFixed(2)}',
+                      '₹${c.effectiveSubscriptionBalance.toStringAsFixed(2)}',
                       c.status,
                       (c.timeSlots ?? const <String>[]).join(' | '),
                     ],
@@ -2982,8 +2985,8 @@ class _CustomerRow extends StatelessWidget {
     final avatarColor = colorFromName(customer.name);
     final accent = _accentColor(customer.status);
     final hasArea = customer.area?.isNotEmpty == true;
-    final walletShown = customer.effectiveWalletBalance;
-    final isLowBal = walletShown < 100;
+    final balanceShown = customer.effectiveSubscriptionBalance;
+    final isLowBal = balanceShown < 100;
     final showName = fields.contains(_CardField.name);
     final showPhone = fields.contains(_CardField.phone);
     final showArea = fields.contains(_CardField.area);
@@ -3182,14 +3185,14 @@ class _CustomerRow extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
 
-                      // Balance column (same source as detail: walletBalance ?? balance, ≥ 0)
+                      // Remaining subscription balance (same source as detail info tab)
                       if (showBalance)
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              '₹${walletShown.toStringAsFixed(0)}',
+                              '₹${balanceShown.toStringAsFixed(0)}',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -3199,7 +3202,7 @@ class _CustomerRow extends StatelessWidget {
                               ),
                             ),
                             const Text(
-                              'balance',
+                              'remaining balance',
                               style: TextStyle(
                                 fontSize: 9,
                                 color: Color(0xFF94A3B8),
@@ -3244,14 +3247,14 @@ extension _CardFieldX on _CardField {
     _CardField.name => 'name',
     _CardField.phone => 'phone',
     _CardField.area => 'area',
-    _CardField.balance => 'balance',
+    _CardField.balance => 'remaining balance',
   };
 
   String get label => switch (this) {
     _CardField.name => 'Name',
     _CardField.phone => 'Phone',
     _CardField.area => 'Zone/Area',
-    _CardField.balance => 'Balance',
+    _CardField.balance => 'Remaining Balance',
   };
 
   static _CardField? tryParse(String raw) {
@@ -3283,7 +3286,7 @@ final class _CustomerAnalyticsScreen extends StatelessWidget {
     final active = countWhere((c) => (c.status).toLowerCase() == 'active');
     final paused = countWhere((c) => (c.status).toLowerCase() == 'paused');
     final blocked = countWhere((c) => (c.status).toLowerCase() == 'blocked');
-    final lowBal = countWhere((c) => c.effectiveWalletBalance < 100);
+    final lowBal = countWhere((c) => c.effectiveSubscriptionBalance < 100);
 
     final veg = countWhere(
       (c) => (c.dietType ?? '').toLowerCase().contains('veg'),
