@@ -498,9 +498,9 @@ class _TransactionsTabState extends State<TransactionsTab>
         .toSet()
         .length;
 
-    final perDayAmount = dailyDeductionDays > 0
-        ? totalDeducted / dailyDeductionDays
-        : 57.0;
+    final perDayAmount = subscriptionDebits.isEmpty
+        ? 0.0
+        : totalDeducted / (dailyDeductionDays > 0 ? dailyDeductionDays : 1);
     final subscriptionTotal = perDayAmount * 30;
     final remainingBalance = subscriptionTotal - totalDeducted;
 
